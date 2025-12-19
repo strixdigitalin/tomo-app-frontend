@@ -1944,7 +1944,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   activeTab: {
-    elevation: 1,
+    // elevation: 1,
     // shadowOpacity: 0.2,
     shadowRadius: 4,
     // borderWidth: 1,

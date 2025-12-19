@@ -148,6 +148,7 @@ const SignUp = ({ navigation }) => {
                         />
                         <CustomInputField
                             placeholder={'Enter Password '}
+                              isPasswordField={true} 
                             Lefticon={isDarkMode ? <LockWhite /> : <LockIcon />}
                             icon={isDarkMode ? <EyeIconWhite /> : <EyeIcon />}
                             value={userInfo?.Password}
@@ -156,6 +157,7 @@ const SignUp = ({ navigation }) => {
                         <CustomInputField
                             placeholder={'Enter confirm Password '}
                             Lefticon={<LockIcon />}
+                              isPasswordField={true} 
                             icon={<EyeIcon />}
                             value={userInfo?.Confirm}
                             onChangeText={(value) => handleInputChange('Confirm', value)}

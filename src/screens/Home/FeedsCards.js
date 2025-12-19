@@ -2928,6 +2928,379 @@
 // export default FeedCard;
 
 
+// import React, { useEffect, useRef } from 'react';
+// import {
+//   View,
+//   Text,
+//   Image,
+//   TouchableOpacity,
+//   TouchableWithoutFeedback,
+//   Animated,
+//   StyleSheet,
+//   Dimensions
+// } from 'react-native';
+// import Video from 'react-native-video';
+// import GradientIcon from '../../components/GradientIcon';
+// import { SpeakerOff } from '../../assets/SVGs';
+// import AntDesign from 'react-native-vector-icons/AntDesign';
+// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+// import { FONTS_FAMILY } from '../../assets/Fonts';
+// import { useSelector } from 'react-redux';
+// import LinearGradient from 'react-native-linear-gradient';
+// import IMG from '../../assets/Images';
+// import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+
+// const { width: screenWidth } = Dimensions.get('window');
+
+// const FeedCard = ({
+//   post,
+//   index,
+//   isNewsItem,
+//   isVideo,
+//   mediaUrl,
+//   visibleVideoIndex,
+//   pausedVideos,
+//   isMuted,
+//   selector,
+//   doubleTapIndex,
+//   heartOpacity,
+//   heartScale,
+  
+//   onPostPress,
+//   onUserPress,
+//   onMediaPress,
+//   onLikePress,
+//   onDislikePress,
+//   onCommentPress,
+//   onBookmarkPress,
+//   onMuteToggle,
+//   formatInstagramDate
+// }) => {
+//   const { isDarkMode } = useSelector(state => state.theme);
+
+//   const styles = StyleSheet.create({
+//     feedContainer: {
+//       paddingBottom: 12,
+//       backgroundColor: isDarkMode ? 'rgba(22, 28, 28, 0.8)' : 'rgba(228, 237, 238, 0.8)',
+//       borderRadius: 30,
+//       paddingHorizontal: 10,
+//       position: 'relative',
+//       overflow: 'hidden',
+//     },
+//     feedHeader: {
+//       flexDirection: 'row',
+//       justifyContent: 'space-between',
+//       alignItems: 'flex-start',
+//       paddingHorizontal: 0,
+//       paddingVertical: 12,
+//     },
+//     feedUserInfo: {
+//       flexDirection: 'row',
+//       alignItems: 'center',
+//       flex: 1,
+//     },
+//     profileImageWrapper: {
+//       marginRight: 12,
+//     },
+//     profileImage: {
+//       width: 42,
+//       height: 42,
+//       borderRadius: 21,
+//       borderWidth: 2,
+//       borderColor: isDarkMode ? '#1a1a1a' : '#f0f0f0',
+//     },
+//     userNameRow: {
+//       flexDirection: 'row',
+//       alignItems: 'center',
+//       marginBottom: 2,
+//     },
+//     username: {
+//       fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+//       fontSize: 15,
+//     },
+//     timeText: {
+//       color: '#999',
+//       fontSize: 12,
+//       marginLeft: 6,
+//       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+//     },
+//     caption: {
+//       fontSize: 14,
+//       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+//       lineHeight: 18,
+//     },
+//     mediaContainer: {
+//       position: 'relative',
+//       marginTop: 8,
+//     },
+//     postImage: {
+//       width: '100%',
+//       height: 350,
+//       borderRadius: 20
+//     },
+//     videoContainer: {
+//       borderRadius: 0,
+//       overflow: 'hidden',
+//     },
+//     heartAnimation: {
+//       position: 'absolute',
+//       top: '50%',
+//       left: '50%',
+//       transform: [{ translateX: -50 }, { translateY: -50 }],
+//     },
+//     soundButton: {
+//       position: 'absolute',
+//       bottom: 16,
+//       right: 16,
+//     },
+//     soundButtonInner: {
+//       backgroundColor: 'rgba(0, 0, 0, 0.6)',
+//       padding: 8,
+//       borderRadius: 20,
+//       backdropFilter: 'blur(10px)',
+//     },
+//     actions: {
+//       flexDirection: 'row',
+//       justifyContent: 'space-between',
+//       alignItems: 'center',
+//       paddingHorizontal: 16,
+//     },
+//     leftActions: {
+//       flexDirection: 'row',
+//       alignItems: 'center',
+//       gap: 16,
+//     },
+//     actionButton: {
+//       flexDirection: 'row',
+//       alignItems: 'center',
+//       gap: 6,
+//       paddingVertical: 4,
+//       paddingHorizontal: 8,
+//       borderRadius: 16,
+//       backgroundColor: '#E0E0E0',
+//     },
+//     actionText: {
+//       fontSize: 14,
+//       fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+//     },
+//   });
+
+//   return (
+//     <GlowWrapper
+//       isDarkMode={isDarkMode}
+//       borderRadius={30}
+//       showStars={true}
+//       starCount={100}
+//       showShinePatches={true}
+//       intensity="low"
+//       containerStyle={{
+//         margin: 10,
+//       }}
+//     >
+//       <TouchableOpacity
+//         style={styles.feedContainer}
+//         onPress={onPostPress}
+//         activeOpacity={0.98}
+//       >
+//         {/* Header */}
+//         <View style={styles.feedHeader}>
+//           <View style={styles.feedUserInfo}>
+//             <View style={styles.profileImageWrapper}>
+//               <Image
+//                 source={
+//                   isNewsItem
+//                     ? IMG.MessageProfile
+//                     : post?.User?.Image
+//                       ? { uri: post?.User?.Image }
+//                       : IMG.MessageProfile
+//                 }
+//                 style={styles.profileImage}
+//               />
+//             </View>
+            
+//             <TouchableOpacity
+//               onPress={onUserPress}
+//               style={{ flex: 1 }}
+//               activeOpacity={0.7}
+//             >
+//               <View style={styles.userNameRow}>
+//                 <Text style={[styles.username, { color: isDarkMode ? '#fff' : '#000' }]}>
+//                   {isNewsItem ? post?.title : post?.User?.UserName}
+//                 </Text>
+//                 {!isNewsItem && (
+//                   <Text style={styles.timeText}>
+//                     • {formatInstagramDate(post?.createdAt)}
+//                   </Text>
+//                 )}
+//               </View>
+//               <Text 
+//                 style={[styles.caption, { color: isDarkMode ? '#ccc' : '#666' }]} 
+//                 numberOfLines={2}
+//               >
+//                 {isNewsItem
+//                   ? post?.description?.replace(/<[^>]*>/g, '')
+//                   : post?.caption}
+//               </Text>
+//             </TouchableOpacity>
+//           </View>
+//         </View>
+
+//         {/* Post Media */}
+//         <TouchableWithoutFeedback onPress={onMediaPress}>
+//           <View style={styles.mediaContainer}>
+//             {isVideo ? (
+//               <View style={styles.videoContainer}>
+//                 <Video
+//                   source={{ uri: mediaUrl }}
+//                   style={styles.postImage}
+//                   resizeMode='cover'
+//                   repeat={true}
+//                   muted={isMuted}
+//                   paused={visibleVideoIndex !== index || pausedVideos[index]}
+//                 />
+//               </View>
+//             ) : (
+//               <Image
+//                 source={{ uri: mediaUrl }}
+//                 style={styles.postImage}
+//                 resizeMode='cover'
+//               />
+//             )}
+
+//             {/* Bottom Actions Bar */}
+//             <View style={{
+//               height: 40,
+//               width: '100%',
+//               backgroundColor: 'rgba(0, 0, 0, 0.2)',
+//               position: 'absolute',
+//               bottom: 0,
+//               justifyContent: 'center',
+//               borderBottomLeftRadius: 20,
+//               borderBottomRightRadius: 20
+//             }}>
+//               {!isNewsItem && (
+//                 <View style={styles.actions}>
+//                   <View style={styles.leftActions}>
+//                     {/* Like Button */}
+//                     <View style={styles.actionButton}>
+//                       <TouchableOpacity onPress={onLikePress} activeOpacity={0.7}>
+//                         {post?.likes?.includes(selector?._id) ? (
+//                           <GradientIcon
+//                             colors={['#21B7FF', '#0084F8']}
+//                             size={20}
+//                             iconType='Ionicons'
+//                             name={'triangle'}
+//                           />
+//                         ) : (
+//                           <GradientIcon
+//                             colors={['#999', '#999']}
+//                             size={16}
+//                             iconType='Feather'
+//                             name={'triangle'}
+//                           />
+//                         )}
+//                       </TouchableOpacity>
+//                       <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
+//                         {post?.TotalLikes}
+//                       </Text>
+//                     </View>
+
+//                     {/* Dislike Button */}
+//                     <View style={styles.actionButton}>
+//                       <TouchableOpacity onPress={onDislikePress} activeOpacity={0.7}>
+//                         <GradientIcon
+//                           colors={post?.Unlikes?.includes(selector?._id) 
+//                             ? ['#21B7FF', '#0084F8']
+//                             : ['#999', '#999']}
+//                           size={16}
+//                           iconType='Feather'
+//                           name={'triangle'}
+//                           style={{ transform: [{ rotate: '180deg' }] }}
+//                         />
+//                       </TouchableOpacity>
+//                       <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
+//                         {post?.TotalUnLikes}
+//                       </Text>
+//                     </View>
+
+//                     {/* Comment Button */}
+//                     <View style={styles.actionButton}>
+//                       <TouchableOpacity onPress={onCommentPress} activeOpacity={0.7}>
+//                         <GradientIcon
+//                           colors={['#21B7FF', '#0084F8']}
+//                           size={16}
+//                           iconType='FontAwesome'
+//                           name={'comment-o'}
+//                         />
+//                       </TouchableOpacity>
+//                       <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
+//                         {post?.TotalComents}
+//                       </Text>
+//                     </View>
+//                   </View>
+
+//                   {/* Bookmark Button */}
+//                   <TouchableOpacity onPress={onBookmarkPress} activeOpacity={0.7}>
+//                     {post?.SavedBy?.includes(selector?._id) ? (
+//                       <GradientIcon
+//                         colors={['#21B7FF', '#0084F8']}
+//                         size={22}
+//                         iconType='FontAwesome'
+//                         name={'bookmark'}
+//                       />
+//                     ) : (
+//                       <GradientIcon
+//                         colors={['#999', '#999']}
+//                         size={22}
+//                         iconType='FontAwesome'
+//                         name={'bookmark-o'}
+//                       />
+//                     )}
+//                   </TouchableOpacity>
+//                 </View>
+//               )}
+//             </View>
+
+//             {/* Heart Animation */}
+//             {!isNewsItem && (
+//               <Animated.View pointerEvents='none' style={styles.heartAnimation}>
+//                 <Animated.View
+//                   style={{
+//                     opacity: doubleTapIndex === index ? heartOpacity : 0,
+//                     transform: [{ scale: heartScale }],
+//                   }}
+//                 >
+//                   <MaterialIcons name='favorite' size={100} color='#FF1493' />
+//                 </Animated.View>
+//               </Animated.View>
+//             )}
+
+//             {/* Mute/Unmute Button */}
+//             {isVideo && (
+//               <TouchableOpacity
+//                 style={styles.soundButton}
+//                 onPress={onMuteToggle}
+//                 activeOpacity={0.8}
+//               >
+//                 <View style={styles.soundButtonInner}>
+//                   {isMuted ? (
+//                     <SpeakerOff />
+//                   ) : (
+//                     <AntDesign name={'sound'} color='white' size={16} />
+//                   )}
+//                 </View>
+//               </TouchableOpacity>
+//             )}
+//           </View>
+//         </TouchableWithoutFeedback>
+//       </TouchableOpacity>
+//     </GlowWrapper>
+//   );
+// };
+
+// export default FeedCard;
+
+
 import React, { useEffect, useRef } from 'react';
 import {
   View,
@@ -3182,65 +3555,86 @@ const FeedCard = ({
                 <View style={styles.actions}>
                   <View style={styles.leftActions}>
                     {/* Like Button */}
-                    <View style={styles.actionButton}>
-                      <TouchableOpacity onPress={onLikePress} activeOpacity={0.7}>
-                        {post?.likes?.includes(selector?._id) ? (
-                          <GradientIcon
-                            colors={['#21B7FF', '#0084F8']}
-                            size={20}
-                            iconType='Ionicons'
-                            name={'triangle'}
-                          />
-                        ) : (
-                          <GradientIcon
-                            colors={['#999', '#999']}
-                            size={16}
-                            iconType='Feather'
-                            name={'triangle'}
-                          />
-                        )}
-                      </TouchableOpacity>
-                      <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
-                        {post?.TotalLikes}
-                      </Text>
-                    </View>
-
-                    {/* Dislike Button */}
-                    <View style={styles.actionButton}>
-                      <TouchableOpacity onPress={onDislikePress} activeOpacity={0.7}>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        onLikePress();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      {post?.likes?.includes(selector?._id) ? (
                         <GradientIcon
-                          colors={post?.Unlikes?.includes(selector?._id) 
-                            ? ['#21B7FF', '#0084F8']
-                            : ['#999', '#999']}
+                          colors={['#21B7FF', '#0084F8']}
+                          size={20}
+                          iconType='Ionicons'
+                          name={'triangle'}
+                        />
+                      ) : (
+                        <GradientIcon
+                          colors={['#999', '#999']}
                           size={16}
                           iconType='Feather'
                           name={'triangle'}
-                          style={{ transform: [{ rotate: '180deg' }] }}
                         />
-                      </TouchableOpacity>
+                      )}
+                      <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
+                        {post?.TotalLikes}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Dislike Button */}
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        onDislikePress();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <GradientIcon
+                        colors={post?.Unlikes?.includes(selector?._id) 
+                          ? ['#21B7FF', '#0084F8']
+                          : ['#999', '#999']}
+                        size={16}
+                        iconType='Feather'
+                        name={'triangle'}
+                        style={{ transform: [{ rotate: '180deg' }] }}
+                      />
                       <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
                         {post?.TotalUnLikes}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
 
                     {/* Comment Button */}
-                    <View style={styles.actionButton}>
-                      <TouchableOpacity onPress={onCommentPress} activeOpacity={0.7}>
-                        <GradientIcon
-                          colors={['#21B7FF', '#0084F8']}
-                          size={16}
-                          iconType='FontAwesome'
-                          name={'comment-o'}
-                        />
-                      </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        onCommentPress();
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <GradientIcon
+                        colors={['#21B7FF', '#0084F8']}
+                        size={16}
+                        iconType='FontAwesome'
+                        name={'comment-o'}
+                      />
                       <Text style={[styles.actionText, { color: '#7078e2ff' }]}>
                         {post?.TotalComents}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </View>
 
                   {/* Bookmark Button */}
-                  <TouchableOpacity onPress={onBookmarkPress} activeOpacity={0.7}>
+                  <TouchableOpacity 
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      onBookmarkPress();
+                    }}
+                    activeOpacity={0.7}
+                  >
                     {post?.SavedBy?.includes(selector?._id) ? (
                       <GradientIcon
                         colors={['#21B7FF', '#0084F8']}

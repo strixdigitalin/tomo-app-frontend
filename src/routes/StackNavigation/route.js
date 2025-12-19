@@ -28,6 +28,9 @@ import AllProductsOfAShops from '../../screens/Shops/AllProductsOfaShop';
 import CreateProducts from '../../screens/Shops/CreateProduct';
 import AllPostOfAUser from '../../screens/AllPostOfAUser/AllPostOfaUser';
 import FeedBack from '../../screens/Feedback/FeedBack';
+import BoostProduct from '../../screens/Shops/BoostProduct';
+import BoostSuccess from '../../screens/Shops/SuccessBoost';
+import MyPromotions from '../../screens/Shops/MyPromotions';
 
 
 
@@ -75,6 +78,13 @@ const StackNavigation = () => {
         <Stack.Screen name={'TermsAndConditions'} component={TermsAndConditions} />
         <Stack.Screen name={'AllPostOfAUser'} component={AllPostOfAUser} />
         <Stack.Screen name={'FeedBack'} component={FeedBack} />
+
+        <Stack.Screen name={'BoostProduct'} component={BoostProduct} />
+        <Stack.Screen name={'BoostSuccess'} component={BoostSuccess} />
+        <Stack.Screen name={'MyPromotions'} component={MyPromotions} />
+
+
+
 
 
 

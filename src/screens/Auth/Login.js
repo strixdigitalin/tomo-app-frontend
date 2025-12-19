@@ -384,7 +384,7 @@ const Login = ({ navigation }) => {
                 useNativeDriver: true,
             }),
         ]).start();
-        
+
         checkBiometricStatus();
     }, []);
 
@@ -396,14 +396,14 @@ const Login = ({ navigation }) => {
 
     console.log('Biometric Available:', biometricAvailable);
     console.log('Biometric Enabled:', biometricEnabled);
-    
+
 
     const checkBiometricStatus = async () => {
         try {
             const { available, biometryType } = await rnBiometrics.isSensorAvailable();
             const enabled = await getItem('user_biometric_enabled');
             console.log(enabled, 'Biometric Enabled Status::::::::::::');
-            
+
 
             console.log('User Biometric Status:', { available, biometryType, enabled });
 
@@ -444,9 +444,9 @@ const Login = ({ navigation }) => {
                 promptMessage: 'Place your finger on the sensor to login',
                 cancelButtonText: 'Cancel',
             });
-            
+
             console.log('User Biometric result:', { success, error });
-            
+
             if (success) {
                 const savedEmail = await getItem('user_saved_email');
                 const savedPassword = await getItem('user_saved_password');
@@ -510,12 +510,12 @@ const Login = ({ navigation }) => {
                     const getUserDetails = await apiGet(urls.userProfile);
                     if (getUserDetails?.statusCode === 200) {
                         dispatch(setUser(JSON.stringify(getUserDetails?.data)));
-                        
+
                         // Setup biometric if available and not already enabled
                         if (showBiometricSetup && biometricAvailable && !biometricEnabled) {
                             setupBiometricLogin(email, password);
                         }
-                        
+
                         navigation.navigate('Tab');
                     }
                     hideLoader();
@@ -554,12 +554,12 @@ const Login = ({ navigation }) => {
     const renderHeader = () => {
         return (
             <Animated.View style={[styles.headerContainer, { opacity: fadeAnim }]}>
-                <Row>
+                {/* <Row>
                     <TouchableOpacity>
                         {isDarkMode ? <BackOuterWhite /> : <Back />}
                     </TouchableOpacity>
                     <CustomText style={styles.backText}>Back</CustomText>
-                </Row>
+                </Row> */}
                 <CustomText style={styles.signInText}>Sign In</CustomText>
             </Animated.View>
         );
@@ -586,12 +586,22 @@ const Login = ({ navigation }) => {
                         value={userInfo?.Email}
                         onChangeText={(value) => handleInputChange('Email', value)}
                     />
-                    <CustomInputField
+                    {/* <CustomInputField
                         placeholder="Enter Password"
                         Lefticon={isDarkMode ? <LockWhite /> : <LockIcon />}
                         icon={isDarkMode ? <EyeIconWhite /> : <EyeIcon />}
                         value={userInfo?.Password}
                         onChangeText={(value) => handleInputChange('Password', value)}
+                        secureTextEntry={true}
+                    /> */}
+                    <CustomInputField
+                        // label="Password"
+                        placeholder="Enter Password"
+                        value={userInfo?.Password}
+                        onChangeText={(value) => handleInputChange('Password', value)}
+                        isPasswordField={true}  // ⭐ Yeh add karo password field ke liye
+                        Lefticon={<LockIcon />}
+                        icon={<EyeIcon />}  // Yeh toggle karega
                     />
                     <Animated.View
                         style={[
@@ -691,7 +701,7 @@ const Login = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            width:'100%',
+            width: '100%',
             paddingVertical: 12,
             paddingHorizontal: 20,
             borderWidth: 1,
@@ -709,7 +719,7 @@ const Login = ({ navigation }) => {
             fontSize: 16,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             // bottom: 10
-            top:30
+            top: 30
         },
         signupLink: {
             fontSize: 16,

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -11,21 +11,21 @@ import {
   Share,
 } from 'react-native'
 import Modal from 'react-native-modal'
-import {Forward} from '../assets/SVGs/index'
+import { Forward } from '../assets/SVGs/index'
 import Row from './wrapper/row'
-import {FONTS_FAMILY} from '../assets/Fonts'
+import { FONTS_FAMILY } from '../assets/Fonts'
 import CustomText from './TextComponent'
 import SpaceBetweenRow from './wrapper/spacebetween'
-import {clearAsyncStorage} from '../utils/Apis'
-import {showError} from '../utils/helperFunctions'
-import {navigationRef} from '../routes/StackNavigation/route'
+import { clearAsyncStorage } from '../utils/Apis'
+import { showError } from '../utils/helperFunctions'
+import { navigationRef } from '../routes/StackNavigation/route'
 import IMG from '../assets/Images'
 import ThemeToggle from './ThemeToggle'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 import FingerPrintToggle from './FingerPrintToggle'
 import ReactNativeBiometrics from 'react-native-biometrics'
 
-const CustomDrawer = ({isVisible, onClose, navigation}) => {
+const CustomDrawer = ({ isVisible, onClose, navigation }) => {
   const [biometricAvailable, setBiometricAvailable] = useState(false)
 
   let selector = useSelector(state => state?.user?.userData)
@@ -40,7 +40,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
 
   const checkBiometricStatus = async () => {
     try {
-      const {available, biometryType} = await rnBiometrics.isSensorAvailable()
+      const { available, biometryType } = await rnBiometrics.isSensorAvailable()
 
       setBiometricAvailable(available)
     } catch (error) {
@@ -71,7 +71,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
           },
         },
       ],
-      {cancelable: true}, // Dismiss by tapping outside
+      { cancelable: true }, // Dismiss by tapping outside
     )
   }
 
@@ -85,7 +85,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
       onClose()
     }
 
-       if (label == 'Feedback') {
+    if (label == 'Feedback') {
       navigation.navigate('FeedBack')
       onClose()
     }
@@ -94,6 +94,14 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
       navigation.navigate('ContactUs')
       onClose()
     }
+
+    
+      if (label == 'Promotions (New)*') {
+      navigation.navigate('MyPromotions')
+      onClose()
+    }
+
+
     if (label == 'Privacy Policy') {
       navigation.navigate('PrivacyPolicy')
       onClose()
@@ -118,7 +126,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
     }
 
     if (label == 'All Shops') {
-      navigation.navigate('Tab', {screen: 'MarketPlace'})
+      navigation.navigate('Tab', { screen: 'MarketPlace' })
       onClose()
     }
 
@@ -148,7 +156,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
       }
     }
   }
-  const {isDarkMode} = useSelector(state => state.theme)
+  const { isDarkMode } = useSelector(state => state.theme)
 
   const styles = StyleSheet.create({
     modal: {
@@ -252,7 +260,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
     },
   })
 
-  const OptionItem = ({label, icon, tc}) => (
+  const OptionItem = ({ label, icon, tc }) => (
     <TouchableOpacity
       style={styles.optionItem}
       onPress={() => handleOperation(label)}>
@@ -263,7 +271,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
           width: '100%',
           padding: 8,
         }}>
-        <Row style={{gap: 18}}>
+        <Row style={{ gap: 18 }}>
           {icon}
           <Text
             style={{
@@ -299,14 +307,14 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
               marginVertical: 20,
             }}
           /> */}
-             <Image
+          <Image
             source={IMG.TomoLogo}
             style={{
               height: 120,
               width: 120,
               alignSelf: 'center',
               marginVertical: 20,
-              borderRadius:20
+              borderRadius: 20
             }}
           />
           <ThemeToggle />
@@ -321,12 +329,12 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
               <OptionItem label='All Shops' />
             )}
             <OptionItem label='Saved Posts' />
-
+            <OptionItem label='Promotions (New)*' />
             <OptionItem label='Privacy Policy' />
             <OptionItem label='Terms & Conditions' />
             {/* <OptionItem label="Help Center" /> */}
             <OptionItem label='Invite a Freind' />
-             <OptionItem label='Feedback' />
+            <OptionItem label='Feedback' />
             <OptionItem label='FAQ' />
 
             <OptionItem label='Log Out' />

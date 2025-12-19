@@ -226,10 +226,362 @@
 
 // export default AllProductsOfAShops;
 
+// import React, { useEffect, useState, useCallback } from 'react';
+// import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
+// import { useSelector } from 'react-redux';
+// import { BackBlackSimple, BackIcon, BellIcon, LocationIcon, Search } from '../../assets/SVGs';
+// import SpaceBetweenRow from '../../components/wrapper/spacebetween';
+// import CustomText from '../../components/TextComponent';
+// import { FONTS_FAMILY } from '../../assets/Fonts';
+// import IMG from '../../assets/Images';
+// import useLoader from '../../utils/LoaderHook';
+// import { apiGet } from '../../utils/Apis';
+// import urls from '../../config/urls';
+// import { useIsFocused } from '@react-navigation/native';
+// import LinearGradient from 'react-native-linear-gradient';
+// import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+// import GradientIcon from '../../components/GradientIcon';
+
+// // Separate ProductCard component for optimization
+
+
+// const AllProductsOfAShops = ({ navigation, route }) => {
+//     const [allProducts, setAllProducts] = useState([]);
+//     const [searchQuery, setSearchQuery] = useState('');
+//     const [filteredProducts, setFilteredProducts] = useState([]);
+//     const { showLoader, hideLoader } = useLoader();
+//     const isFocused = useIsFocused();
+//     const { isDarkMode } = useSelector(state => state.theme);
+
+//     let selector = useSelector(state => state?.user?.userData);
+//     if (Object.keys(selector).length !== 0) {
+//         selector = JSON.parse(selector);
+//     }
+
+//     useEffect(() => {
+//         if (isFocused) {
+//             fetchData();
+//         }
+//     }, [isFocused]);
+
+//     // Real-time search filter
+//     useEffect(() => {
+//         if (searchQuery.trim() === '') {
+//             setFilteredProducts(allProducts);
+//         } else {
+//             const filtered = allProducts.filter(product => {
+//                 const productName = product?.ProductName?.toLowerCase() || '';
+//                 const productDetails = product?.ProductDetails?.toLowerCase() || '';
+//                 const query = searchQuery.toLowerCase();
+
+//                 return productName.includes(query) || productDetails.includes(query);
+//             });
+//             setFilteredProducts(filtered);
+//         }
+//     }, [searchQuery, allProducts]);
+
+//     const fetchData = async () => {
+//         showLoader();
+//         try {
+//             const res = await apiGet(`${urls.getAllProductsOfAShop}/${route?.params?.shopId}`);
+//             setAllProducts(res?.data || []);
+//             setFilteredProducts(res?.data || []);
+//         } catch (error) {
+//             console.error('Error fetching products:', error);
+//         } finally {
+//             hideLoader();
+//         }
+//     };
+
+//     const handleSearch = useCallback((text) => {
+//         setSearchQuery(text);
+//     }, []);
+
+//     const handleProductPress = useCallback((productId) => {
+//         navigation.navigate('ProductDetail', { productId });
+//     }, [navigation]);
+
+
+//     const ProductCard = React.memo(({ item, onPress}) => {
+//     return (
+//         <GlowWrapper
+//             isDarkMode={isDarkMode}
+//             borderRadius={10}
+//             showStars={true}
+//             starCount={6}
+//             showShinePatches={true}
+//             intensity="low"
+//             containerStyle={{
+//                 flex: 1,
+//                 margin: 5,
+//             }}
+//         >
+//             <TouchableOpacity 
+//                 style={[
+//                     styles.cardContainer,
+//                     { 
+//                         backgroundColor: isDarkMode ? '#252525' : '#fff',
+//                         borderColor: isDarkMode ? 'gray' : '#E4E4E4'
+//                     }
+//                 ]}
+//                 onPress={onPress}
+//                 activeOpacity={0.8}
+//             >
+//                 <Image
+//                     source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+//                     style={styles.productImage}
+//                     resizeMode="cover"
+//                 />
+//                 <View style={styles.productInfo}>
+//                     <CustomText 
+//                         style={styles.productName}
+//                         numberOfLines={1}
+//                     >
+//                         {item?.ProductName}
+//                     </CustomText>
+//                     <View style={styles.detailsRow}>
+//                         <GradientIcon
+//                             colors={['#21B7FF', '#0084F8']}
+//                             size={12}
+//                             iconType='FontAwesome6'
+//                             name={'circle-info'}
+//                         />
+//                         <CustomText 
+//                             style={[
+//                                 styles.productDetails,
+//                                 { color: isDarkMode ? 'white' : '#7d7d7d' }
+//                             ]}
+//                             numberOfLines={2}
+//                         >
+//                             {item?.ProductDetails}
+//                         </CustomText>
+//                     </View>
+//                 </View>
+//             </TouchableOpacity>
+//         </GlowWrapper>
+//     );
+// });
+//     const renderHeader = () => {
+//         return (
+//             <SpaceBetweenRow 
+//                 style={[
+//                     styles.header,
+//                     { backgroundColor: isDarkMode ? '#252525' : 'white' }
+//                 ]}
+//             >
+//                 <TouchableOpacity onPress={() => navigation.goBack()}>
+//                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
+//                 </TouchableOpacity>
+//                 <CustomText style={styles.headerTitle}>
+//                     Products
+//                 </CustomText>
+//                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
+//                     <GradientIcon
+//                         colors={['#21B7FF', '#0084F8']}
+//                         size={20}
+//                         iconType='FontAwesome5'
+//                         name={'bell'}
+//                     />
+//                 </TouchableOpacity>
+//             </SpaceBetweenRow>
+//         );
+//     };
+
+//     const renderItem = useCallback(({ item }) => (
+//         <ProductCard
+//             item={item}
+//             isDarkMode={isDarkMode}
+//             onPress={() => handleProductPress(item?._id)}
+//             styles={styles}
+//             // isDarkMode={isDarkMode}
+//         />
+//     ), [isDarkMode, handleProductPress]);
+
+//     const keyExtractor = useCallback((item) => item?._id?.toString(), []);
+
+//     const getItemLayout = useCallback((data, index) => ({
+//         length: 180,
+//         offset: 180 * Math.floor(index / 2),
+//         index,
+//     }), []);
+
+//     const styles = StyleSheet.create({
+//         container: {
+//             flex: 1,
+//             backgroundColor: isDarkMode ? 'black' : '#fff',
+//         },
+//         header: {
+//             paddingTop: 50,
+//             paddingHorizontal: 20,
+//             paddingBottom: 15,
+//         },
+//         headerTitle: {
+//             fontSize: 20,
+//             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//         },
+//         searchContainer: {
+//             flexDirection: 'row',
+//             alignItems: 'center',
+//             backgroundColor: isDarkMode ? '#252525' : '#F0F0F0',
+//             borderRadius: 30,
+//             margin: 10,
+//             padding: 4,
+//             marginTop: 10,
+//             paddingHorizontal: 15,
+//             gap: 10,
+//         },
+//         searchInput: {
+//             flex: 1,
+//             fontSize: 16,
+//             color: isDarkMode ? 'white' : 'black',
+//         },
+//         listContent: {
+//             paddingHorizontal: 5,
+//             paddingBottom: 20,
+//         },
+//         cardContainer: {
+//             borderRadius: 10,
+//             padding: 7,
+//             borderWidth: 1,
+//         },
+//         productImage: {
+//             height: 100,
+//             width: '100%',
+//             borderRadius: 10,
+//         },
+//         productInfo: {
+//             marginTop: 6,
+//         },
+//         productName: {
+//             fontSize: 16,
+//             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//             marginBottom: 5,
+//         },
+//         detailsRow: {
+//             flexDirection: 'row',
+//             alignItems: 'flex-start',
+//             gap: 5,
+//         },
+//         productDetails: {
+//             fontSize: 10,
+//             flex: 1,
+//         },
+//         emptyText: {
+//             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+//             alignSelf: 'center',
+//             paddingVertical: 20,
+//         },
+//         createButtonWrapper: {
+//             marginHorizontal: 20,
+//             marginBottom: 10,
+//         },
+//         followButton: {
+//             paddingVertical: 15,
+//             paddingHorizontal: 16,
+//             borderRadius: 8,
+//             alignItems: 'center',
+//         },
+//         followText: {
+//             fontSize: 16,
+//             fontWeight: '600',
+//             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//         },
+//     });
+
+//     return (
+//         <View style={styles.container}>
+//             <StatusBar
+//                 translucent={true}
+//                 backgroundColor="transparent"
+//                 barStyle={isDarkMode ? "light-content" : "dark-content"}
+//             />
+//             {renderHeader()}
+
+//             <View style={styles.searchContainer}>
+//                 <GradientIcon
+//                     colors={['#21B7FF', '#0084F8']}
+//                     size={18}
+//                     iconType='FontAwesome5'
+//                     name={'search'}
+//                 />
+//                 <TextInput 
+//                     style={styles.searchInput} 
+//                     placeholder="Search products..." 
+//                     placeholderTextColor="#A0A0A0" 
+//                     value={searchQuery}
+//                     onChangeText={handleSearch}
+//                 />
+//             </View>
+
+//             <FlatList
+//                 data={filteredProducts}
+//                 keyExtractor={keyExtractor}
+//                 renderItem={renderItem}
+//                 numColumns={2}
+//                 contentContainerStyle={styles.listContent}
+//                 showsVerticalScrollIndicator={false}
+//                 removeClippedSubviews={true}
+//                 maxToRenderPerBatch={10}
+//                 windowSize={5}
+//                 initialNumToRender={6}
+//                 getItemLayout={getItemLayout}
+//                 ListEmptyComponent={
+//                     <CustomText style={styles.emptyText}>
+//                         No Products found!
+//                     </CustomText>
+//                 }
+//             />
+
+//             {selector?.SellerStatus === 'Approved' && (
+//                 <View style={styles.createButtonWrapper}>
+//                     {/* <GlowWrapper
+//                         isDarkMode={isDarkMode}
+//                         borderRadius={8}
+//                         showStars={true}
+//                         starCount={8}
+//                         showShinePatches={false}
+//                         intensity="medium"
+//                     > */}
+//                         <TouchableOpacity
+//                             onPress={() => navigation?.navigate('CreateProducts', { 
+//                                 shopId: route?.params?.shopId 
+//                             })}
+//                         >
+//                             <LinearGradient
+//                                 // colors={['#ff00ff', '#6a5acd']}
+//                                 colors={['#21B7FF', '#0084F8']}
+//                                 start={{ x: 1, y: 0 }}
+//                                 end={{ x: 1, y: 1 }}
+//                                 style={styles.followButton}
+//                             >
+//                                 <Text style={[
+//                                     styles.followText,
+//                                     { color: '#fff' }
+//                                 ]}>
+//                                     Create Product
+//                                 </Text>
+//                             </LinearGradient>
+//                         </TouchableOpacity>
+//                     {/* </GlowWrapper> */}
+//                 </View>
+//             )}
+
+//             <View style={{ height: 100 }} />
+//         </View>
+//     );
+// };
+
+// export default AllProductsOfAShops;
+
+
+// ============================================
+// 1. AllProductsOfAShops.js (Modified - Add Boost Button)
+// ============================================
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 import { useSelector } from 'react-redux';
-import { BackBlackSimple, BackIcon, BellIcon, LocationIcon, Search } from '../../assets/SVGs';
+import { BackBlackSimple, BackIcon } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
@@ -241,9 +593,7 @@ import { useIsFocused } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import GradientIcon from '../../components/GradientIcon';
-
-// Separate ProductCard component for optimization
-
+import { App_Primary_color } from '../../common/Colors/colors';
 
 const AllProductsOfAShops = ({ navigation, route }) => {
     const [allProducts, setAllProducts] = useState([]);
@@ -264,7 +614,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         }
     }, [isFocused]);
 
-    // Real-time search filter
     useEffect(() => {
         if (searchQuery.trim() === '') {
             setFilteredProducts(allProducts);
@@ -273,7 +622,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 const productName = product?.ProductName?.toLowerCase() || '';
                 const productDetails = product?.ProductDetails?.toLowerCase() || '';
                 const query = searchQuery.toLowerCase();
-
                 return productName.includes(query) || productDetails.includes(query);
             });
             setFilteredProducts(filtered);
@@ -301,69 +649,124 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         navigation.navigate('ProductDetail', { productId });
     }, [navigation]);
 
+    // NEW: Handle Boost Button Press
+    const handleBoostPress = useCallback((product) => {
+        navigation.navigate('BoostProduct', {
+            product: product,
+            shopId: route?.params?.shopId
+        });
+    }, [navigation, route?.params?.shopId]);
 
-    const ProductCard = React.memo(({ item, onPress}) => {
-    return (
-        <GlowWrapper
-            isDarkMode={isDarkMode}
-            borderRadius={10}
-            showStars={true}
-            starCount={6}
-            showShinePatches={true}
-            intensity="low"
-            containerStyle={{
-                flex: 1,
-                margin: 5,
-            }}
-        >
-            <TouchableOpacity 
-                style={[
-                    styles.cardContainer,
-                    { 
-                        backgroundColor: isDarkMode ? '#252525' : '#fff',
-                        borderColor: isDarkMode ? 'gray' : '#E4E4E4'
-                    }
-                ]}
-                onPress={onPress}
-                activeOpacity={0.8}
+    const ProductCard = React.memo(({ item, onPress, onBoostPress }) => {
+        return (
+            <GlowWrapper
+                isDarkMode={isDarkMode}
+                borderRadius={10}
+                showStars={true}
+                starCount={6}
+                showShinePatches={true}
+                intensity="low"
+                containerStyle={{
+                    flex: 1,
+                    margin: 5,
+                }}
             >
-                <Image
-                    source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
-                    style={styles.productImage}
-                    resizeMode="cover"
-                />
-                <View style={styles.productInfo}>
-                    <CustomText 
-                        style={styles.productName}
-                        numberOfLines={1}
-                    >
-                        {item?.ProductName}
-                    </CustomText>
-                    <View style={styles.detailsRow}>
-                        <GradientIcon
-                            colors={['#21B7FF', '#0084F8']}
-                            size={12}
-                            iconType='FontAwesome6'
-                            name={'circle-info'}
-                        />
-                        <CustomText 
-                            style={[
-                                styles.productDetails,
-                                { color: isDarkMode ? 'white' : '#7d7d7d' }
-                            ]}
-                            numberOfLines={2}
+                <TouchableOpacity
+                    style={[
+                        styles.cardContainer,
+                        {
+                            backgroundColor: isDarkMode ? '#252525' : '#fff',
+                            borderColor: isDarkMode ? 'gray' : '#E4E4E4'
+                        }
+                    ]}
+                    onPress={onPress}
+                    activeOpacity={0.8}
+                >
+                    <Image
+                        source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+                        style={styles.productImage}
+                        resizeMode="cover"
+                    />
+
+                    {/* NEW: Boost Badge if product is boosted */}
+                    {item?.isBoosted && (
+                        <View style={styles.boostBadge}>
+                            <LinearGradient
+                                colors={['#21B7FF', '#0084F8']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.boostBadgeGradient}
+                            >
+                                <GradientIcon
+                                    colors={['#fff', '#fff']}
+                                    size={10}
+                                    iconType='FontAwesome5'
+                                    name={'bolt'}
+                                />
+                                <CustomText style={styles.boostBadgeText}>Boosted</CustomText>
+                            </LinearGradient>
+                        </View>
+                    )}
+
+                    <View style={styles.productInfo}>
+                        <CustomText
+                            style={styles.productName}
+                            numberOfLines={1}
                         >
-                            {item?.ProductDetails}
+                            {item?.ProductName}
                         </CustomText>
+                        <View style={styles.detailsRow}>
+                            <GradientIcon
+                                colors={['#21B7FF', '#0084F8']}
+                                size={12}
+                                iconType='FontAwesome6'
+                                name={'circle-info'}
+                            />
+                            <CustomText
+                                style={[
+                                    styles.productDetails,
+                                    { color: isDarkMode ? 'white' : '#7d7d7d' }
+                                ]}
+                                numberOfLines={2}
+                            >
+                                {item?.ProductDetails}
+                            </CustomText>
+                        </View>
+
+                        {/* NEW: Boost Button - Only show if seller is owner */}
+                        {/* {selector?.SellerStatus === 'Approved' && ( */}
+                            <TouchableOpacity
+                                style={styles.boostButton}
+                                onPress={() => onBoostPress(item)}
+                                activeOpacity={0.7}
+                            >
+                                <LinearGradient
+                                    colors={['#21B7FF', '#0084F8']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.boostButtonGradient}
+                                >
+                                    <GradientIcon
+                                        colors={['#fff', '#fff']}
+                                        size={12}
+                                        iconType='FontAwesome5'
+                                        name={'chart-line'}
+                                    />
+                                    <CustomText style={styles.boostButtonText}>
+                                        {item?.isBoosted ? 'Manage Boost' : 'Boost'}
+                                    </CustomText>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        {/* )} */}
                     </View>
-                </View>
-            </TouchableOpacity>
-        </GlowWrapper>
-    );
-});
+                </TouchableOpacity>
+            </GlowWrapper>
+        );
+    });
+
     const renderHeader = () => {
         return (
-            <SpaceBetweenRow 
+            <SpaceBetweenRow
                 style={[
                     styles.header,
                     { backgroundColor: isDarkMode ? '#252525' : 'white' }
@@ -372,9 +775,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
                 </TouchableOpacity>
-                <CustomText style={styles.headerTitle}>
-                    Products
-                </CustomText>
+                <CustomText style={styles.headerTitle}>Products</CustomText>
                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
                     <GradientIcon
                         colors={['#21B7FF', '#0084F8']}
@@ -392,16 +793,15 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             item={item}
             isDarkMode={isDarkMode}
             onPress={() => handleProductPress(item?._id)}
-            styles={styles}
-            // isDarkMode={isDarkMode}
+            onBoostPress={handleBoostPress}
         />
-    ), [isDarkMode, handleProductPress]);
+    ), [isDarkMode, handleProductPress, handleBoostPress]);
 
     const keyExtractor = useCallback((item) => item?._id?.toString(), []);
 
     const getItemLayout = useCallback((data, index) => ({
-        length: 180,
-        offset: 180 * Math.floor(index / 2),
+        length: 200,
+        offset: 200 * Math.floor(index / 2),
         index,
     }), []);
 
@@ -466,6 +866,46 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             fontSize: 10,
             flex: 1,
         },
+        // NEW: Boost Button Styles
+        boostButton: {
+            marginTop: 8,
+            borderRadius: 6,
+            overflow: 'hidden',
+        },
+        boostButtonGradient: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: 6,
+            paddingHorizontal: 10,
+            gap: 5,
+        },
+        boostButtonText: {
+            color: '#fff',
+            fontSize: 11,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        },
+        // NEW: Boost Badge Styles
+        boostBadge: {
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            borderRadius: 12,
+            overflow: 'hidden',
+            zIndex: 1,
+        },
+        boostBadgeGradient: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 3,
+            paddingHorizontal: 8,
+            gap: 3,
+        },
+        boostBadgeText: {
+            color: '#fff',
+            fontSize: 9,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        },
         emptyText: {
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
             alignSelf: 'center',
@@ -486,6 +926,21 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             fontWeight: '600',
             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
         },
+        promotionsLink: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginHorizontal: 10,
+            marginBottom: 10,
+            paddingVertical: 12,
+            paddingHorizontal: 15,
+            borderRadius: 8,
+        },
+        promotionsLinkText: {
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+            color:'white'
+        },
     });
 
     return (
@@ -504,14 +959,36 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                     iconType='FontAwesome5'
                     name={'search'}
                 />
-                <TextInput 
-                    style={styles.searchInput} 
-                    placeholder="Search products..." 
-                    placeholderTextColor="#A0A0A0" 
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search products..."
+                    placeholderTextColor="#A0A0A0"
                     value={searchQuery}
                     onChangeText={handleSearch}
                 />
             </View>
+
+            {/* NEW: Quick Access to My Promotions */}
+            {/* {selector?.SellerStatus === 'Approved' && ( */}
+                {/* <TouchableOpacity
+                    style={[styles.promotionsLink, {
+                        backgroundColor: isDarkMode ? '#252525' : '#F0F0F0'
+                    }]}
+                    onPress={() => navigation.navigate('MyPromotions', {
+                        shopId: route?.params?.shopId
+                    })}
+                >
+                    <GradientIcon
+                        colors={['#21B7FF', '#0084F8']}
+                        size={16}
+                        iconType='FontAwesome5'
+                        name={'chart-bar'}
+                    />
+                    <CustomText style={styles.promotionsLinkText}>
+                        View My Promotions
+                    </CustomText>
+                </TouchableOpacity> */}
+            {/* // )} */}
 
             <FlatList
                 data={filteredProducts}
@@ -534,35 +1011,22 @@ const AllProductsOfAShops = ({ navigation, route }) => {
 
             {selector?.SellerStatus === 'Approved' && (
                 <View style={styles.createButtonWrapper}>
-                    {/* <GlowWrapper
-                        isDarkMode={isDarkMode}
-                        borderRadius={8}
-                        showStars={true}
-                        starCount={8}
-                        showShinePatches={false}
-                        intensity="medium"
-                    > */}
-                        <TouchableOpacity
-                            onPress={() => navigation?.navigate('CreateProducts', { 
-                                shopId: route?.params?.shopId 
-                            })}
+                    <TouchableOpacity
+                        onPress={() => navigation?.navigate('CreateProducts', {
+                            shopId: route?.params?.shopId
+                        })}
+                    >
+                        <LinearGradient
+                            colors={['#21B7FF', '#0084F8']}
+                            start={{ x: 1, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.followButton}
                         >
-                            <LinearGradient
-                                // colors={['#ff00ff', '#6a5acd']}
-                                colors={['#21B7FF', '#0084F8']}
-                                start={{ x: 1, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.followButton}
-                            >
-                                <Text style={[
-                                    styles.followText,
-                                    { color: '#fff' }
-                                ]}>
-                                    Create Product
-                                </Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                    {/* </GlowWrapper> */}
+                            <Text style={[styles.followText, { color: '#fff' }]}>
+                                Create Product
+                            </Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
                 </View>
             )}
 
@@ -571,4 +1035,4 @@ const AllProductsOfAShops = ({ navigation, route }) => {
     );
 };
 
-export default AllProductsOfAShops;
+export default AllProductsOfAShops
