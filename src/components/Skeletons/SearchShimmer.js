@@ -326,6 +326,7 @@ const SearchShimmerLoader = () => {
       padding: 12,
       marginTop: 60,
       height: 48,
+      
     },
     searchIcon: {
       marginRight: 10,
@@ -348,7 +349,7 @@ const SearchShimmerLoader = () => {
     gridContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      paddingHorizontal: 2,
+      paddingHorizontal: 11,
       marginBottom: 100,
     },
     userCardContainer: {
@@ -356,6 +357,7 @@ const SearchShimmerLoader = () => {
       margin: 1,
       borderRadius: 8,
       overflow: 'hidden',
+      alignSelf:'center'
     },
     userImage: {
       width: '100%',

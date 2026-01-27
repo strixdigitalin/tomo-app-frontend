@@ -632,6 +632,8 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         showLoader();
         try {
             const res = await apiGet(`${urls.getAllProductsOfAShop}/${route?.params?.shopId}`);
+            console.log('res:::::::::::::::::::::::::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>>', res);
+            
             setAllProducts(res?.data || []);
             setFilteredProducts(res?.data || []);
         } catch (error) {
@@ -683,7 +685,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                     activeOpacity={0.8}
                 >
                     <Image
-                        source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+                        source={item?.Images[0] ? { uri: item?.Images[0] } : IMG.PostImage}
                         style={styles.productImage}
                         resizeMode="cover"
                     />
@@ -913,7 +915,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         },
         createButtonWrapper: {
             marginHorizontal: 20,
-            marginBottom: 10,
+            // marginTop: 40,
         },
         followButton: {
             paddingVertical: 15,
@@ -1030,7 +1032,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 </View>
             )}
 
-            <View style={{ height: 100 }} />
+            <View style={{ height: 50 }} />
         </View>
     );
 };

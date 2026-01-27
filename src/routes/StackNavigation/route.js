@@ -142,6 +142,7 @@ import PostDetailScreen from '../../screens/Home/PostDetailScreen';
 import CommentsScreen from '../../screens/Home/CommentScreen';
 import SettingsDrawerScreen from '../../components/DrawerModal';
 import ReactNativeChatbot from '../../screens/Message/ChatBot';
+import ReportScreen from '../../screens/Home/ReportPostScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -397,6 +398,14 @@ const StackNavigation = () => {
             animation: 'slide_from_right',
           }}
         />
+ <Stack.Screen
+          name={'ReportScreen'}
+          component={ReportScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        
 
         {/* Boost & Promotion Screens */}
         <Stack.Screen

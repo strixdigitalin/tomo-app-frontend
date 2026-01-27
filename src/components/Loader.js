@@ -7,8 +7,10 @@ const Loader = ({visible = false}) => {
   const { isDarkMode } = useSelector(state => state.theme);
 
   return (
-    <Modal transparent visible={visible}>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <Modal transparent visible={visible}
+    style={{alignSelf:'center'}}
+    >
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', alignSelf:'center'}}>
         <View
           style={{
             padding: 15,
