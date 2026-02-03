@@ -143,6 +143,8 @@ import CommentsScreen from '../../screens/Home/CommentScreen';
 import SettingsDrawerScreen from '../../components/DrawerModal';
 import ReactNativeChatbot from '../../screens/Message/ChatBot';
 import ReportScreen from '../../screens/Home/ReportPostScreen';
+import AddVehicleSpecs from '../../screens/UserDetail/AddSpecs';
+import Settings from '../../screens/PrivacyPolicy/Settings';
 
 const Stack = createNativeStackNavigator();
 
@@ -415,6 +417,26 @@ const StackNavigation = () => {
             animation: 'slide_from_bottom',
           }}
         />
+
+          <Stack.Screen
+          name={'AddVehicleSpecs'}
+          component={AddVehicleSpecs}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+
+        
+
+          <Stack.Screen
+          name={'Settings'}
+          component={Settings}
+          options={{
+            animation: 'right',
+          }}
+        />
+
+        
         <Stack.Screen
           name={'BoostSuccess'}
           component={BoostSuccess}

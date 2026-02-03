@@ -346,14 +346,20 @@ const Splash = ({ navigation }) => {
 
         try {
             if (token) {
-                const getUserDetails = await apiGet(urls.userProfile);
+        
+                const updateLastSeen = await apiGet('/api/user/UserUpdateLastActive');
+                if(updateLastSeen?.statusCode==200){
 
-                if (getUserDetails?.statusCode === 200 || getUserDetails?.data) {
-                    await navigateToUserDashboard(getUserDetails?.data);
-                } else {
-                    navigation.replace('Onboarding');
+                    const getUserDetails = await apiGet(urls.userProfile);
+    
+                    if (getUserDetails?.statusCode === 200 || getUserDetails?.data) {
+                        await navigateToUserDashboard(getUserDetails?.data);
+                    } else {
+                        navigation.replace('Onboarding');
+                    }
+                    setLoading(false);
                 }
-                setLoading(false);
+
             } else {
                 navigation.replace('Onboarding');
                 setLoading(false);

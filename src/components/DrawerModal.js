@@ -387,6 +387,7 @@ import ThemeToggle from './ThemeToggle'
 import { useSelector } from 'react-redux'
 import FingerPrintToggle from './FingerPrintToggle'
 import ReactNativeBiometrics from 'react-native-biometrics'
+import LastActiveToggle from './LastActiveToggle'
 
 const SettingsDrawerScreen = ({ navigation }) => {
   const [biometricAvailable, setBiometricAvailable] = useState(false)
@@ -548,6 +549,10 @@ const SettingsDrawerScreen = ({ navigation }) => {
         closeDrawer()
         setTimeout(() => navigation.navigate('Tab', { screen: 'MarketPlace' }), 300)
         break
+          case 'Settings':
+        closeDrawer()
+        setTimeout(() => navigation.navigate('Settings'), 300)
+        break
       case 'Invite a Freind':
         handleInvite()
         break
@@ -679,6 +684,10 @@ const SettingsDrawerScreen = ({ navigation }) => {
           <ThemeToggle />
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.delay(150)}>
+         <LastActiveToggle />
+        </Animated.View>
+
         {/* Fingerprint Toggle */}
         {biometricAvailable && (
           <Animated.View entering={FadeInDown.delay(200)}>
@@ -714,6 +723,7 @@ const SettingsDrawerScreen = ({ navigation }) => {
             <OptionItem label='Feedback' index={7} />
             <OptionItem label='FAQ' index={8} />
             <OptionItem label='AI chat Bot' index={8} />
+             {/* <OptionItem label='Settings' index={8} /> */}
             <OptionItem label='Log Out' index={9} />
 
             <View style={styles.divider} />

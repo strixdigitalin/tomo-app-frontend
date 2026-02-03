@@ -1002,11 +1002,46 @@ const OtherUserDetail = ({ navigation, route }) => {
       </View>
 
       {/* Status and Join Date */}
-      <View style={styles.statusContainer}>
+      {/* <View style={styles.statusContainer}>
         <View style={styles.statusDot} />
         <Text style={styles.statusText}>just now</Text>
         <Text style={styles.joinedText}>📅 Joined Aug 5, 2025</Text>
-      </View>
+      </View> */}
+
+      {/* ✅ ACTIVITY STATUS & JOIN DATE WITH TOGGLES */}
+<View style={styles.statusContainer}>
+  { UserDetails?.ShowLastActive && (
+    <>
+      <View style={styles.statusDot} />
+      <Text style={styles.statusText}>
+        {(() => {
+          const now = new Date();
+          const lastActive = new Date(UserDetails.LastActiveAt);
+          const diffMs = now - lastActive;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+          
+          if (diffMins < 1) return 'just now';
+          if (diffMins < 60) return `${diffMins}m ago`;
+          if (diffHours < 24) return `${diffHours}h ago`;
+          if (diffDays < 7) return `${diffDays}d ago`;
+          return `${Math.floor(diffDays / 7)}w ago`;
+        })()}
+      </Text>
+    </>
+  )}
+  {UserDetails?.ShowJoinedDate &&
+(
+    <Text style={styles.joinedText}>
+      📅 Joined {(() => {
+        const joinDate = new Date(UserDetails?.createdAt || '2025-08-05');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[joinDate.getMonth()]} ${joinDate.getDate()}, ${joinDate.getFullYear()}`;
+      })()}
+    </Text>
+  )}
+</View>
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
