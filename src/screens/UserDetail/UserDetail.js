@@ -5234,11 +5234,11 @@ const OtherUserDetail = ({ navigation, route }) => {
         </Animated.View>
       )}
 
-      <CustomDrawer
+      {/* <CustomDrawer
         isVisible={isDrawerVisible}
         onClose={() => setDrawerVisible(false)}
         navigation={navigation}
-      />
+      /> */}
     </View>
   )
 }

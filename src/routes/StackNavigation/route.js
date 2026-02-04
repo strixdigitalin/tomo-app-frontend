@@ -145,6 +145,7 @@ import ReactNativeChatbot from '../../screens/Message/ChatBot';
 import ReportScreen from '../../screens/Home/ReportPostScreen';
 import AddVehicleSpecs from '../../screens/UserDetail/AddSpecs';
 import Settings from '../../screens/PrivacyPolicy/Settings';
+import ThemeSettings from '../../screens/PrivacyPolicy/ThemeSettingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -431,9 +432,19 @@ const StackNavigation = () => {
           <Stack.Screen
           name={'Settings'}
           component={Settings}
-          options={{
-            animation: 'right',
-          }}
+          // options={{
+          //   animation: 'right',
+          // }}
+        />
+
+        
+
+           <Stack.Screen
+          name={'ThemeSettings'}
+          component={ThemeSettings}
+          // options={{
+          //   animation: 'right',
+          // }}
         />
 
         

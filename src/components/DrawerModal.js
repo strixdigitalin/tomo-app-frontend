@@ -359,6 +359,385 @@
 
 
 // SettingsDrawerScreen.js - New file
+// import React, { useEffect, useState } from 'react'
+// import {
+//   View,
+//   Text,
+//   Image,
+//   TouchableOpacity,
+//   StyleSheet,
+//   Alert,
+//   ScrollView,
+//   Share,
+//   Pressable,
+//   StatusBar,
+// } from 'react-native'
+// import Animated, {
+//   SlideInRight,
+//   FadeIn,
+//   FadeInDown,
+//   FadeOut,
+// } from 'react-native-reanimated'
+// import { FONTS_FAMILY } from '../assets/Fonts'
+// import SpaceBetweenRow from './wrapper/spacebetween'
+// import { clearAsyncStorage } from '../utils/Apis'
+// import { showError } from '../utils/helperFunctions'
+// import IMG from '../assets/Images'
+// import ThemeToggle from './ThemeToggle'
+// import { useSelector } from 'react-redux'
+// import FingerPrintToggle from './FingerPrintToggle'
+// import ReactNativeBiometrics from 'react-native-biometrics'
+// import LastActiveToggle from './LastActiveToggle'
+
+// const SettingsDrawerScreen = ({ navigation }) => {
+//   const [biometricAvailable, setBiometricAvailable] = useState(false)
+//   const { isDarkMode } = useSelector(state => state.theme)
+
+//   let selector = useSelector(state => state?.user?.userData)
+//   if (Object.keys(selector).length != 0) {
+//     selector = JSON.parse(selector)
+//   }
+
+//   const rnBiometrics = new ReactNativeBiometrics()
+
+//   useEffect(() => {
+//     checkBiometricStatus()
+//   }, [])
+
+//   const checkBiometricStatus = async () => {
+//     try {
+//       const { available } = await rnBiometrics.isSensorAvailable()
+//       setBiometricAvailable(available)
+//     } catch (error) {
+//       console.log('Biometric check error:', error)
+//     }
+//   }
+
+//   const handleLogout = async () => {
+//     Alert.alert(
+//       'Logout',
+//       'Do you really want to logout?',
+//       [
+//         {
+//           text: 'Cancel',
+//           style: 'cancel',
+//         },
+//         {
+//           text: 'Yes',
+//           onPress: async () => {
+//             try {
+//               await clearAsyncStorage()
+//               navigation?.replace('Login')
+//             } catch (error) {
+//               showError('Error while logging out')
+//             }
+//           },
+//         },
+//       ],
+//       { cancelable: true },
+//     )
+//   }
+
+//   // const handleOperation = async label => {
+//   //   const closeDrawer = () => navigation.goBack()
+
+//   //   switch (label) {
+//   //     case 'Log Out':
+//   //       handleLogout()
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Terms & Conditions':
+//   //       navigation.navigate('TermsAndConditions')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Feedback':
+//   //       navigation.navigate('FeedBack')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Help Center':
+//   //       navigation.navigate('ContactUs')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Promotions (New)*':
+//   //       navigation.navigate('MyPromotions')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Privacy Policy':
+//   //       navigation.navigate('PrivacyPolicy')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'FAQ':
+//   //       navigation.navigate('FAQs')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Followers':
+//   //       navigation.navigate('Followers')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Request to become Seller':
+//   //       navigation.navigate('RequestBecomSeller')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Saved Posts':
+//   //       navigation.navigate('SavedPosts')
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'All Shops':
+//   //       navigation.navigate('Tab', { screen: 'MarketPlace' })
+//   //       // closeDrawer()
+//   //       break
+//   //     case 'Invite a Freind':
+//   //       handleInvite()
+//   //       break
+//   //     default:
+//   //       break
+//   //   }
+//   // }
+
+//   const handleOperation = async label => {
+//     const closeDrawer = () => {
+//       navigation.goBack()
+//     }
+
+//     switch (label) {
+//       case 'Log Out':
+//         handleLogout()
+//         break
+//       case 'Terms & Conditions':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('TermsAndConditions'), 300)
+//         break
+//       case 'Feedback':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('FeedBack'), 300)
+//         break
+//       case 'Help Center':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('ContactUs'), 300)
+//         break
+
+//           case 'AI chat Bot':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('ReactNativeChatbot'), 300)
+//         break
+        
+//       case 'Promotions (New)*':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('MyPromotions'), 300)
+//         break
+//       case 'Privacy Policy':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('PrivacyPolicy'), 300)
+//         break
+//       case 'FAQ':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('FAQs'), 300)
+//         break
+//       case 'Followers':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('Followers'), 300)
+//         break
+//       case 'Request to become Seller':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('RequestBecomSeller'), 300)
+//         break
+//       case 'Saved Posts':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('SavedPosts'), 300)
+//         break
+//       case 'All Shops':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('Tab', { screen: 'MarketPlace' }), 300)
+//         break
+//           case 'Settings':
+//         closeDrawer()
+//         setTimeout(() => navigation.navigate('Settings'), 300)
+//         break
+//       case 'Invite a Freind':
+//         handleInvite()
+//         break
+//       default:
+//         break
+//     }
+//   }
+
+//   const handleInvite = async () => {
+//     const inviteLink = 'https://www.example.com/invite'
+
+//     try {
+//       const result = await Share.share({
+//         message: `Hey! Check out this amazing app: ${inviteLink}`,
+//         url: inviteLink,
+//         title: 'Invite a Friend',
+//       })
+
+//       if (result.action === Share.sharedAction) {
+//         console.log('Shared successfully')
+//         navigation.goBack()
+//       } else if (result.action === Share.dismissedAction) {
+//         console.log('Share dismissed')
+//       }
+//     } catch (error) {
+//       console.error('Error sharing invite:', error.message)
+//     }
+//   }
+
+//   const OptionItem = ({ label, index }) => (
+//     <Animated.View entering={FadeInDown.delay(index * 30).duration(300)}>
+//       <TouchableOpacity
+//         style={styles.optionItem}
+//         onPress={() => handleOperation(label)}
+//         activeOpacity={0.7}>
+//         <View
+//           style={{
+//             backgroundColor: isDarkMode ? '#1a1a1a' : 'white',
+//             borderRadius: 10,
+//             width: '100%',
+//             padding: 12,
+//           }}>
+//           <Text
+//             style={{
+//               color: isDarkMode ? 'white' : 'black',
+//               fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+//               fontSize: 15,
+//             }}>
+//             {label}
+//           </Text>
+//         </View>
+//       </TouchableOpacity>
+//     </Animated.View>
+//   )
+
+//   const styles = StyleSheet.create({
+//     container: {
+//       flex: 1,
+//       flexDirection: 'row',
+//       backgroundColor: 'transparent',
+//     },
+//     backdrop: {
+//       flex: 1,
+//       backgroundColor: 'rgba(0,0,0,0.5)',
+//     },
+//     drawerContainer: {
+//       width: '80%',
+//       height: '100%',
+//       backgroundColor: isDarkMode ? '#000000' : '#f8f8f8',
+//       paddingHorizontal: 15,
+//     },
+//     logoContainer: {
+//       alignItems: 'center',
+//       marginVertical: 20,
+//       top: 20
+//     },
+//     logo: {
+//       height: 100,
+//       width: 100,
+//       borderRadius: 20,
+//     },
+//     options: {
+//       marginTop: 20,
+//       gap: 8,
+//     },
+//     optionItem: {
+//       paddingVertical: 4,
+//     },
+//     divider: {
+//       height: 0.5,
+//       backgroundColor: isDarkMode ? '#333' : '#ddd',
+//       width: '90%',
+//       marginVertical: 15,
+//       alignSelf: 'center',
+//     },
+//   })
+
+//   return (
+//     <View style={styles.container}>
+//       <StatusBar
+//         backgroundColor="rgba(0,0,0,0.5)"
+//         barStyle="light-content"
+//         translucent
+//       />
+
+//       {/* Backdrop - tap to close */}
+//       <Pressable
+//         style={styles.backdrop}
+//         onPress={() => navigation.goBack()}
+//       />
+
+//       {/* Drawer Content */}
+//       <Animated.View
+//         entering={SlideInRight.duration(300)}
+//         exiting={FadeOut.duration(200)}
+//         style={styles.drawerContainer}
+//       >
+//         <Animated.View
+//           entering={FadeIn.delay(100)}
+//           style={styles.logoContainer}
+//         >
+//           <Image
+//             source={IMG.TomoLogo}
+//             style={styles.logo}
+//           />
+//         </Animated.View>
+//         {/* Theme Toggle */}
+//         <Animated.View entering={FadeInDown.delay(150)}>
+//           <ThemeToggle />
+//         </Animated.View>
+
+//         <Animated.View entering={FadeInDown.delay(150)}>
+//          <LastActiveToggle />
+//         </Animated.View>
+
+//         {/* Fingerprint Toggle */}
+//         {biometricAvailable && (
+//           <Animated.View entering={FadeInDown.delay(200)}>
+//             <FingerPrintToggle />
+//           </Animated.View>
+//         )}
+//         <ScrollView
+//           showsVerticalScrollIndicator={false}
+//           contentContainerStyle={{ paddingBottom: 40 }}
+//         >
+//           {/* Logo */}
+
+
+
+
+//           {/* Options */}
+//           <View style={styles.options}>
+//             <OptionItem label='Followers' index={0} />
+
+//             {selector?.SellerStatus !== 'Approved' && (
+//               <OptionItem label='Request to become Seller' index={1} />
+//             )}
+
+//             {selector?.SellerStatus === 'Approved' && (
+//               <OptionItem label='All Shops' index={1} />
+//             )}
+
+//             <OptionItem label='Saved Posts' index={2} />
+//             <OptionItem label='Promotions (New)*' index={3} />
+//             <OptionItem label='Privacy Policy' index={4} />
+//             <OptionItem label='Terms & Conditions' index={5} />
+//             <OptionItem label='Invite a Freind' index={6} />
+//             <OptionItem label='Feedback' index={7} />
+//             <OptionItem label='FAQ' index={8} />
+//             <OptionItem label='AI chat Bot' index={8} />
+//              <OptionItem label='Settings' index={10} />
+//             <OptionItem label='Log Out' index={9} />
+
+//             <View style={styles.divider} />
+//           </View>
+//         </ScrollView>
+//       </Animated.View>
+//     </View>
+//   )
+// }
+
+// export default SettingsDrawerScreen
+
+
+
 import React, { useEffect, useState } from 'react'
 import {
   View,
@@ -383,34 +762,14 @@ import SpaceBetweenRow from './wrapper/spacebetween'
 import { clearAsyncStorage } from '../utils/Apis'
 import { showError } from '../utils/helperFunctions'
 import IMG from '../assets/Images'
-import ThemeToggle from './ThemeToggle'
 import { useSelector } from 'react-redux'
-import FingerPrintToggle from './FingerPrintToggle'
-import ReactNativeBiometrics from 'react-native-biometrics'
-import LastActiveToggle from './LastActiveToggle'
 
 const SettingsDrawerScreen = ({ navigation }) => {
-  const [biometricAvailable, setBiometricAvailable] = useState(false)
   const { isDarkMode } = useSelector(state => state.theme)
 
   let selector = useSelector(state => state?.user?.userData)
   if (Object.keys(selector).length != 0) {
     selector = JSON.parse(selector)
-  }
-
-  const rnBiometrics = new ReactNativeBiometrics()
-
-  useEffect(() => {
-    checkBiometricStatus()
-  }, [])
-
-  const checkBiometricStatus = async () => {
-    try {
-      const { available } = await rnBiometrics.isSensorAvailable()
-      setBiometricAvailable(available)
-    } catch (error) {
-      console.log('Biometric check error:', error)
-    }
   }
 
   const handleLogout = async () => {
@@ -438,62 +797,6 @@ const SettingsDrawerScreen = ({ navigation }) => {
     )
   }
 
-  // const handleOperation = async label => {
-  //   const closeDrawer = () => navigation.goBack()
-
-  //   switch (label) {
-  //     case 'Log Out':
-  //       handleLogout()
-  //       // closeDrawer()
-  //       break
-  //     case 'Terms & Conditions':
-  //       navigation.navigate('TermsAndConditions')
-  //       // closeDrawer()
-  //       break
-  //     case 'Feedback':
-  //       navigation.navigate('FeedBack')
-  //       // closeDrawer()
-  //       break
-  //     case 'Help Center':
-  //       navigation.navigate('ContactUs')
-  //       // closeDrawer()
-  //       break
-  //     case 'Promotions (New)*':
-  //       navigation.navigate('MyPromotions')
-  //       // closeDrawer()
-  //       break
-  //     case 'Privacy Policy':
-  //       navigation.navigate('PrivacyPolicy')
-  //       // closeDrawer()
-  //       break
-  //     case 'FAQ':
-  //       navigation.navigate('FAQs')
-  //       // closeDrawer()
-  //       break
-  //     case 'Followers':
-  //       navigation.navigate('Followers')
-  //       // closeDrawer()
-  //       break
-  //     case 'Request to become Seller':
-  //       navigation.navigate('RequestBecomSeller')
-  //       // closeDrawer()
-  //       break
-  //     case 'Saved Posts':
-  //       navigation.navigate('SavedPosts')
-  //       // closeDrawer()
-  //       break
-  //     case 'All Shops':
-  //       navigation.navigate('Tab', { screen: 'MarketPlace' })
-  //       // closeDrawer()
-  //       break
-  //     case 'Invite a Freind':
-  //       handleInvite()
-  //       break
-  //     default:
-  //       break
-  //   }
-  // }
-
   const handleOperation = async label => {
     const closeDrawer = () => {
       navigation.goBack()
@@ -516,7 +819,7 @@ const SettingsDrawerScreen = ({ navigation }) => {
         setTimeout(() => navigation.navigate('ContactUs'), 300)
         break
 
-          case 'AI chat Bot':
+      case 'AI chat Bot':
         closeDrawer()
         setTimeout(() => navigation.navigate('ReactNativeChatbot'), 300)
         break
@@ -549,7 +852,7 @@ const SettingsDrawerScreen = ({ navigation }) => {
         closeDrawer()
         setTimeout(() => navigation.navigate('Tab', { screen: 'MarketPlace' }), 300)
         break
-          case 'Settings':
+      case 'Settings':
         closeDrawer()
         setTimeout(() => navigation.navigate('Settings'), 300)
         break
@@ -670,6 +973,7 @@ const SettingsDrawerScreen = ({ navigation }) => {
         exiting={FadeOut.duration(200)}
         style={styles.drawerContainer}
       >
+        {/* Logo */}
         <Animated.View
           entering={FadeIn.delay(100)}
           style={styles.logoContainer}
@@ -679,30 +983,11 @@ const SettingsDrawerScreen = ({ navigation }) => {
             style={styles.logo}
           />
         </Animated.View>
-        {/* Theme Toggle */}
-        <Animated.View entering={FadeInDown.delay(150)}>
-          <ThemeToggle />
-        </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(150)}>
-         <LastActiveToggle />
-        </Animated.View>
-
-        {/* Fingerprint Toggle */}
-        {biometricAvailable && (
-          <Animated.View entering={FadeInDown.delay(200)}>
-            <FingerPrintToggle />
-          </Animated.View>
-        )}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 40 }}
         >
-          {/* Logo */}
-
-
-
-
           {/* Options */}
           <View style={styles.options}>
             <OptionItem label='Followers' index={0} />
@@ -722,9 +1007,9 @@ const SettingsDrawerScreen = ({ navigation }) => {
             <OptionItem label='Invite a Freind' index={6} />
             <OptionItem label='Feedback' index={7} />
             <OptionItem label='FAQ' index={8} />
-            <OptionItem label='AI chat Bot' index={8} />
-             {/* <OptionItem label='Settings' index={8} /> */}
-            <OptionItem label='Log Out' index={9} />
+            <OptionItem label='AI chat Bot' index={9} />
+            <OptionItem label='Settings' index={10} />
+            <OptionItem label='Log Out' index={11} />
 
             <View style={styles.divider} />
           </View>
