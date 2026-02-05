@@ -632,7 +632,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         showLoader();
         try {
             const res = await apiGet(`${urls.getAllProductsOfAShop}/${route?.params?.shopId}`);
-            console.log('res:::::::::::::::::::::::::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>>', res);
+            // console.log('res:::::::::::::::::::::::::::::::::::::::::::::>>>>>>>>>>>>>>>>>>>>>', res);
             
             setAllProducts(res?.data || []);
             setFilteredProducts(res?.data || []);

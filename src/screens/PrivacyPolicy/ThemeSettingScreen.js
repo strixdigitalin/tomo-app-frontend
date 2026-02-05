@@ -17,8 +17,7 @@ import CustomText from '../../components/TextComponent';
 import Slider from '@react-native-community/slider';
 
 const ThemeSettings = ({ navigation }) => {
-//   const { isDarkMode } = useSelector(state => state.theme);
-  const isDarkMode  = true;
+  const { isDarkMode } = useSelector(state => state.theme);
 
   
   // Static states - baad me context/redux se connect karenge
@@ -116,7 +115,7 @@ const ThemeSettings = ({ navigation }) => {
     },
     colorThemeCard: {
       width: 110,
-      height: 140,
+      height: 110,
       borderRadius: 12,
       marginRight: 12,
       overflow: 'hidden',
@@ -333,7 +332,7 @@ const ThemeSettings = ({ navigation }) => {
             style={styles.settingCard}
             onPress={() => {
               // Image picker logic baad me implement karenge
-              console.log('Change Wallpaper');
+            //   console.log('Change Wallpaper');
             }}
           >
             <View style={styles.settingIcon}>

@@ -40,7 +40,7 @@ const RequestBecomSeller = ({ navigation }) => {
 
 
     const onSubmit = async () => {
-        console.log('--------', fileName);
+        // console.log('--------', fileName);
 
         try {
             const token = await getItem('token');

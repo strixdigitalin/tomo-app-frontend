@@ -1067,7 +1067,7 @@ const StoryScreen = ({ route, navigation }) => {
 
             const payload = { emoji: emoji };
             const response = await apiPost(`${urls?.reactToStory}/${currentStoryId}`, payload);
-            console.log('Emoji reaction sent successfully:', response);
+            // console.log('Emoji reaction sent successfully:', response);
         } catch (error) {
             console.error('Error sending emoji reaction:', error);
         }

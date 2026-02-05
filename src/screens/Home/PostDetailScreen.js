@@ -638,9 +638,9 @@ const PostDetailScreen = ({ route, navigation }) => {
   // ✅ CHECK IF POST IS MINE
   const isMyPost = post?.User?._id === selector?._id
 
-  console.log('✅ Post User ID:', post?.User?._id)
-  console.log('✅ Selector ID:', selector?._id)
-  console.log('✅ Is My Post?', isMyPost)
+  // console.log('✅ Post User ID:', post?.User?._id)
+  // console.log('✅ Selector ID:', selector?._id)
+  // console.log('✅ Is My Post?', isMyPost)
 
   useEffect(() => {
     if (post?._id) {

@@ -641,7 +641,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     const endPoint = `${urls.getUserById}/${route?.params?.userId}`
     const res = await apiGet(endPoint)
     setUserDetails(res?.data)
-    console.log(res?.data, 'UserDetails from api')
+    // console.log(res?.data, 'UserDetails from api')
     setLoading(false)
   }
 

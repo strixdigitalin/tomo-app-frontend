@@ -36,7 +36,7 @@ const Followers = ({ navigation }) => {
     const fetchData = async () => {
         setLoading(true)
         const res = await apiGet(urls.getAllFollowers)
-        console.log(res, '===FOLLOWRS==============');
+        // console.log(res, '===FOLLOWRS==============');
 
         setAllFollowers(res?.data)
         setLoading(false)

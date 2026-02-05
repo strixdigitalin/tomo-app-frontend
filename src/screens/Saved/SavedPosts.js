@@ -143,7 +143,7 @@ const SavedPosts = ({ navigation }) => {
     fetchCommentDataOfaPost(id)
   }
   const editComments = async (id, text) => {
-    console.log('---------___++++++++++++-----', id, text)
+    // console.log('---------___++++++++++++-----', id, text)
 
     const data = {
       text: text,

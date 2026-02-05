@@ -4068,7 +4068,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     selector = JSON.parse(selector)
   }
 
-  console.log('Show Lat Actve::::::::::', selector);
+  // console.log('Show Lat Actve::::::::::', selector);
   
 
   useEffect(() => {
@@ -4771,14 +4771,14 @@ const OtherUserDetail = ({ navigation, route }) => {
             <Text style={styles.editProfileButtonText}>Edit profile</Text>
           </TouchableOpacity>
         )}
-         {!route?.params?.userId && (
+         {/* {!route?.params?.userId && (
           <TouchableOpacity
             style={styles.editProfileButton}
             onPress={()=>navigation.navigate('AddVehicleSpecs')}
           >
             <Text style={styles.editProfileButtonText}>Add Specs</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </SpaceBetweenRow>
 
       <View style={styles.statsContainer}>

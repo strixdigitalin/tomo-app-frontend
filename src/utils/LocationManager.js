@@ -566,7 +566,7 @@ class LocationManager {
       });
 
       if (shouldUpdateDistance || shouldUpdateTime) {
-        console.log(`📍 Updating location - Distance: ${Math.round(distance)}m, Time: ${Math.round(timeDiff / 1000 / 60)}min`);
+        // console.log(`📍 Updating location - Distance: ${Math.round(distance)}m, Time: ${Math.round(timeDiff / 1000 / 60)}min`);
         await this.updateLocationOnServer({ latitude, longitude }, accuracy);
         this.lastKnownLocation = { latitude, longitude };
         this.lastUpdateTime = now;

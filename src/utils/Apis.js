@@ -114,7 +114,7 @@ export async function apiReq(
       })
       .catch(error => {
         console.log(error);
-        console.log(error && error.response, 'the error response');
+        // console.log(error && error.response, 'the error response');
         if (error && error.response && error.response.status === 401) {
           showError('User is not authorized');
           clearAsyncStorage();

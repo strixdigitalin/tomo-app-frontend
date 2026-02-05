@@ -875,10 +875,10 @@ const SettingsDrawerScreen = ({ navigation }) => {
       })
 
       if (result.action === Share.sharedAction) {
-        console.log('Shared successfully')
+        // console.log('Shared successfully')
         navigation.goBack()
       } else if (result.action === Share.dismissedAction) {
-        console.log('Share dismissed')
+        // console.log('Share dismissed')
       }
     } catch (error) {
       console.error('Error sharing invite:', error.message)

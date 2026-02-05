@@ -767,7 +767,7 @@ const AddVehicleSpecs = ({ navigation, route }) => {
 
         launchImageLibrary(options, (response) => {
             if (response.didCancel) {
-                console.log('User cancelled image picker');
+                // console.log('User cancelled image picker');
             } else if (response.errorMessage) {
                 console.error('Image Picker Error:', response.errorMessage);
                 ToastMsg('Error picking image');
@@ -874,34 +874,34 @@ const AddVehicleSpecs = ({ navigation, route }) => {
             }
 
             // Log the payload for debugging
-            console.log('=== API PAYLOAD ===');
-            console.log('Endpoint:', isEditMode ? `${BASE_URL}/api/user/UpdateUserCurrentCar/${vehicleId}` : `${BASE_URL}/api/user/UserAddCurrentCar`);
-            console.log('Token:', token ? 'Present' : 'Missing');
-            console.log('FormData fields:', {
-                vehicleName: vehicleName.trim(),
-                make: make.trim(),
-                model: model.trim(),
-                year: parseInt(year),
-                bodyType: bodyType.trim() || 'Not provided',
-                engine: engine.trim() || 'Not provided',
-                horsepower: horsepower.trim() ? parseInt(horsepower) : 'Not provided',
-                torque: torque.trim() ? parseInt(torque) : 'Not provided',
-                drivetrain: drivetrain || 'Not provided',
-                transmission: transmission || 'Not provided',
-                performance: stringToArray(performance),
-                suspension: stringToArray(suspension),
-                brakes: stringToArray(brakes),
-                paintWrap: paintWrap.trim() || 'Not provided',
-                exteriorMods: stringToArray(exteriorMods),
-                interiorMods: stringToArray(interiorMods),
-                mileage: mileage.trim() ? parseInt(mileage) : 'Not provided',
-                buildStage: buildStage || 'Not provided',
-                ownerNote: ownerNote.trim() || 'Not provided',
-                zeroToSixty: zeroToSixty.trim() || 'Not provided',
-                quarterMile: quarterMile.trim() || 'Not provided',
-                currentPrice: currentPrice.trim() ? parseInt(currentPrice) : 'Not provided',
-                hasImage: vehicleImage && !vehicleImage.isExisting ? 'Yes' : 'No'
-            });
+            // console.log('=== API PAYLOAD ===');
+            // console.log('Endpoint:', isEditMode ? `${BASE_URL}/api/user/UpdateUserCurrentCar/${vehicleId}` : `${BASE_URL}/api/user/UserAddCurrentCar`);
+            // console.log('Token:', token ? 'Present' : 'Missing');
+            // console.log('FormData fields:', {
+            //     vehicleName: vehicleName.trim(),
+            //     make: make.trim(),
+            //     model: model.trim(),
+            //     year: parseInt(year),
+            //     bodyType: bodyType.trim() || 'Not provided',
+            //     engine: engine.trim() || 'Not provided',
+            //     horsepower: horsepower.trim() ? parseInt(horsepower) : 'Not provided',
+            //     torque: torque.trim() ? parseInt(torque) : 'Not provided',
+            //     drivetrain: drivetrain || 'Not provided',
+            //     transmission: transmission || 'Not provided',
+            //     performance: stringToArray(performance),
+            //     suspension: stringToArray(suspension),
+            //     brakes: stringToArray(brakes),
+            //     paintWrap: paintWrap.trim() || 'Not provided',
+            //     exteriorMods: stringToArray(exteriorMods),
+            //     interiorMods: stringToArray(interiorMods),
+            //     mileage: mileage.trim() ? parseInt(mileage) : 'Not provided',
+            //     buildStage: buildStage || 'Not provided',
+            //     ownerNote: ownerNote.trim() || 'Not provided',
+            //     zeroToSixty: zeroToSixty.trim() || 'Not provided',
+            //     quarterMile: quarterMile.trim() || 'Not provided',
+            //     currentPrice: currentPrice.trim() ? parseInt(currentPrice) : 'Not provided',
+            //     hasImage: vehicleImage && !vehicleImage.isExisting ? 'Yes' : 'No'
+            // });
 
             // API call
             let response;
@@ -909,7 +909,7 @@ const AddVehicleSpecs = ({ navigation, route }) => {
             if (isEditMode) {
                 // Update existing vehicle
                 const updateUrl = `${BASE_URL}/api/user/UpdateUserCurrentCar/${vehicleId}`;
-                console.log('UPDATE URL:', updateUrl);
+                // console.log('UPDATE URL:', updateUrl);
                 
                 response = await axios.put(
                     updateUrl,
@@ -925,7 +925,7 @@ const AddVehicleSpecs = ({ navigation, route }) => {
             } else {
                 // Add new vehicle
                 const addUrl = `${BASE_URL}/api/user/UserAddCurrentCar`;
-                console.log('ADD URL:', addUrl);
+                // console.log('ADD URL:', addUrl);
                 
                 response = await axios.post(
                     addUrl,
@@ -940,7 +940,7 @@ const AddVehicleSpecs = ({ navigation, route }) => {
                 ToastMsg('Vehicle added successfully!');
             }
 
-            console.log('API Response:', response.data);
+            // console.log('API Response:', response.data);
             setLoading(false);
             navigation.goBack();
 

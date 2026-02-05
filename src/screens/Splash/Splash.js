@@ -288,18 +288,18 @@ const Splash = ({ navigation }) => {
     const verifyBiometricBeforeLogin = async () => {
         try {
             const biometricEnabled = await getItem('user_biometric_enabled');
-            console.log('Biometric enabled:', biometricEnabled);
+            // console.log('Biometric enabled:', biometricEnabled);
 
             if (biometricEnabled !== 'true') {
-                console.log('Biometric not enabled, skipping verification');
+                // console.log('Biometric not enabled, skipping verification');
                 return true;
             }
 
             const { available, biometryType } = await rnBiometrics.isSensorAvailable();
-            console.log('Biometric sensor available:', available, 'Type:', biometryType);
+            // console.log('Biometric sensor available:', available, 'Type:', biometryType);
 
             if (!available) {
-                console.log('Biometric sensor not available');
+                // console.log('Biometric sensor not available');
                 return true;
             }
 
@@ -309,19 +309,19 @@ const Splash = ({ navigation }) => {
                 cancelButtonText: 'Cancel',
             });
 
-            console.log('Biometric result:', { success, error });
+            // console.log('Biometric result:', { success, error });
 
             if (success) {
-                console.log('Biometric authentication successful');
+                // console.log('Biometric authentication successful');
                 return true;
             } else {
-                console.log('Biometric authentication failed:', error);
+                // console.log('Biometric authentication failed:', error);
                 ToastMsg(error || 'Biometric authentication failed');
                 navigation.replace('Onboarding');
                 return false;
             }
         } catch (error) {
-            console.log('Biometric verification error:', error);
+            // console.log('Biometric verification error:', error);
             return true;
         }
     };
