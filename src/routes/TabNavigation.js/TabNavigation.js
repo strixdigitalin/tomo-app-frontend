@@ -785,6 +785,490 @@
 // export default TabNavigation;
 
 
+// import * as React from 'react';
+// import { Keyboard, StyleSheet, Dimensions } from 'react-native';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { verticalScale } from 'react-native-size-matters';
+// import { white } from '../../common/Colors/colors';
+// import Home from '../../screens/Home/Home';
+// import { View } from 'react-native';
+// import Animated, {
+//   useAnimatedStyle,
+//   useSharedValue,
+//   withSpring,
+//   withTiming,
+//   withDelay,
+//   withSequence,
+//   interpolate,
+//   Easing,
+//   runOnJS,
+//   useDerivedValue,
+// } from 'react-native-reanimated';
+// import LinearGradient from 'react-native-linear-gradient';
+
+// import {
+//   ActiveHomeNew,
+//   BottomTabLinenew,
+//   DeActiveHomeWhite,
+//   DeActiveSearch,
+//   DeactiveWhiteMsg,
+//   DeActiveWhiteSearch,
+//   MarketDeactive,
+//   MarketDeactiveForLite,
+//   MarketplaceActiveTabNew,
+//   MessageActiveTabNew,
+//   SearchActiveTabNew,
+// } from '../../assets/SVGs';
+// import { DeActiveMsg } from '../../assets/SVGs';
+// import { DeActiveLast } from '../../assets/SVGs';
+// import { DeActiveHome } from '../../assets/SVGs';
+// import SearchScreen from '../../screens/Search/SearchFeed';
+// import MessageList from '../../screens/Message/MessageList';
+// import UserDetail from '../../screens/UserDetail/UserDetail';
+// import { useSelector } from 'react-redux';
+// import Shops from '../../screens/Shops/Shops';
+
+// const Tab = createBottomTabNavigator();
+// const { width } = Dimensions.get('window');
+
+// // Ultra Smooth Tab Icon with Bounce and Glow Effect
+// const AnimatedTabIcon = ({ focused, children, index }) => {
+//   const scale = useSharedValue(0.3);
+//   const translateY = useSharedValue(30);
+//   const opacity = useSharedValue(0);
+//   const rotate = useSharedValue(-15);
+//   const glowOpacity = useSharedValue(0);
+
+//   React.useEffect(() => {
+//     // Sexy cascade entrance with bounce
+//     const delay = index * 100;
+    
+//     setTimeout(() => {
+//       // Main entrance animation
+//       scale.value = withSequence(
+//         withSpring(focused ? 1.2 : 1, {
+//           damping: 8,
+//           stiffness: 100,
+//         }),
+//         withSpring(focused ? 1 : 0.85, {
+//           damping: 15,
+//           stiffness: 90,
+//         })
+//       );
+
+//       translateY.value = withSequence(
+//         withSpring(-10, {
+//           damping: 10,
+//           stiffness: 120,
+//         }),
+//         withSpring(0, {
+//           damping: 20,
+//           stiffness: 90,
+//         })
+//       );
+
+//       rotate.value = withSpring(0, {
+//         damping: 15,
+//         stiffness: 80,
+//       });
+
+//       opacity.value = withTiming(1, { 
+//         duration: 500,
+//         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+//       });
+//     }, delay);
+//   }, []);
+
+//   React.useEffect(() => {
+//     if (focused) {
+//       // Active state with sexy bounce
+//       scale.value = withSequence(
+//         withSpring(1.3, {
+//           damping: 10,
+//           stiffness: 150,
+//         }),
+//         withSpring(1.1, {
+//           damping: 15,
+//           stiffness: 100,
+//         })
+//       );
+
+//       translateY.value = withSequence(
+//         withSpring(-15, {
+//           damping: 8,
+//           stiffness: 120,
+//         }),
+//         withSpring(-8, {
+//           damping: 12,
+//           stiffness: 100,
+//         })
+//       );
+
+//       rotate.value = withSequence(
+//         withSpring(8, {
+//           damping: 10,
+//           stiffness: 100,
+//         }),
+//         withSpring(0, {
+//           damping: 15,
+//           stiffness: 80,
+//         })
+//       );
+
+//       // Glow effect
+//       glowOpacity.value = withSequence(
+//         withTiming(0.8, { duration: 300 }),
+//         withTiming(0.4, { duration: 300 })
+//       );
+//     } else {
+//       // Inactive state with smooth transition
+//       scale.value = withSpring(0.85, {
+//         damping: 20,
+//         stiffness: 90,
+//       });
+
+//       translateY.value = withSpring(0, {
+//         damping: 20,
+//         stiffness: 90,
+//       });
+
+//       rotate.value = withSpring(0, {
+//         damping: 20,
+//         stiffness: 90,
+//       });
+
+//       glowOpacity.value = withTiming(0, { duration: 200 });
+//     }
+//   }, [focused]);
+
+//   const animatedStyle = useAnimatedStyle(() => {
+//     return {
+//       transform: [
+//         { scale: scale.value },
+//         { translateY: translateY.value },
+//         { rotate: `${rotate.value}deg` },
+//       ],
+//       opacity: opacity.value,
+//     };
+//   });
+
+//   const glowStyle = useAnimatedStyle(() => {
+//     return {
+//       position: 'absolute',
+//       width: 60,
+//       height: 60,
+//       borderRadius: 30,
+//       backgroundColor: '#21B7FF',
+//       opacity: glowOpacity.value * 0.3,
+//       transform: [{ scale: 1.5 }],
+//       zIndex: -1,
+//     };
+//   });
+
+//   return (
+//     <Animated.View style={[{ alignItems: 'center', top: 16, width: 100 }, animatedStyle]}>
+//       {focused && <Animated.View style={glowStyle} />}
+//       {children}
+//     </Animated.View>
+//   );
+// };
+
+// // Sexy Bottom Line with Wave Effect
+// const AnimatedBottomLine = () => {
+//   const scaleX = useSharedValue(0);
+//   const translateY = useSharedValue(10);
+//   const opacity = useSharedValue(0);
+
+//   React.useEffect(() => {
+//     scaleX.value = withSequence(
+//       withSpring(0.3, {
+//         damping: 15,
+//         stiffness: 100,
+//       }),
+//       withSpring(1.2, {
+//         damping: 10,
+//         stiffness: 120,
+//       }),
+//       withSpring(1, {
+//         damping: 20,
+//         stiffness: 100,
+//       })
+//     );
+
+//     translateY.value = withSpring(0, {
+//       damping: 20,
+//       stiffness: 100,
+//     });
+
+//     opacity.value = withTiming(1, { 
+//       duration: 400,
+//       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+//     });
+//   }, []);
+
+//   const animatedStyle = useAnimatedStyle(() => {
+//     return {
+//       transform: [
+//         { scaleX: scaleX.value },
+//         { translateY: translateY.value },
+//       ],
+//       opacity: opacity.value,
+//       top: 15,
+//     };
+//   });
+
+//   return (
+//     <Animated.View style={animatedStyle}>
+//       <BottomTabLinenew />
+//     </Animated.View>
+//   );
+// };
+
+// // Animated Background with Gradient Shift
+// const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
+//   const gradientShift = useSharedValue(0);
+
+//   React.useEffect(() => {
+//     gradientShift.value = withSequence(
+//       withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+//       withTiming(0, { duration: 800, easing: Easing.inOut(Easing.ease) })
+//     );
+//   }, []);
+
+//   const backgroundStyle = useAnimatedStyle(() => {
+//     return {
+//       opacity: interpolate(gradientShift.value, [0, 1], [0.95, 1]),
+//     };
+//   });
+
+//   return (
+//     <Animated.View style={[{ flex: 1 }, tabBarAnimatedStyle, backgroundStyle]}>
+//       <LinearGradient
+//         colors={
+//           isDarkMode 
+//             ? ['#2a2a2a', '#252525', '#1a1a1a'] 
+//             : ['#ffffff', '#fafafa', '#f5f5f5']
+//         }
+//         style={{ flex: 1 }}
+//         start={{ x: 0, y: 0 }}
+//         end={{ x: 1, y: 1 }}
+//       />
+//     </Animated.View>
+//   );
+// };
+
+// function TabNavigation() {
+//   const { isDarkMode } = useSelector(state => state.theme);
+//   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
+  
+//   const tabBarTranslateY = useSharedValue(100);
+//   const tabBarOpacity = useSharedValue(0);
+//   const tabBarScale = useSharedValue(0.9);
+
+//   let selector = useSelector(state => state?.user?.userData);
+//   if (Object.keys(selector).length != 0) {
+//     selector = JSON.parse(selector);
+//   }
+
+//   React.useEffect(() => {
+//     // Sexy slide up with bounce
+//     tabBarTranslateY.value = withDelay(
+//       300,
+//       withSequence(
+//         withSpring(-10, {
+//           damping: 15,
+//           stiffness: 100,
+//         }),
+//         withSpring(0, {
+//           damping: 25,
+//           stiffness: 90,
+//         })
+//       )
+//     );
+
+//     tabBarOpacity.value = withDelay(
+//       200,
+//       withTiming(1, { 
+//         duration: 600,
+//         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+//       })
+//     );
+
+//     tabBarScale.value = withDelay(
+//       200,
+//       withSpring(1, {
+//         damping: 20,
+//         stiffness: 90,
+//       })
+//     );
+//   }, []);
+
+//   React.useEffect(() => {
+//     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+//       setKeyboardVisible(true);
+//       // Smooth hide animation
+//       tabBarTranslateY.value = withSpring(100, {
+//         damping: 20,
+//         stiffness: 90,
+//       });
+//       tabBarOpacity.value = withTiming(0, { duration: 200 });
+//     });
+    
+//     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+//       setKeyboardVisible(false);
+//       // Smooth show animation
+//       tabBarTranslateY.value = withSpring(0, {
+//         damping: 25,
+//         stiffness: 90,
+//       });
+//       tabBarOpacity.value = withTiming(1, { duration: 300 });
+//     });
+
+//     return () => {
+//       showSubscription.remove();
+//       hideSubscription.remove();
+//     };
+//   }, []);
+
+//   const tabBarAnimatedStyle = useAnimatedStyle(() => {
+//     return {
+//       transform: [
+//         { translateY: tabBarTranslateY.value },
+//         { scale: tabBarScale.value },
+//       ],
+//       opacity: tabBarOpacity.value,
+//     };
+//   });
+
+//   return (
+//     <Tab.Navigator
+//       initialRouteName="Home"
+//       screenOptions={{
+//         headerShown: false,
+//         tabBarStyle: keyboardVisible
+//           ? { display: 'none' }
+//           : {
+//               position: 'absolute',
+//               height: verticalScale(60),
+//               justifyContent: 'center',
+//               alignItems: 'center',
+//               backgroundColor: 'transparent',
+//               borderTopWidth: 0,
+//               elevation: 0,
+//               shadowColor: isDarkMode ? '#000' : '#000',
+//               shadowOffset: { width: 0, height: -4 },
+//               shadowOpacity: isDarkMode ? 0.4 : 0.15,
+//               shadowRadius: 15,
+//             },
+//         tabBarBackground: () => (
+//           <AnimatedTabBarBackground 
+//             isDarkMode={isDarkMode} 
+//             tabBarAnimatedStyle={tabBarAnimatedStyle} 
+//           />
+//         ),
+//       }}
+//     >
+//       <Tab.Screen
+//         name="Home"
+//         component={Home}
+//         options={{
+//           tabBarLabel: () => null,
+//           tabBarIcon: ({ focused }) => (
+//             <AnimatedTabIcon focused={focused} index={0}>
+//               {focused ? (
+//                 <>
+//                   <ActiveHomeNew />
+//                   <AnimatedBottomLine />
+//                 </>
+//               ) : (
+//                 <>{isDarkMode ? <DeActiveHomeWhite /> : <DeActiveHome />}</>
+//               )}
+//             </AnimatedTabIcon>
+//           ),
+//         }}
+//       />
+
+//       <Tab.Screen
+//         name="MarketPlace"
+//         component={Shops}
+//         options={{
+//           tabBarLabel: () => null,
+//           tabBarIcon: ({ focused }) => (
+//             <AnimatedTabIcon focused={focused} index={1}>
+//               {focused ? (
+//                 <>
+//                   <MarketplaceActiveTabNew />
+//                   <AnimatedBottomLine />
+//                 </>
+//               ) : (
+//                 <>{isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}</>
+//               )}
+//             </AnimatedTabIcon>
+//           ),
+//         }}
+//       />
+
+//       <Tab.Screen
+//         name="Search"
+//         component={SearchScreen}
+//         options={{
+//           tabBarLabel: () => null,
+//           tabBarIcon: ({ focused }) => (
+//             <AnimatedTabIcon focused={focused} index={2}>
+//               {focused ? (
+//                 <>
+//                   <SearchActiveTabNew />
+//                   <AnimatedBottomLine />
+//                 </>
+//               ) : (
+//                 <>{isDarkMode ? <DeActiveWhiteSearch /> : <DeActiveSearch />}</>
+//               )}
+//             </AnimatedTabIcon>
+//           ),
+//         }}
+//       />
+
+//       <Tab.Screen
+//         name="Msg"
+//         component={MessageList}
+//         options={{
+//           tabBarLabel: () => null,
+//           tabBarIcon: ({ focused }) => (
+//             <AnimatedTabIcon focused={focused} index={3}>
+//               {focused ? (
+//                 <>
+//                   <MessageActiveTabNew />
+//                   <AnimatedBottomLine />
+//                 </>
+//               ) : (
+//                 <>{isDarkMode ? <DeactiveWhiteMsg /> : <DeActiveMsg />}</>
+//               )}
+//             </AnimatedTabIcon>
+//           ),
+//         }}
+//       />
+
+//       <Tab.Screen
+//         name="last"
+//         component={UserDetail}
+//         options={{
+//           tabBarLabel: () => null,
+//           tabBarIcon: ({ focused }) => (
+//             <AnimatedTabIcon focused={focused} index={4}>
+//               <DeActiveLast />
+//               {focused && <AnimatedBottomLine />}
+//             </AnimatedTabIcon>
+//           ),
+//         }}
+//       />
+//     </Tab.Navigator>
+//   );
+// }
+
+// export default TabNavigation;
+
+
+
 import * as React from 'react';
 import { Keyboard, StyleSheet, Dimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -827,12 +1311,13 @@ import MessageList from '../../screens/Message/MessageList';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import { useSelector } from 'react-redux';
 import Shops from '../../screens/Shops/Shops';
+import { THEMES } from '../../redux/reducer/theme';
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');
 
 // Ultra Smooth Tab Icon with Bounce and Glow Effect
-const AnimatedTabIcon = ({ focused, children, index }) => {
+const AnimatedTabIcon = ({ focused, children, index, glowColors }) => {
   const scale = useSharedValue(0.3);
   const translateY = useSharedValue(30);
   const opacity = useSharedValue(0);
@@ -915,7 +1400,7 @@ const AnimatedTabIcon = ({ focused, children, index }) => {
         })
       );
 
-      // Glow effect
+      // Glow effect with dynamic color
       glowOpacity.value = withSequence(
         withTiming(0.8, { duration: 300 }),
         withTiming(0.4, { duration: 300 })
@@ -958,7 +1443,6 @@ const AnimatedTabIcon = ({ focused, children, index }) => {
       width: 60,
       height: 60,
       borderRadius: 30,
-      backgroundColor: '#21B7FF',
       opacity: glowOpacity.value * 0.3,
       transform: [{ scale: 1.5 }],
       zIndex: -1,
@@ -967,7 +1451,20 @@ const AnimatedTabIcon = ({ focused, children, index }) => {
 
   return (
     <Animated.View style={[{ alignItems: 'center', top: 16, width: 100 }, animatedStyle]}>
-      {focused && <Animated.View style={glowStyle} />}
+      {focused && (
+        <Animated.View style={glowStyle}>
+          <LinearGradient
+            colors={glowColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 30,
+            }}
+          />
+        </Animated.View>
+      )}
       {children}
     </Animated.View>
   );
@@ -1058,12 +1555,18 @@ const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
 };
 
 function TabNavigation() {
-  const { isDarkMode } = useSelector(state => state.theme);
+  const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
   
   const tabBarTranslateY = useSharedValue(100);
   const tabBarOpacity = useSharedValue(0);
   const tabBarScale = useSharedValue(0.9);
+
+  // ✅ GET CURRENT THEME COLORS
+  const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
+  const primaryColor = currentTheme.primary;
+  const secondaryColor = currentTheme.secondary;
+  const glowColors = [primaryColor, secondaryColor];
 
   let selector = useSelector(state => state?.user?.userData);
   if (Object.keys(selector).length != 0) {
@@ -1174,7 +1677,7 @@ function TabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={0}>
+            <AnimatedTabIcon focused={focused} index={0} glowColors={glowColors}>
               {focused ? (
                 <>
                   <ActiveHomeNew />
@@ -1194,7 +1697,7 @@ function TabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={1}>
+            <AnimatedTabIcon focused={focused} index={1} glowColors={glowColors}>
               {focused ? (
                 <>
                   <MarketplaceActiveTabNew />
@@ -1214,7 +1717,7 @@ function TabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={2}>
+            <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
               {focused ? (
                 <>
                   <SearchActiveTabNew />
@@ -1234,7 +1737,7 @@ function TabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={3}>
+            <AnimatedTabIcon focused={focused} index={3} glowColors={glowColors}>
               {focused ? (
                 <>
                   <MessageActiveTabNew />
@@ -1254,7 +1757,7 @@ function TabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={4}>
+            <AnimatedTabIcon focused={focused} index={4} glowColors={glowColors}>
               <DeActiveLast />
               {focused && <AnimatedBottomLine />}
             </AnimatedTabIcon>

@@ -936,6 +936,546 @@
 
 // export default React.memo(Shops);
 
+// import React, { useEffect, useState, useCallback } from 'react';
+// import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
+// import { useSelector } from 'react-redux';
+// import Animated, {
+//   FadeInDown,
+//   FadeInUp,
+//   ZoomIn,
+//   SlideInRight,
+//   SlideInLeft,
+//   FadeIn,
+//   useSharedValue,
+//   useAnimatedStyle,
+//   withSpring,
+//   withTiming,
+//   withRepeat,
+//   withSequence,
+//   withDelay,
+//   interpolate,
+//   Easing,
+// } from 'react-native-reanimated';
+// import { AddShopBtn, BackBlackSimple, BackIcon } from '../../assets/SVGs';
+// import SpaceBetweenRow from '../../components/wrapper/spacebetween';
+// import CustomText from '../../components/TextComponent';
+// import { FONTS_FAMILY } from '../../assets/Fonts';
+// import IMG from '../../assets/Images';
+// import useLoader from '../../utils/LoaderHook';
+// import { apiGet } from '../../utils/Apis';
+// import urls from '../../config/urls';
+// import { useIsFocused } from '@react-navigation/native';
+// import useKeyboardStatus from '../../utils/KeyBoardHook';
+// import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
+// import GradientIcon from '../../components/GradientIcon';
+// import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+// import LinearGradient from 'react-native-linear-gradient';
+
+// // Animated Shop Card with sexy hover effect
+// const ShopCard = React.memo(({ item, isDarkMode, onPress, index }) => {
+//     if (!item || !item._id) return null;
+
+//     const scale = useSharedValue(1);
+//     const imageScale = useSharedValue(1);
+
+//     const cardStyle = useAnimatedStyle(() => ({
+//         transform: [{ scale: scale.value }],
+//     }));
+
+//     const imageStyle = useAnimatedStyle(() => ({
+//         transform: [{ scale: imageScale.value }],
+//     }));
+
+//     const handlePressIn = () => {
+//         scale.value = withSpring(0.95, {
+//             damping: 15,
+//             stiffness: 150,
+//         });
+//         imageScale.value = withSpring(1.1, {
+//             damping: 12,
+//             stiffness: 100,
+//         });
+//     };
+
+//     const handlePressOut = () => {
+//         scale.value = withSpring(1, {
+//             damping: 15,
+//             stiffness: 150,
+//         });
+//         imageScale.value = withSpring(1, {
+//             damping: 12,
+//             stiffness: 100,
+//         });
+//     };
+
+//     return (
+//         <Animated.View
+//             entering={FadeInUp.duration(400).delay(index * 80).springify()}
+//             style={[{ flex: 1, margin: 4 }, cardStyle]}
+//         >
+//             <GlowWrapper
+//                 isDarkMode={isDarkMode}
+//                 borderRadius={10}
+//                 showStars={false}
+//                 showShinePatches={true}
+//                 intensity="low"
+//                 containerStyle={{ flex: 1 }}
+//             >
+//                 <TouchableOpacity
+//                     style={[
+//                         styles.cardContainer,
+//                         { backgroundColor: isDarkMode ? '#1a1a1a' : '#f0f0f0' }
+//                     ]}
+//                     activeOpacity={0.8}
+//                     onPress={onPress}
+//                     onPressIn={handlePressIn}
+//                     onPressOut={handlePressOut}
+//                 >
+//                     <Animated.View style={[styles.imageWrapper, imageStyle]}>
+//                         <Image
+//                             source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+//                             style={styles.shopImage}
+//                             resizeMode="cover"
+//                         />
+//                     </Animated.View>
+//                     <View style={styles.overlay} />
+//                     <Animated.View
+//                         entering={FadeIn.duration(400).delay(index * 80 + 200)}
+//                         style={styles.textContainer}
+//                     >
+//                         <Text style={styles.shopName} numberOfLines={1}>
+//                             {item?.Name}
+//                         </Text>
+//                         <View style={styles.locationRow}>
+//                             <GradientIcon
+//                                 colors={['#21B7FF', '#0084F8']}
+//                                 size={12}
+//                                 iconType='FontAwesome6'
+//                                 name={'location-dot'}
+//                             />
+//                             <Text style={styles.locationText} numberOfLines={1}>
+//                                 {item?.Address?.[0]?.LocationName || 'No location'}
+//                             </Text>
+//                         </View>
+//                     </Animated.View>
+//                 </TouchableOpacity>
+//             </GlowWrapper>
+//         </Animated.View>
+//     );
+// });
+
+// ShopCard.displayName = 'ShopCard';
+
+// // Animated Header
+// const AnimatedHeader = ({ navigation, isDarkMode }) => {
+//     const leftIconTranslateY = useSharedValue(-80);
+//     const leftIconScale = useSharedValue(0.3);
+//     const leftIconOpacity = useSharedValue(0);
+    
+//     const rightIconTranslateY = useSharedValue(-80);
+//     const rightIconScale = useSharedValue(0.3);
+//     const rightIconOpacity = useSharedValue(0);
+
+//     const titleScale = useSharedValue(0.8);
+//     const titleOpacity = useSharedValue(0);
+
+//     useEffect(() => {
+//         // Left icon animation
+//         leftIconTranslateY.value = withSequence(
+//             withSpring(10, { damping: 8, stiffness: 150 }),
+//             withSpring(-5, { damping: 10, stiffness: 180 }),
+//             withSpring(0, { damping: 15, stiffness: 150 })
+//         );
+//         leftIconScale.value = withSpring(1, { damping: 12, stiffness: 150 });
+//         leftIconOpacity.value = withTiming(1, { duration: 400 });
+
+//         // Title animation
+//         setTimeout(() => {
+//             titleScale.value = withSpring(1, { damping: 15, stiffness: 120 });
+//             titleOpacity.value = withTiming(1, { duration: 400 });
+//         }, 100);
+
+//         // Right icon animation
+//         setTimeout(() => {
+//             rightIconTranslateY.value = withSequence(
+//                 withSpring(10, { damping: 8, stiffness: 150 }),
+//                 withSpring(-5, { damping: 10, stiffness: 180 }),
+//                 withSpring(0, { damping: 15, stiffness: 150 })
+//             );
+//             rightIconScale.value = withSpring(1, { damping: 12, stiffness: 150 });
+//             rightIconOpacity.value = withTiming(1, { duration: 400 });
+//         }, 200);
+//     }, []);
+
+//     const leftIconStyle = useAnimatedStyle(() => ({
+//         transform: [
+//             { translateY: leftIconTranslateY.value },
+//             { scale: leftIconScale.value }
+//         ],
+//         opacity: leftIconOpacity.value,
+//     }));
+
+//     const rightIconStyle = useAnimatedStyle(() => ({
+//         transform: [
+//             { translateY: rightIconTranslateY.value },
+//             { scale: rightIconScale.value }
+//         ],
+//         opacity: rightIconOpacity.value,
+//     }));
+
+//     const titleStyle = useAnimatedStyle(() => ({
+//         transform: [{ scale: titleScale.value }],
+//         opacity: titleOpacity.value,
+//     }));
+
+//     return (
+//         <SpaceBetweenRow
+//             style={[
+//                 styles.header,
+//                 { backgroundColor: isDarkMode ? '#252525' : 'white' }
+//             ]}
+//         >
+//             <Animated.View style={leftIconStyle}>
+//                 <TouchableOpacity onPress={() => navigation.goBack()}>
+//                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
+//                 </TouchableOpacity>
+//             </Animated.View>
+            
+//             <Animated.View style={titleStyle}>
+//                 <CustomText style={styles.headerTitle}>
+//                     Market Place
+//                 </CustomText>
+//             </Animated.View>
+            
+//             <Animated.View style={rightIconStyle}>
+//                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
+//                     <GradientIcon
+//                         colors={['#21B7FF', '#0084F8']}
+//                         size={20}
+//                         iconType='FontAwesome5'
+//                         name={'bell'}
+//                     />
+//                 </TouchableOpacity>
+//             </Animated.View>
+//         </SpaceBetweenRow>
+//     );
+// };
+
+// // Animated Search Bar
+// const AnimatedSearchBar = ({ searchQuery, handleSearch, isDarkMode }) => {
+//     const scale = useSharedValue(0);
+//     const translateY = useSharedValue(-50);
+
+//     useEffect(() => {
+//         scale.value = withDelay(300, withSpring(1, {
+//             damping: 15,
+//             stiffness: 120,
+//         }));
+//         translateY.value = withDelay(300, withSpring(0, {
+//             damping: 20,
+//             stiffness: 100,
+//         }));
+//     }, []);
+
+//     const searchStyle = useAnimatedStyle(() => ({
+//         transform: [
+//             { scale: scale.value },
+//             { translateY: translateY.value }
+//         ],
+//     }));
+
+//     return (
+//         <Animated.View
+//             style={[
+//                 styles.searchContainer,
+//                 { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' },
+//                 searchStyle
+//             ]}
+//         >
+//             <GradientIcon
+//                 colors={['#21B7FF', '#0084F8']}
+//                 size={18}
+//                 iconType='FontAwesome5'
+//                 name={'search'}
+//             />
+//             <TextInput
+//                 style={[
+//                     styles.searchInput,
+//                     { color: isDarkMode ? 'white' : 'black' }
+//                 ]}
+//                 placeholder="Search shops..."
+//                 placeholderTextColor="#A0A0A0"
+//                 value={searchQuery}
+//                 onChangeText={handleSearch}
+//             />
+//         </Animated.View>
+//     );
+// };
+
+// // Animated FAB Button
+// const AnimatedFAB = ({ onPress }) => {
+//     const scale = useSharedValue(1);
+//     const rotate = useSharedValue(0);
+
+//     useEffect(() => {
+//         scale.value = withRepeat(
+//             withSequence(
+//                 withTiming(1.1, { duration: 1000 }),
+//                 withTiming(1, { duration: 1000 })
+//             ),
+//             -1,
+//             false
+//         );
+
+//         rotate.value = withRepeat(
+//             withTiming(360, { duration: 3000, easing: Easing.linear }),
+//             -1,
+//             false
+//         );
+//     }, []);
+
+//     const fabStyle = useAnimatedStyle(() => ({
+//         transform: [
+//             { scale: scale.value },
+//             // { rotate: `${rotate.value}deg` }
+//         ],
+//     }));
+
+//     return (
+//         <Animated.View
+//             // entering={ZoomIn.duration(200).delay(200)}
+//             style={[styles.addShopButtonContainer]}
+//         >
+//             <TouchableOpacity onPress={onPress}>
+//                 <LinearGradient
+//                     colors={['#21B7FF', '#0084F8']}
+//                     start={{ x: 1, y: 0 }}
+//                     end={{ x: 1, y: 1 }}
+//                     style={styles.followButton}
+//                 >
+//                     <Text style={styles.followText}>
+//                         Add shop
+//                     </Text>
+//                 </LinearGradient>
+//             </TouchableOpacity>
+//        </Animated.View>
+//     );
+// };
+
+// const Shops = ({ navigation }) => {
+//     const [allShops, setAllShops] = useState([]);
+//     const [filteredShops, setFilteredShops] = useState([]);
+//     const [searchQuery, setSearchQuery] = useState('');
+//     const { showLoader, hideLoader } = useLoader();
+//     const isFocused = useIsFocused();
+//     const [loading, setLoading] = useState(false);
+//     const { isKeyboardOpen } = useKeyboardStatus();
+//     const { isDarkMode } = useSelector(state => state.theme);
+
+//     let selector = useSelector(state => state?.user?.userData);
+//     if (Object.keys(selector).length !== 0) {
+//         selector = JSON.parse(selector);
+//     }
+
+//     useEffect(() => {
+//         if (isFocused) {
+//             fetchData();
+//         }
+//     }, [isFocused]);
+
+//     useEffect(() => {
+//         if (searchQuery.trim() === '') {
+//             setFilteredShops(allShops);
+//         } else {
+//             const filtered = allShops.filter(shop => {
+//                 const shopName = shop?.Name?.toLowerCase() || '';
+//                 const shopAddress = shop?.Address?.[0]?.LocationName?.toLowerCase() || '';
+//                 const query = searchQuery.toLowerCase();
+//                 return shopName.includes(query) || shopAddress.includes(query);
+//             });
+//             setFilteredShops(filtered);
+//         }
+//     }, [searchQuery, allShops]);
+
+//     const fetchData = async () => {
+//         setLoading(true);
+//         try {
+//             const res = await apiGet(urls.getAllShops);
+//             setAllShops(res?.data || []);
+//             setFilteredShops(res?.data || []);
+//         } catch (error) {
+//             console.error('Error fetching shops:', error);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const handleSearch = useCallback((text) => {
+//         setSearchQuery(text);
+//     }, []);
+
+//     const handleShopPress = useCallback((shopId) => {
+//         navigation.navigate('AllProductsOfAShops', { shopId });
+//     }, [navigation]);
+
+//     const renderItem = useCallback(({ item, index }) => (
+//         <ShopCard
+//             item={item}
+//             isDarkMode={isDarkMode}
+//             onPress={() => handleShopPress(item?._id)}
+//             index={index}
+//         />
+//     ), [isDarkMode, handleShopPress]);
+
+//     const keyExtractor = useCallback((item, index) => {
+//         return item?._id?.toString() || `item-${index}`;
+//     }, []);
+
+//     return (
+//         <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
+//             <StatusBar
+//                 translucent={true}
+//                 backgroundColor="transparent"
+//                 barStyle={isDarkMode ? "light-content" : "dark-content"}
+//             />
+            
+//             <AnimatedHeader navigation={navigation} isDarkMode={isDarkMode} />
+
+//             {loading ? (
+//                 <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} />
+//             ) : (
+//                 <>
+//                     <AnimatedSearchBar
+//                         searchQuery={searchQuery}
+//                         handleSearch={handleSearch}
+//                         isDarkMode={isDarkMode}
+//                     />
+
+//                     <FlatList
+//                         data={filteredShops}
+//                         keyExtractor={keyExtractor}
+//                         renderItem={renderItem}
+//                         numColumns={2}
+//                         contentContainerStyle={styles.listContent}
+//                         showsVerticalScrollIndicator={false}
+//                     />
+
+//                     {selector?.SellerStatus === 'Approved' && (
+//                         <AnimatedFAB
+//                             onPress={() => navigation?.navigate('AddShops')}
+//                         />
+//                     )}
+
+//                     {!isKeyboardOpen && <View style={{ height: 100 }} />}
+//                 </>
+//             )}
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     header: {
+//         paddingTop: 50,
+//         paddingHorizontal: 20,
+//         paddingBottom: 15,
+//     },
+//     headerTitle: {
+//         fontSize: 20,
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//     },
+//     searchContainer: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         borderRadius: 30,
+//         margin: 10,
+//         padding: 4,
+//         marginTop: 10,
+//         paddingHorizontal: 15,
+//         gap: 10,
+//     },
+//     searchInput: {
+//         flex: 1,
+//         fontSize: 16,
+//     },
+//     listContent: {
+//         paddingHorizontal: 8,
+//         paddingBottom: 20,
+//     },
+//     cardContainer: {
+//         height: 160,
+//         borderRadius: 10,
+//         overflow: 'hidden',
+//         position: 'relative',
+//     },
+//     imageWrapper: {
+//         width: '100%',
+//         height: '100%',
+//     },
+//     shopImage: {
+//         width: '100%',
+//         height: '100%',
+//         resizeMode: 'cover',
+//     },
+//     overlay: {
+//         position: 'absolute',
+//         bottom: 0,
+//         left: 0,
+//         right: 0,
+//         height: '50%',
+//         backgroundColor: 'rgba(0, 0, 0, 0.6)',
+//         borderBottomLeftRadius: 10,
+//         borderBottomRightRadius: 10,
+//     },
+//     textContainer: {
+//         position: 'absolute',
+//         bottom: 12,
+//         left: 12,
+//         right: 12,
+//     },
+//     shopName: {
+//         color: '#fff',
+//         fontSize: 16,
+//         fontWeight: '600',
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//         textShadowColor: 'rgba(0, 0, 0, 0.8)',
+//         textShadowOffset: { width: 0, height: 1 },
+//         textShadowRadius: 3,
+//         marginBottom: 4,
+//     },
+//     locationRow: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         gap: 5,
+//     },
+//     locationText: {
+//         fontSize: 11,
+//         color: '#ccc',
+//         flex: 1,
+//     },
+//     addShopButtonContainer: {
+//         paddingHorizontal: 30,
+//         paddingBottom: 10,
+//     },
+//     followButton: {
+//         paddingVertical: 15,
+//         paddingHorizontal: 16,
+//         borderRadius: 8,
+//         alignItems: 'center',
+//     },
+//     followText: {
+//         fontSize: 16,
+//         fontWeight: '600',
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//         color: '#fff',
+//     },
+// });
+
+// export default React.memo(Shops);
+
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -970,9 +1510,10 @@ import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
 import GradientIcon from '../../components/GradientIcon';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import LinearGradient from 'react-native-linear-gradient';
+import { THEMES } from '../../redux/reducer/theme'; // ✅ IMPORT THEMES
 
 // Animated Shop Card with sexy hover effect
-const ShopCard = React.memo(({ item, isDarkMode, onPress, index }) => {
+const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor }) => { // ✅ ADD primaryColor prop
     if (!item || !item._id) return null;
 
     const scale = useSharedValue(1);
@@ -1020,6 +1561,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index }) => {
                 showShinePatches={true}
                 intensity="low"
                 containerStyle={{ flex: 1 }}
+                glowColors={[primaryColor, primaryColor]}
             >
                 <TouchableOpacity
                     style={[
@@ -1048,7 +1590,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index }) => {
                         </Text>
                         <View style={styles.locationRow}>
                             <GradientIcon
-                                colors={['#21B7FF', '#0084F8']}
+                                colors={[primaryColor, primaryColor]} // ✅ THEME COLOR (pehle ['#21B7FF', '#0084F8'])
                                 size={12}
                                 iconType='FontAwesome6'
                                 name={'location-dot'}
@@ -1067,7 +1609,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index }) => {
 ShopCard.displayName = 'ShopCard';
 
 // Animated Header
-const AnimatedHeader = ({ navigation, isDarkMode }) => {
+const AnimatedHeader = ({ navigation, isDarkMode, primaryColor }) => { // ✅ ADD primaryColor prop
     const leftIconTranslateY = useSharedValue(-80);
     const leftIconScale = useSharedValue(0.3);
     const leftIconOpacity = useSharedValue(0);
@@ -1150,7 +1692,7 @@ const AnimatedHeader = ({ navigation, isDarkMode }) => {
             <Animated.View style={rightIconStyle}>
                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
                     <GradientIcon
-                        colors={['#21B7FF', '#0084F8']}
+                        colors={[primaryColor, primaryColor]} // ✅ THEME COLOR (pehle ['#21B7FF', '#0084F8'])
                         size={20}
                         iconType='FontAwesome5'
                         name={'bell'}
@@ -1162,7 +1704,7 @@ const AnimatedHeader = ({ navigation, isDarkMode }) => {
 };
 
 // Animated Search Bar
-const AnimatedSearchBar = ({ searchQuery, handleSearch, isDarkMode }) => {
+const AnimatedSearchBar = ({ searchQuery, handleSearch, isDarkMode, primaryColor }) => { // ✅ ADD primaryColor prop
     const scale = useSharedValue(0);
     const translateY = useSharedValue(-50);
 
@@ -1193,7 +1735,7 @@ const AnimatedSearchBar = ({ searchQuery, handleSearch, isDarkMode }) => {
             ]}
         >
             <GradientIcon
-                colors={['#21B7FF', '#0084F8']}
+                colors={[primaryColor, primaryColor]} // ✅ THEME COLOR (pehle ['#21B7FF', '#0084F8'])
                 size={18}
                 iconType='FontAwesome5'
                 name={'search'}
@@ -1213,7 +1755,7 @@ const AnimatedSearchBar = ({ searchQuery, handleSearch, isDarkMode }) => {
 };
 
 // Animated FAB Button
-const AnimatedFAB = ({ onPress }) => {
+const AnimatedFAB = ({ onPress, primaryColor }) => { // ✅ ADD primaryColor prop
     const scale = useSharedValue(1);
     const rotate = useSharedValue(0);
 
@@ -1248,7 +1790,7 @@ const AnimatedFAB = ({ onPress }) => {
         >
             <TouchableOpacity onPress={onPress}>
                 <LinearGradient
-                    colors={['#21B7FF', '#0084F8']}
+                    colors={[primaryColor, primaryColor]} // ✅ THEME COLOR (pehle ['#21B7FF', '#0084F8'])
                     start={{ x: 1, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.followButton}
@@ -1270,7 +1812,13 @@ const Shops = ({ navigation }) => {
     const isFocused = useIsFocused();
     const [loading, setLoading] = useState(false);
     const { isKeyboardOpen } = useKeyboardStatus();
-    const { isDarkMode } = useSelector(state => state.theme);
+    
+    // ✅ GET THEME STATE
+    const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
+    
+    // ✅ GET CURRENT THEME COLORS
+    const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
+    const primaryColor = currentTheme.primary;
 
     let selector = useSelector(state => state?.user?.userData);
     if (Object.keys(selector).length !== 0) {
@@ -1324,8 +1872,9 @@ const Shops = ({ navigation }) => {
             isDarkMode={isDarkMode}
             onPress={() => handleShopPress(item?._id)}
             index={index}
+            primaryColor={primaryColor} // ✅ PASS primaryColor
         />
-    ), [isDarkMode, handleShopPress]);
+    ), [isDarkMode, handleShopPress, primaryColor]); // ✅ ADD primaryColor dependency
 
     const keyExtractor = useCallback((item, index) => {
         return item?._id?.toString() || `item-${index}`;
@@ -1339,7 +1888,11 @@ const Shops = ({ navigation }) => {
                 barStyle={isDarkMode ? "light-content" : "dark-content"}
             />
             
-            <AnimatedHeader navigation={navigation} isDarkMode={isDarkMode} />
+            <AnimatedHeader 
+                navigation={navigation} 
+                isDarkMode={isDarkMode} 
+                primaryColor={primaryColor} // ✅ PASS primaryColor
+            />
 
             {loading ? (
                 <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} />
@@ -1349,6 +1902,7 @@ const Shops = ({ navigation }) => {
                         searchQuery={searchQuery}
                         handleSearch={handleSearch}
                         isDarkMode={isDarkMode}
+                        primaryColor={primaryColor} // ✅ PASS primaryColor
                     />
 
                     <FlatList
@@ -1363,6 +1917,7 @@ const Shops = ({ navigation }) => {
                     {selector?.SellerStatus === 'Approved' && (
                         <AnimatedFAB
                             onPress={() => navigation?.navigate('AddShops')}
+                            primaryColor={primaryColor} // ✅ PASS primaryColor
                         />
                     )}
 

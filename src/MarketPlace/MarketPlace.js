@@ -147,6 +147,7 @@ import { BackIcon, CameraButton, Mic, NotiFication, Search } from '../assets/SVG
 import SpaceBetweenRow from '../components/wrapper/spacebetween';
 import CustomText from '../components/TextComponent';
 import { FONTS_FAMILY } from '../assets/Fonts';
+import { THEMES } from '../redux/reducer/theme';
 
 // Sample marketplace data with categories and items
 const marketplaceItems = [
@@ -217,9 +218,16 @@ const categories = [
 ];
 
 const MarketPlace = ({navigation}) => {
-  const { isDarkMode } = useSelector(state => state.theme);
+  // const { isDarkMode } = useSelector(state => state.theme);
   const [location, setLocation] = useState('Indore');
   const [distance, setDistance] = useState('65 km');
+
+    const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
+  
+    // ✅ GET CURRENT THEME COLORS
+    const currentTheme = THEMES[selectedColorTheme] || THEMES.default
+    const primaryColor = currentTheme.primary
+    const secondaryColor = currentTheme.secondary
 
   const styles = StyleSheet.create({
     container: {

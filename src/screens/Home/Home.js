@@ -81,7 +81,7 @@
 //   const [currentStep, setCurrentStep] = useState(0)
 //   const [highlightPosition, setHighlightPosition] = useState(null)
 //   const [hasSeenTour, setHasSeenTour] = useState(false)
-  
+
 //   const searchBarRef = useRef(null)
 //   const storyRef = useRef(null)
 //   const likeButtonRef = useRef(null)
@@ -634,7 +634,7 @@
 //         console.log('Error checking tour status:', error)
 //       }
 //     }
-    
+
 //     checkFirstVisit()
 //   }, [isFocused, selectedTab])
 
@@ -710,7 +710,7 @@
 //       await Tts.setDefaultLanguage('en-US')
 //       await Tts.setDefaultRate(0.5)
 //       await Tts.setDefaultPitch(1.0)
-      
+
 //       setTtsStatus('Ready')
 //     } catch (error) {
 //       console.error('TTS Init Error:', error)
@@ -720,7 +720,7 @@
 //   const speakGreeting = () => {
 //     const userName = selector?.FullName || selector?.UserName || 'Friend'
 //     const greeting = `Welcome ${userName} on Tomo. Happy to see you here!`
-    
+
 //     console.log('TTS: Speaking welcome:', greeting)
 //     Tts.stop()
 //     Tts.speak(greeting)
@@ -1662,7 +1662,7 @@
 //                 right: currentStepData.position === 'left' ? undefined : 20,
 //               },
 //             ]}>
-            
+
 //             {/* Finger Pointer Icon */}
 //             <View style={styles.tourFingerContainer}>
 //               <Text style={styles.tourFingerIcon}>👆</Text>
@@ -2190,7 +2190,7 @@
 //   // ✅ MAIN RETURN - UPDATED WITH TOUR
 //   return (
 //     <View style={styles.container}>
-    
+
 //       <StatusBar
 //         backgroundColor={ isDarkMode ? '#000' : '#fff'}
 //         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
@@ -2246,7 +2246,7 @@
 //         </Animated.View>
 //       )}
 
-      
+
 //       {loading ? (
 //         <View style={{ flex: 1, paddingTop: selectedTab === 'home' ? 100 : 100 }}>
 //           <FeedShimmerLoader isDarkMode={isDarkMode} count={5} />
@@ -2385,9 +2385,23 @@ import FeedCard from './FeedsCards'
 import Tts from 'react-native-tts'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 import { ToastMsg } from '../../utils/helperFunctions'
+import { THEMES } from '../../redux/reducer/theme'
+import { App_Primary_color } from '../../common/Colors/colors'
 
 const Home = ({ navigation }) => {
-  const { isDarkMode } = useSelector(state => state.theme)
+  // const { isDarkMode } = useSelector(state => state.theme)
+
+  const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
+
+  // ✅ GET CURRENT THEME COLORS
+  const currentTheme = THEMES[selectedColorTheme] || THEMES.default
+  const primaryColor = currentTheme.primary
+  const secondaryColor = currentTheme.secondary
+
+  const glowColors = [primaryColor, secondaryColor];
+
+
+
   const dispatch = useDispatch()
   const isFocused = useIsFocused()
   const { showLoader, hideLoader } = useLoader()
@@ -2488,14 +2502,14 @@ const Home = ({ navigation }) => {
   //   }
   // }
 
-const handleBellPress = () => {
-  navigation.navigate('Activity', {
-    bellPosition: {
-      x: screenWidth - 32, // bell approx right side
-      y: 70               // statusbar + header height
-    }
-  })
-}
+  const handleBellPress = () => {
+    navigation.navigate('Activity', {
+      bellPosition: {
+        x: screenWidth - 32, // bell approx right side
+        y: 70               // statusbar + header height
+      }
+    })
+  }
 
 
 
@@ -2891,31 +2905,31 @@ const handleBellPress = () => {
       await Tts.setDefaultLanguage('en-US')
       await Tts.setDefaultRate(0.5)
       await Tts.setDefaultPitch(1.0)
-      
+
       setTtsStatus('Ready')
     } catch (error) {
       console.error('TTS Init Error:', error)
     }
   }
 
- 
+
 
   const speakGreeting = () => {
     const userName = selector?.FullName || selector?.UserName || 'Friend'
     const greeting = `Welcome ${userName} on Tomo. Happy to see you here!`
-    
+
     console.log('TTS: Speaking welcome:', greeting)
     Tts.stop()
     Tts.speak(greeting)
   }
 
- 
-    
- 
 
- 
 
- 
+
+
+
+
+
 
   // Fetch functions
   const fetchAdvertisements = useCallback(async () => {
@@ -3363,7 +3377,9 @@ const handleBellPress = () => {
               onPress={() => navigation.navigate('GalleryForAddPost')}
               style={styles.headerIconContainer}>
               <GradientIcon
-                colors={['#21B7FF', '#0084F8']}
+                // colors={['#21B7FF', '#0084F8']}
+                colors={glowColors}
+
                 size={20}
                 iconType='FontAwesome5'
                 name={'sliders-h'}
@@ -3390,7 +3406,9 @@ const handleBellPress = () => {
                   {selectedTab === tab && (
                     <Animated.View entering={ZoomIn.duration(300)}>
                       <LinearGradient
-                        colors={['#21B7FF', '#0084F8']}
+                        // colors={['#21B7FF', '#0084F8']}
+                        colors={glowColors}
+
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={styles.tabIndicator}
@@ -3402,21 +3420,23 @@ const handleBellPress = () => {
             ))}
           </View>
 
-     <Animated.View style={rightIconStyle}>
-  <View ref={bellIconRef} collapsable={false}>
-    <TouchableOpacity
-      onPress={handleBellPress}
-      style={styles.headerIconContainer}
-    >
-      <GradientIcon
-        colors={['#21B7FF', '#0084F8']}
-        size={20}
-        iconType="FontAwesome5"
-        name="bell"
-      />
-    </TouchableOpacity>
-  </View>
-</Animated.View>
+          <Animated.View style={rightIconStyle}>
+            <View ref={bellIconRef} collapsable={false}>
+              <TouchableOpacity
+                onPress={handleBellPress}
+                style={styles.headerIconContainer}
+              >
+                <GradientIcon
+                  // colors={['#21B7FF', '#0084F8']}
+                  colors={[primaryColor, secondaryColor]}
+
+                  size={20}
+                  iconType="FontAwesome5"
+                  name="bell"
+                />
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
 
         </SpaceBetweenRow>
       </Animated.View>
@@ -3622,122 +3642,122 @@ const handleBellPress = () => {
 
   // ✅ Home.js me renderStories function ko update karo:
 
-const renderStories = useCallback(() => {
-  return (
-    <View
-      style={{
-        borderBottomWidth: 0.5,
-        borderBottomColor: isDarkMode ? '#333' : '#E5E5E5',
-      }}>
+  const renderStories = useCallback(() => {
+    return (
       <View
         style={{
-          paddingVertical: 5,
-          backgroundColor: isDarkMode ? '#000' : '#fff',
+          borderBottomWidth: 0.5,
+          borderBottomColor: isDarkMode ? '#333' : '#E5E5E5',
         }}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16 }}>
+        <View
+          style={{
+            paddingVertical: 5,
+            backgroundColor: isDarkMode ? '#000' : '#fff',
+          }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}>
 
-          {/* YOUR STORY */}
-          <Animated.View
-            entering={ZoomIn.duration(400).delay(100)}
-            style={styles.storyContainer}>
-            <TouchableOpacity
-              style={styles.yourStoryWrapper}
-              onPress={() =>
-                navigation.navigate('StoryScreen', {
-                  storyImage: allStories,
-                  User: selector,
-                  allUsersStories: followedStories, // ✅ ALL USERS PASS KARO
-                  initialUserIndex: -1, // ✅ YOUR STORY = -1 (pehle aapki story)
-                })
-              }
-              activeOpacity={0.8}>
-              <LinearGradient
-                colors={allStories[0]?.media ?
-                  ['#21B7FF', '#0084F8'] : ['#E5E5E5', '#E5E5E5']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.storyGradientBorder}>
-                <View style={styles.storyImageContainer}>
-                  <Image
-                    source={
-                      allStories[0]?.media
-                        ? { uri: allStories[0]?.media }
-                        : IMG.TomoLogo
-                    }
-                    style={styles.storyImage}
-                  />
-                </View>
-              </LinearGradient>
+            {/* YOUR STORY */}
+            <Animated.View
+              entering={ZoomIn.duration(400).delay(100)}
+              style={styles.storyContainer}>
               <TouchableOpacity
-                style={styles.addStoryButton}
-                onPress={() => navigation.navigate('GalleryPickerScreen')}
-                activeOpacity={0.9}>
+                style={styles.yourStoryWrapper}
+                onPress={() =>
+                  navigation.navigate('StoryScreen', {
+                    storyImage: allStories,
+                    User: selector,
+                    allUsersStories: followedStories, // ✅ ALL USERS PASS KARO
+                    initialUserIndex: -1, // ✅ YOUR STORY = -1 (pehle aapki story)
+                  })
+                }
+                activeOpacity={0.8}>
                 <LinearGradient
-                  colors={['#21B7FF', '#0084F8']}
+                  colors={allStories[0]?.media ?
+                    ['#21B7FF', '#0084F8'] : ['#E5E5E5', '#E5E5E5']}
                   start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.addStoryGradient}>
-                  <AddStoryIcon />
+                  end={{ x: 1, y: 1 }}
+                  style={styles.storyGradientBorder}>
+                  <View style={styles.storyImageContainer}>
+                    <Image
+                      source={
+                        allStories[0]?.media
+                          ? { uri: allStories[0]?.media }
+                          : IMG.TomoLogo
+                      }
+                      style={styles.storyImage}
+                    />
+                  </View>
                 </LinearGradient>
+                <TouchableOpacity
+                  style={styles.addStoryButton}
+                  onPress={() => navigation.navigate('GalleryPickerScreen')}
+                  activeOpacity={0.9}>
+                  <LinearGradient
+                    colors={['#21B7FF', '#0084F8']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.addStoryGradient}>
+                    <AddStoryIcon />
+                  </LinearGradient>
+                </TouchableOpacity>
               </TouchableOpacity>
-            </TouchableOpacity>
-            <Text style={[styles.storyText, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
-              Your Story
-            </Text>
-          </Animated.View>
+              <Text style={[styles.storyText, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
+                Your Story
+              </Text>
+            </Animated.View>
 
-          {/* OTHER USERS STORIES */}
-          {followedStories?.map((item, index) => {
-            const key = item?._id || `story-${index}`
-            if (item?.User?.Stories?.length > 0) {
-              return (
-                <Animated.View
-                  key={key}
-                  entering={ZoomIn.duration(400).delay((index + 1) * 80)}
-                  style={styles.storyContainer}>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('StoryScreen', {
-                        storyImage: item.User?.Stories, // ✅ Current user ki stories
-                        User: item?.User, // ✅ Current user
-                        allUsersStories: followedStories, // ✅ ALL users ki stories
-                        initialUserIndex: index, // ✅ Index pass karo
-                      })
-                    }
-                    activeOpacity={0.8}>
-                    <LinearGradient
-                      colors={['#21B7FF', '#0084F8']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.storyGradientBorder}>
-                      <View style={styles.storyImageContainer}>
-                        <Image
-                          source={
-                            item.User?.Stories?.length > 0
-                              ? { uri: item.User?.Stories[0]?.media }
-                              : IMG.AddStoryImage
-                          }
-                          style={styles.storyImage}
-                        />
-                      </View>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                  <Text style={[styles.storyText, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
-                    {item?.User?.UserName}
-                  </Text>
-                </Animated.View>
-              )
-            }
-            return null
-          })}
-        </ScrollView>
+            {/* OTHER USERS STORIES */}
+            {followedStories?.map((item, index) => {
+              const key = item?._id || `story-${index}`
+              if (item?.User?.Stories?.length > 0) {
+                return (
+                  <Animated.View
+                    key={key}
+                    entering={ZoomIn.duration(400).delay((index + 1) * 80)}
+                    style={styles.storyContainer}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('StoryScreen', {
+                          storyImage: item.User?.Stories, // ✅ Current user ki stories
+                          User: item?.User, // ✅ Current user
+                          allUsersStories: followedStories, // ✅ ALL users ki stories
+                          initialUserIndex: index, // ✅ Index pass karo
+                        })
+                      }
+                      activeOpacity={0.8}>
+                      <LinearGradient
+                        colors={['#21B7FF', '#0084F8']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.storyGradientBorder}>
+                        <View style={styles.storyImageContainer}>
+                          <Image
+                            source={
+                              item.User?.Stories?.length > 0
+                                ? { uri: item.User?.Stories[0]?.media }
+                                : IMG.AddStoryImage
+                            }
+                            style={styles.storyImage}
+                          />
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                    <Text style={[styles.storyText, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
+                      {item?.User?.UserName}
+                    </Text>
+                  </Animated.View>
+                )
+              }
+              return null
+            })}
+          </ScrollView>
+        </View>
       </View>
-    </View>
-  )
-}, [isDarkMode, allStories, followedStories, selector, navigation])
+    )
+  }, [isDarkMode, allStories, followedStories, selector, navigation])
 
   const renderAdvertisement = useCallback((ad, index) => {
     const currentImageIndex = currentAdImageIndex[ad._id] || 0
@@ -4440,10 +4460,10 @@ const renderStories = useCallback(() => {
 
   return (
     <View style={styles.container}>
-    
+
       <StatusBar
         // translucent={true}
-        backgroundColor={ isDarkMode ? '#000' : '#fff'}
+        backgroundColor={isDarkMode ? '#000' : '#fff'}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
 
@@ -4471,7 +4491,7 @@ const renderStories = useCallback(() => {
             searchBarAnimatedStyle,
             {
               position: 'absolute',
-              top: 100, 
+              top: 100,
               left: 0,
               right: 0,
               zIndex: 1000,
@@ -4485,7 +4505,7 @@ const renderStories = useCallback(() => {
         </Animated.View>
       )}
 
-      
+
       {loading ? (
         <View style={{ flex: 1, paddingTop: selectedTab === 'home' ? 100 : 100 }}>
           <FeedShimmerLoader isDarkMode={isDarkMode} count={5} />

@@ -3322,6 +3322,7 @@ import { useSelector } from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import IMG from '../../assets/Images';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+import { THEMES } from '../../redux/reducer/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -3349,7 +3350,16 @@ const FeedCard = ({
   onMuteToggle,
   formatInstagramDate
 }) => {
-  const { isDarkMode } = useSelector(state => state.theme);
+  // const { isDarkMode } = useSelector(state => state.theme);
+
+   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
+      
+      // ✅ GET CURRENT THEME COLORS
+      const currentTheme = THEMES[selectedColorTheme] || THEMES.default
+      const primaryColor = currentTheme.primary
+      const secondaryColor = currentTheme.secondary
+  
+          const glowColors = [primaryColor, secondaryColor];
 
   const styles = StyleSheet.create({
     feedContainer: {
@@ -3466,6 +3476,7 @@ const FeedCard = ({
       starCount={100}
       showShinePatches={true}
       intensity="low"
+      glowColors={glowColors}
       containerStyle={{
         margin: 10,
       }}
@@ -3565,7 +3576,9 @@ const FeedCard = ({
                     >
                       {post?.likes?.includes(selector?._id) ? (
                         <GradientIcon
-                          colors={['#21B7FF', '#0084F8']}
+                          // colors={['#21B7FF', '#0084F8']}
+                          colors={glowColors}
+
                           size={20}
                           iconType='Ionicons'
                           name={'triangle'}
@@ -3594,7 +3607,9 @@ const FeedCard = ({
                     >
                       <GradientIcon
                         colors={post?.Unlikes?.includes(selector?._id) 
-                          ? ['#21B7FF', '#0084F8']
+                          ?
+                          //  ['#21B7FF', '#0084F8']
+                          glowColors
                           : ['#999', '#999']}
                         size={16}
                         iconType='Feather'
@@ -3616,7 +3631,9 @@ const FeedCard = ({
                       activeOpacity={0.7}
                     >
                       <GradientIcon
-                        colors={['#21B7FF', '#0084F8']}
+                        // colors={['#21B7FF', '#0084F8']}
+                        colors={glowColors}
+
                         size={16}
                         iconType='FontAwesome'
                         name={'comment-o'}

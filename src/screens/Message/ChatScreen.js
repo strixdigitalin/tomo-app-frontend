@@ -1062,7 +1062,14 @@ const ChatScreen = ({ route, navigation }) => {
     const [menuVisible, setMenuVisible] = useState(false);
     const [haveIBlockedThem, setHaveIBlockedThem] = useState(false);
     const [isBlockedByThem, setIsBlockedByThem] = useState(false);
-    const { isDarkMode } = useSelector(state => state.theme);
+    // const { isDarkMode } = useSelector(state => state.theme);
+
+      const { 
+        isDarkMode, 
+        selectedColorTheme, 
+        messageCornerRadius, 
+        feedListView 
+      } = useSelector(state => state.theme);
     
     // Sticker feature states
     const [showStickerPicker, setShowStickerPicker] = useState(false);
@@ -1088,6 +1095,9 @@ const ChatScreen = ({ route, navigation }) => {
             ToastMsg("Failed to get user ID");
         }
     };
+
+    // console.log('messageCornerRadius===================>>>>>', messageCornerRadius);
+    
 
     useEffect(() => {
         GetUserId();
@@ -1351,6 +1361,239 @@ const ChatScreen = ({ route, navigation }) => {
     const borderColor = isDarkMode ? '#333' : '#EEE';
     const stickerTabBg = isDarkMode ? '#2a2a2a' : '#F8F8F8';
 
+
+    const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    headerWrapper: {
+        paddingTop: 50,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
+    },
+    headerContent: {
+        paddingHorizontal: 16,
+        alignItems: 'center',
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    backButton: {
+        padding: 4,
+    },
+    profileImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+    },
+    headerText: {
+        marginLeft: 4,
+    },
+    profileName: {
+        fontSize: 16,
+        fontWeight: "600",
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+    },
+    userstatus: {
+        fontSize: 12,
+        marginTop: 2,
+    },
+    moreButton: {
+        padding: 4,
+    },
+    chatWrapper: {
+        flex: 1,
+    },
+    chatContainer: {
+        flex: 1,
+    },
+    chatContent: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+    },
+    messageContainer: {
+        flexDirection: "row",
+        marginVertical: 3,
+        alignItems: "flex-end",
+    },
+    myMessage: {
+        justifyContent: "flex-end",
+    },
+    messageBubble: {
+        padding: 12,
+        borderRadius: messageCornerRadius,
+        maxWidth: "75%",
+        minWidth: 60,
+    },
+    myMessageBubble: {
+        backgroundColor: "#4F52FE",
+    },
+    messageText: {
+        fontSize: 15,
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+        lineHeight: 20,
+    },
+    metaContainer: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        alignItems: "center",
+        marginTop: 4,
+        gap: 4,
+    },
+    editedText: {
+        fontSize: 9,
+        fontStyle: 'italic',
+        marginRight: 4,
+    },
+    timestamp: {
+        fontSize: 10,
+    },
+    status: {
+        fontSize: 12,
+        color: "rgba(255,255,255,0.8)",
+    },
+    editingBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderTopWidth: 1,
+    },
+    editingContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        flex: 1,
+    },
+    editingTextContainer: {
+        flex: 1,
+    },
+    editingLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        marginBottom: 2,
+    },
+    editingPreview: {
+        fontSize: 13,
+    },
+    cancelEdit: {
+        padding: 4,
+    },
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderTopWidth: 1,
+    },
+    iconButton: {
+        padding: 8,
+        paddingBottom: 12,
+    },
+    input: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 24,
+        marginHorizontal: 8,
+        fontSize: 15,
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+        maxHeight: 100,
+    },
+    sendButton: {
+        backgroundColor: '#4F52FE',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    sendButtonDisabled: {
+        opacity: 0.5,
+    },
+    // Sticker Picker Styles
+    stickerPickerContainer: {
+        overflow: 'hidden',
+        borderTopWidth: 1,
+    },
+    stickerTabs: {
+        flexDirection: 'row',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+    },
+    stickerTab: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        marginRight: 4,
+        borderRadius: 16,
+    },
+    stickerTabActive: {
+        backgroundColor: '#4F52FE',
+    },
+    stickerTabText: {
+        fontSize: 13,
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+    },
+    stickerTabTextActive: {
+        color: 'white',
+        fontWeight: '600',
+    },
+    stickerGrid: {
+        paddingHorizontal: 8,
+        paddingTop: 12,
+        paddingBottom: 8,
+    },
+    stickerItem: {
+        width: '16.666%',
+        aspectRatio: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    stickerEmoji: {
+        fontSize: 32,
+    },
+    // Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    optionsContainer: {
+        width: '80%',
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    optionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        gap: 12,
+    },
+    optionText: {
+        fontSize: 16,
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+    },
+    optionDivider: {
+        height: 0.5,
+        marginHorizontal: 20,
+    },
+});
+
     return (
         <View style={[styles.container, { backgroundColor }]}>
             <StatusBar
@@ -1566,236 +1809,6 @@ const ChatScreen = ({ route, navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    headerWrapper: {
-        paddingTop: 50,
-        paddingBottom: 10,
-        borderBottomWidth: 1,
-    },
-    headerContent: {
-        paddingHorizontal: 16,
-        alignItems: 'center',
-    },
-    headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    backButton: {
-        padding: 4,
-    },
-    profileImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-    },
-    headerText: {
-        marginLeft: 4,
-    },
-    profileName: {
-        fontSize: 16,
-        fontWeight: "600",
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-    },
-    userstatus: {
-        fontSize: 12,
-        marginTop: 2,
-    },
-    moreButton: {
-        padding: 4,
-    },
-    chatWrapper: {
-        flex: 1,
-    },
-    chatContainer: {
-        flex: 1,
-    },
-    chatContent: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-    },
-    messageContainer: {
-        flexDirection: "row",
-        marginVertical: 3,
-        alignItems: "flex-end",
-    },
-    myMessage: {
-        justifyContent: "flex-end",
-    },
-    messageBubble: {
-        padding: 12,
-        borderRadius: 16,
-        maxWidth: "75%",
-        minWidth: 60,
-    },
-    myMessageBubble: {
-        backgroundColor: "#4F52FE",
-    },
-    messageText: {
-        fontSize: 15,
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-        lineHeight: 20,
-    },
-    metaContainer: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        marginTop: 4,
-        gap: 4,
-    },
-    editedText: {
-        fontSize: 9,
-        fontStyle: 'italic',
-        marginRight: 4,
-    },
-    timestamp: {
-        fontSize: 10,
-    },
-    status: {
-        fontSize: 12,
-        color: "rgba(255,255,255,0.8)",
-    },
-    editingBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-    },
-    editingContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        flex: 1,
-    },
-    editingTextContainer: {
-        flex: 1,
-    },
-    editingLabel: {
-        fontSize: 12,
-        fontWeight: '600',
-        marginBottom: 2,
-    },
-    editingPreview: {
-        fontSize: 13,
-    },
-    cancelEdit: {
-        padding: 4,
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderTopWidth: 1,
-    },
-    iconButton: {
-        padding: 8,
-        paddingBottom: 12,
-    },
-    input: {
-        flex: 1,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 24,
-        marginHorizontal: 8,
-        fontSize: 15,
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-        maxHeight: 100,
-    },
-    sendButton: {
-        backgroundColor: '#4F52FE',
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    sendButtonDisabled: {
-        opacity: 0.5,
-    },
-    // Sticker Picker Styles
-    stickerPickerContainer: {
-        overflow: 'hidden',
-        borderTopWidth: 1,
-    },
-    stickerTabs: {
-        flexDirection: 'row',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-    },
-    stickerTab: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        marginRight: 4,
-        borderRadius: 16,
-    },
-    stickerTabActive: {
-        backgroundColor: '#4F52FE',
-    },
-    stickerTabText: {
-        fontSize: 13,
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-    },
-    stickerTabTextActive: {
-        color: 'white',
-        fontWeight: '600',
-    },
-    stickerGrid: {
-        paddingHorizontal: 8,
-        paddingTop: 12,
-        paddingBottom: 8,
-    },
-    stickerItem: {
-        width: '16.666%',
-        aspectRatio: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    stickerEmoji: {
-        fontSize: 32,
-    },
-    // Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    optionsContainer: {
-        width: '80%',
-        borderRadius: 16,
-        overflow: 'hidden',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    optionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        gap: 12,
-    },
-    optionText: {
-        fontSize: 16,
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-    },
-    optionDivider: {
-        height: 0.5,
-        marginHorizontal: 20,
-    },
-});
+
 
 export default ChatScreen;
