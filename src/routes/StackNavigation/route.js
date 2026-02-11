@@ -146,6 +146,7 @@ import ReportScreen from '../../screens/Home/ReportPostScreen';
 import AddVehicleSpecs from '../../screens/UserDetail/AddSpecs';
 import Settings from '../../screens/PrivacyPolicy/Settings';
 import ThemeSettings from '../../screens/PrivacyPolicy/ThemeSettingScreen';
+import ChooseMusicScreen from '../../screens/UserDetail/SelectSongs';
 
 const Stack = createNativeStackNavigator();
 
@@ -312,6 +313,7 @@ const StackNavigation = () => {
             animation: 'slide_from_bottom'
           }}
         />
+
 
         <Stack.Screen
           name="Comments"
@@ -489,6 +491,16 @@ const StackNavigation = () => {
           <Stack.Screen
           name={'ReactNativeChatbot'}
           component={ReactNativeChatbot}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+
+        
+
+         <Stack.Screen
+          name={'ChooseMusicScreen'}
+          component={ChooseMusicScreen}
           options={{
             animation: 'slide_from_bottom',
           }}

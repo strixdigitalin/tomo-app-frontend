@@ -2489,7 +2489,7 @@
 //         const iconColor = isActive 
 //           ? (isDarkMode ? '#fff' : '#000') 
 //           : (isDarkMode ? '#888' : '#666')
-        
+
 //         return (
 //           <TouchableOpacity
 //             key={tab.key}
@@ -2800,12 +2800,12 @@
 //   const [bioText, setBioText] = useState('')
 //   const { showLoader, hideLoader } = useLoader()
 //   const [allProducts, setAllProducts] = useState([])
-  
+
 //   // ✅ NEW STATES FOR MY SPEC & SETTINGS
 //   const [showActivityStatus, setShowActivityStatus] = useState(true) // Toggle for activity
 //   const [showJoinDate, setShowJoinDate] = useState(true) // Toggle for join date
 //   const [isSpecExpanded, setIsSpecExpanded] = useState(false) // See More toggle
-  
+
 //   // ✅ STATIC CAR SPEC DATA (Replace with API later)
 //   const [carSpec, setCarSpec] = useState({
 //     vehicle: '2023 BMW M4',
@@ -2856,7 +2856,7 @@
 //   }
 
 //   console.log('Show Lat Actve::::::::::', selector);
-  
+
 
 //   useEffect(() => {
 //     fetchData()
@@ -2877,7 +2877,7 @@
 //     setLoading(false)
 //   }
 
-  
+
 
 //   const fetchMyPost = async () => {
 //     setLoading(true)
@@ -3507,7 +3507,7 @@
 //           const diffMins = Math.floor(diffMs / 60000);
 //           const diffHours = Math.floor(diffMs / 3600000);
 //           const diffDays = Math.floor(diffMs / 86400000);
-          
+
 //           if (diffMins < 1) return 'just now';
 //           if (diffMins < 60) return `${diffMins}m ago`;
 //           if (diffHours < 24) return `${diffHours}h ago`;
@@ -3722,7 +3722,7 @@
 //         const iconColor = isActive 
 //           ? (isDarkMode ? '#fff' : '#000') 
 //           : (isDarkMode ? '#888' : '#666')
-        
+
 //         return (
 //           <TouchableOpacity
 //             key={tab.key}
@@ -4037,12 +4037,12 @@
 //   const [bioText, setBioText] = useState('')
 //   const { showLoader, hideLoader } = useLoader()
 //   const [allProducts, setAllProducts] = useState([])
-  
+
 //   // ✅ NEW STATES FOR MY SPEC & SETTINGS
 //   const [showActivityStatus, setShowActivityStatus] = useState(true)
 //   const [showJoinDate, setShowJoinDate] = useState(true)
 //   const [isSpecExpanded, setIsSpecExpanded] = useState(false)
-  
+
 //   // ✅ DYNAMIC CAR SPEC DATA FROM API
 //   const [carSpec, setCarSpec] = useState(null)
 //   const [hasCarSpec, setHasCarSpec] = useState(false)
@@ -4069,7 +4069,7 @@
 //   }
 
 //   // console.log('Show Lat Actve::::::::::', selector);
-  
+
 
 //   useEffect(() => {
 //     fetchData()
@@ -4097,7 +4097,7 @@
 //       const res = await apiGet('/api/user/GetUserCurrentCar')
 //       if (res?.data && res?.data?.length > 0) {
 //         const carData = res.data[0] // Get first car
-        
+
 //         // Transform API data to match component structure
 //         const transformedSpec = {
 //           _id: carData._id,
@@ -4141,7 +4141,7 @@
 //           budgetPrice: carData.CurrentPrice ? `$${carData.CurrentPrice.toLocaleString()}` : null,
 //           image: carData.Image || null
 //         }
-        
+
 //         setCarSpec(transformedSpec)
 //         setHasCarSpec(true)
 //       } else {
@@ -4752,7 +4752,7 @@
 //       )}
 //     </Animated.View>
 //   )
-  
+
 //   const renderProfileInfo = () => (
 //     <Animated.View 
 //       entering={FadeInUp.duration(400).delay(400)}
@@ -4815,7 +4815,7 @@
 //                 const diffMins = Math.floor(diffMs / 60000);
 //                 const diffHours = Math.floor(diffMs / 3600000);
 //                 const diffDays = Math.floor(diffMs / 86400000);
-                
+
 //                 if (diffMins < 1) return 'just now';
 //                 if (diffMins < 60) return `${diffMins}m ago`;
 //                 if (diffHours < 24) return `${diffHours}h ago`;
@@ -5057,7 +5057,7 @@
 //         const iconColor = isActive 
 //           ? (isDarkMode ? '#fff' : '#000') 
 //           : (isDarkMode ? '#888' : '#666')
-        
+
 //         return (
 //           <TouchableOpacity
 //             key={tab.key}
@@ -5294,6 +5294,7 @@ import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import GradientIcon from '../../components/GradientIcon'
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper'
 import { THEMES } from '../../redux/reducer/theme' // ✅ IMPORT THEMES
+import Row from '../../components/wrapper/row'
 
 // Simple Animated Post Card
 const PostCard = React.memo(({ item, activeTab, navigation, index, isDarkMode, glowColors }) => {
@@ -5316,7 +5317,7 @@ const PostCard = React.memo(({ item, activeTab, navigation, index, isDarkMode, g
       // entering={FadeInUp.duration(400).delay(index * 40)}
       style={[{ width: '48%', margin: '1%' },]}
     >
-      <GlowWrapper 
+      <GlowWrapper
         containerStyle={{ height: 120 }}
         borderRadius={8}
         showStars={false}
@@ -5324,15 +5325,15 @@ const PostCard = React.memo(({ item, activeTab, navigation, index, isDarkMode, g
         intensity="low"
         isDarkMode={isDarkMode}
         glowColors={glowColors}
-        
+
       >
         <TouchableOpacity
           onPress={() =>
             navigation.navigate(
-              activeTab === 'all' ? 'AllPostOfAUser' : 
-              activeTab === 'saved' ? 'SavedPosts' : 
-              activeTab === 'tagged' ? 'AllPostOfAUser' :
-              'ProductDetail', 
+              activeTab === 'all' ? 'AllPostOfAUser' :
+                activeTab === 'saved' ? 'SavedPosts' :
+                  activeTab === 'tagged' ? 'AllPostOfAUser' :
+                    'ProductDetail',
               { userId: item?.User?._id }
             )
           }
@@ -5341,13 +5342,13 @@ const PostCard = React.memo(({ item, activeTab, navigation, index, isDarkMode, g
           activeOpacity={0.9}
           style={{ height: '100%' }}
         >
-          <Image 
-            source={{ 
-              uri: activeTab === 'all' ? item?.media : 
-                   activeTab === 'saved' ? item?.Post?.media : 
-                   activeTab === 'tagged' ? item?.media :
-                   item?.Image 
-            }} 
+          <Image
+            source={{
+              uri: activeTab === 'all' ? item?.media :
+                activeTab === 'saved' ? item?.Post?.media :
+                  activeTab === 'tagged' ? item?.media :
+                    item?.Image
+            }}
             style={{
               width: '100%',
               height: '100%',
@@ -5367,15 +5368,15 @@ const OtherUserDetail = ({ navigation, route }) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false)
   const [isBioModalVisible, setBioModalVisible] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
-  
+
   // ✅ GET THEME STATE
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
-  
+
   // ✅ GET CURRENT THEME COLORS
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default
   const primaryColor = currentTheme.primary
   const secondaryColor = currentTheme.secondary
-  
+
   const [UserDetails, setUserDetails] = useState(null)
   const [loading, setLoading] = useState(false)
   const [allPosts, setAllPosts] = useState([])
@@ -5384,15 +5385,15 @@ const OtherUserDetail = ({ navigation, route }) => {
   const [bioText, setBioText] = useState('')
   const { showLoader, hideLoader } = useLoader()
   const [allProducts, setAllProducts] = useState([])
-  
+
   // ✅ NEW STATES FOR MY SPEC & SETTINGS
   const [showActivityStatus, setShowActivityStatus] = useState(true)
   const [showJoinDate, setShowJoinDate] = useState(true)
   const [isSpecExpanded, setIsSpecExpanded] = useState(false)
 
-    const glowColors = [primaryColor, secondaryColor];
+  const glowColors = [primaryColor, secondaryColor];
 
-  
+
   // ✅ DYNAMIC CAR SPEC DATA FROM API
   const [carSpec, setCarSpec] = useState(null)
   const [hasCarSpec, setHasCarSpec] = useState(false)
@@ -5419,7 +5420,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   }
 
   // console.log('Show Lat Actve::::::::::', selector);
-  
+
 
   useEffect(() => {
     fetchData()
@@ -5447,7 +5448,7 @@ const OtherUserDetail = ({ navigation, route }) => {
       const res = await apiGet('/api/user/GetUserCurrentCar')
       if (res?.data && res?.data?.length > 0) {
         const carData = res.data[0] // Get first car
-        
+
         // Transform API data to match component structure
         const transformedSpec = {
           _id: carData._id,
@@ -5463,8 +5464,8 @@ const OtherUserDetail = ({ navigation, route }) => {
           drivetrain: carData.Power?.drivetrain || 'N/A',
           transmission: carData.Power?.transmission || 'N/A',
           // Modifications
-          performanceMods: Array.isArray(carData.Modifications?.performance) 
-            ? carData.Modifications.performance.join(', ') 
+          performanceMods: Array.isArray(carData.Modifications?.performance)
+            ? carData.Modifications.performance.join(', ')
             : 'N/A',
           suspensionMods: Array.isArray(carData.Modifications?.suspension)
             ? carData.Modifications.suspension.join(', ')
@@ -5491,7 +5492,7 @@ const OtherUserDetail = ({ navigation, route }) => {
           budgetPrice: carData.CurrentPrice ? `$${carData.CurrentPrice.toLocaleString()}` : null,
           image: carData.Image || null
         }
-        
+
         setCarSpec(transformedSpec)
         setHasCarSpec(true)
       } else {
@@ -5730,7 +5731,7 @@ const OtherUserDetail = ({ navigation, route }) => {
       position: 'absolute',
       bottom: 5,
       right: 5,
-      backgroundColor: primaryColor, // ✅ THEME COLOR (pehle #4F52FE tha)
+      backgroundColor: primaryColor,
       width: 28,
       height: 28,
       borderRadius: 14,
@@ -5945,7 +5946,7 @@ const OtherUserDetail = ({ navigation, route }) => {
       borderBottomColor: isDarkMode ? '#333' : '#e0e0e0',
       marginHorizontal: 10,
       marginBottom: 20,
-      justifyContent:'space-between'
+      justifyContent: 'space-between'
     },
     tabButton: {
       paddingVertical: 15,
@@ -6059,7 +6060,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   )
 
   const renderCoverPhoto = () => (
-    <Animated.View 
+    <Animated.View
       entering={FadeIn.duration(500)}
       style={styles.coverPhotoContainer}
     >
@@ -6071,10 +6072,12 @@ const OtherUserDetail = ({ navigation, route }) => {
         style={styles.coverPhoto}
       />
 
-      <Animated.View 
+      <Animated.View
         entering={ZoomIn.duration(400).delay(300)}
         style={styles.profileImageContainer}
       >
+
+
         {/* ✅ Profile Image is now user's CAR */}
         <Image
           source={{
@@ -6102,26 +6105,51 @@ const OtherUserDetail = ({ navigation, route }) => {
       )}
     </Animated.View>
   )
-  
+
   const renderProfileInfo = () => (
-    <Animated.View 
+    <Animated.View
       entering={FadeInUp.duration(400).delay(400)}
       style={styles.profileInfoSection}
     >
+
       <SpaceBetweenRow>
         <View>
           <Text style={styles.profileName}>{UserDetails?.FullName}</Text>
           <Text style={styles.profileUsername}>{UserDetails?.UserName}</Text>
         </View>
-        {!route?.params?.userId && (
-          <TouchableOpacity
-            style={styles.editProfileButton}
-            onPress={handleBioUpdate}
-          >
-            <Text style={styles.editProfileButtonText}>Edit profile</Text>
-          </TouchableOpacity>
-        )}
-         {/* {!route?.params?.userId && (
+        <Row style={{
+          gap:10
+        }}>
+          {!route?.params?.userId && (
+            <TouchableOpacity
+              style={{
+                //  position: 'absolute',
+                bottom: 15,
+                right: 5,
+                backgroundColor: primaryColor,
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 2,
+                borderColor: isDarkMode ? '#1b1b1b' : '#ffffff',
+              }}
+              onPress={() => navigation.navigate('ChooseMusicScreen')}
+            >
+              <Feather name='music' size={14} color='white' />
+            </TouchableOpacity>
+          )}
+          {!route?.params?.userId && (
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              onPress={handleBioUpdate}
+            >
+              <Text style={styles.editProfileButtonText}>Edit profile</Text>
+            </TouchableOpacity>
+          )}
+        </Row>
+        {/* {!route?.params?.userId && (
           <TouchableOpacity
             style={styles.editProfileButton}
             onPress={()=>navigation.navigate('AddVehicleSpecs')}
@@ -6165,7 +6193,7 @@ const OtherUserDetail = ({ navigation, route }) => {
                 const diffMins = Math.floor(diffMs / 60000);
                 const diffHours = Math.floor(diffMs / 3600000);
                 const diffDays = Math.floor(diffMs / 86400000);
-                
+
                 if (diffMins < 1) return 'just now';
                 if (diffMins < 60) return `${diffMins}m ago`;
                 if (diffHours < 24) return `${diffHours}h ago`;
@@ -6187,7 +6215,7 @@ const OtherUserDetail = ({ navigation, route }) => {
       </View>
 
       {route?.params?.userId && (
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.duration(300).delay(500)}
           style={styles.actionButtons}
         >
@@ -6216,18 +6244,18 @@ const OtherUserDetail = ({ navigation, route }) => {
     // If no car spec exists, show "Add Specs" button
     if (!hasCarSpec || !carSpec) {
       return (
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.duration(400).delay(600)}
           style={styles.mySpecContainer}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.addSpecButton}
             onPress={() => navigation.navigate('AddVehicleSpecs')}
           >
-            <MaterialCommunityIcons 
-              name="car-sports" 
-              size={40} 
-              color={isDarkMode ? '#404040' : '#ddd'} 
+            <MaterialCommunityIcons
+              name="car-sports"
+              size={40}
+              color={isDarkMode ? '#404040' : '#ddd'}
             />
             <Text style={styles.addSpecText}>Add Your Vehicle Specs</Text>
           </TouchableOpacity>
@@ -6237,22 +6265,22 @@ const OtherUserDetail = ({ navigation, route }) => {
 
     // If car spec exists, show full details
     return (
-      <Animated.View 
+      <Animated.View
         entering={FadeInUp.duration(400).delay(600)}
         style={styles.mySpecContainer}
       >
         {/* Header */}
         <View style={styles.mySpecHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <MaterialCommunityIcons 
-              name="car-sports" 
-              size={20} 
+            <MaterialCommunityIcons
+              name="car-sports"
+              size={20}
               color={primaryColor} // ✅ THEME COLOR (pehle isDarkMode ? '#21B7FF' : '#0084F8' tha)
             />
             <Text style={styles.mySpecTitle}>My Spec</Text>
           </View>
           {!route?.params?.userId && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.editSpecButton}
               onPress={handleEditCarSpecs}
             >
@@ -6375,16 +6403,16 @@ const OtherUserDetail = ({ navigation, route }) => {
         )}
 
         {/* See More / See Less Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.seeMoreButton}
           onPress={() => setIsSpecExpanded(!isSpecExpanded)}
         >
           <Text style={styles.seeMoreText}>
             {isSpecExpanded ? 'See Less' : 'See More'}
           </Text>
-          <Feather 
-            name={isSpecExpanded ? 'chevron-up' : 'chevron-down'} 
-            size={16} 
+          <Feather
+            name={isSpecExpanded ? 'chevron-up' : 'chevron-down'}
+            size={16}
             color={primaryColor} // ✅ THEME COLOR (pehle #21B7FF tha)
           />
         </TouchableOpacity>
@@ -6393,7 +6421,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   }
 
   const renderTabs = () => (
-    <Animated.View 
+    <Animated.View
       entering={FadeIn.duration(300).delay(600)}
       style={styles.tabContainer}
     >
@@ -6404,10 +6432,10 @@ const OtherUserDetail = ({ navigation, route }) => {
         { key: 'Marketplace', label: 'Products', icon: 'storefront', iconType: 'Ionicons', width: 80 }
       ].map((tab) => {
         const isActive = activeTab === tab.key
-        const iconColor = isActive 
-          ? (isDarkMode ? '#fff' : '#000') 
+        const iconColor = isActive
+          ? (isDarkMode ? '#fff' : '#000')
           : (isDarkMode ? '#888' : '#666')
-        
+
         return (
           <TouchableOpacity
             key={tab.key}
@@ -6427,7 +6455,7 @@ const OtherUserDetail = ({ navigation, route }) => {
               {tab.label}
             </Text>
             {isActive && (
-              <Animated.View 
+              <Animated.View
                 entering={ZoomIn.duration(200)}
                 style={{
                   position: 'absolute',
@@ -6455,30 +6483,30 @@ const OtherUserDetail = ({ navigation, route }) => {
   )
 
   const renderPostsGrid = () => {
-    const currentPosts = activeTab === 'all' ? allPosts : 
-                        activeTab === 'saved' ? savedPosts : 
-                        activeTab === 'tagged' ? taggedPosts :
-                        allProducts
+    const currentPosts = activeTab === 'all' ? allPosts :
+      activeTab === 'saved' ? savedPosts :
+        activeTab === 'tagged' ? taggedPosts :
+          allProducts
 
-    const filteredPosts = activeTab === 'all' 
+    const filteredPosts = activeTab === 'all'
       ? currentPosts.filter(item => item?.media && !item?.media.toLowerCase().includes('.mp4'))
       : activeTab === 'saved'
-      ? currentPosts.filter(item => item?.Post?.media && !item?.Post?.media.toLowerCase().includes('.mp4'))
-      : activeTab === 'tagged'
-      ? currentPosts.filter(item => item?.media && !item?.media.toLowerCase().includes('.mp4'))
-      : currentPosts.filter(item => item?.Image && !item?.Image.toLowerCase().includes('.mp4'))
+        ? currentPosts.filter(item => item?.Post?.media && !item?.Post?.media.toLowerCase().includes('.mp4'))
+        : activeTab === 'tagged'
+          ? currentPosts.filter(item => item?.media && !item?.media.toLowerCase().includes('.mp4'))
+          : currentPosts.filter(item => item?.Image && !item?.Image.toLowerCase().includes('.mp4'))
 
     if (filteredPosts.length === 0) {
       return (
-        <Animated.View 
+        <Animated.View
           entering={FadeIn.duration(400)}
           style={styles.emptyState}
         >
           <Text style={styles.emptyStateText}>
-            {activeTab === 'all' ? 'No posts yet' : 
-             activeTab === 'saved' ? 'No saved posts' : 
-             activeTab === 'tagged' ? 'No tagged posts' :
-             'No products found'}
+            {activeTab === 'all' ? 'No posts yet' :
+              activeTab === 'saved' ? 'No saved posts' :
+                activeTab === 'tagged' ? 'No tagged posts' :
+                  'No products found'}
           </Text>
         </Animated.View>
       )
@@ -6531,7 +6559,7 @@ const OtherUserDetail = ({ navigation, route }) => {
 
       {/* Bio Edit Modal */}
       {isBioModalVisible && (
-        <Animated.View 
+        <Animated.View
           entering={FadeIn.duration(200)}
           style={{
             position: 'absolute',
@@ -6542,12 +6570,12 @@ const OtherUserDetail = ({ navigation, route }) => {
             zIndex: 999,
           }}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={1}
             onPress={() => setBioModalVisible(false)}
             style={styles.modalOverlay}
           >
-            <Animated.View 
+            <Animated.View
               entering={ZoomIn.duration(300).springify()}
               style={styles.modalContent}
             >
