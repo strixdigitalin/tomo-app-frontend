@@ -134,11 +134,91 @@ const TermsAndConditions = ({ navigation }) => {
         backgroundColor="transparent"
         barStyle={isDarkMode ? "light-content" : "dark-content"}
       />
-      
+
       {renderHeader()}
-      
+
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.contentContainer}>
+          <CustomText style={styles.paragraph}>
+            Welcome to Tomo. By using the Tomo mobile application (“App”), you agree to comply with and be bound by the following Terms & Conditions. Tomo is a vehicle community and marketplace platform where users can upload vehicle-related photos, share posts, and list vehicles for sale or interaction.
+          </CustomText>
+
+          <CustomText style={styles.sectionTitle}>User Accounts</CustomText>
+
+          {renderBulletPoint("Users must provide accurate information when creating an account.")}
+          {renderBulletPoint("You are responsible for maintaining the confidentiality of your account credentials.")}
+          {renderBulletPoint("You must not impersonate another person or misrepresent your identity.")}
+
+          <CustomText style={styles.sectionTitle}>Vehicle Marketplace Listings</CustomText>
+
+          {renderBulletPoint("Users may list vehicles for sale, display, or discussion within the marketplace section.")}
+          {renderBulletPoint("All vehicle details, pricing, and descriptions must be accurate and truthful.")}
+          {renderBulletPoint("Tomo does not guarantee the authenticity of listings created by users.")}
+          {renderBulletPoint("Users are responsible for verifying vehicle information before making any transaction.")}
+
+          <CustomText style={styles.sectionTitle}>User Generated Content</CustomText>
+
+          {renderBulletPoint("Users may upload photos, videos, posts, and comments related to vehicles.")}
+          {renderBulletPoint("You must own the content you upload or have permission to share it.")}
+          {renderBulletPoint("By posting content on Tomo, you grant Tomo a non-exclusive worldwide license to display and distribute that content within the platform.")}
+
+          <CustomText style={styles.sectionTitle}>Prohibited Content</CustomText>
+
+          {renderBulletPoint("Illegal vehicle sales or stolen vehicles.")}
+          {renderBulletPoint("Fraudulent listings or misleading vehicle information.")}
+          {renderBulletPoint("Hate speech, harassment, or abusive behavior.")}
+          {renderBulletPoint("Copyrighted images or media without permission.")}
+          {renderBulletPoint("Spam, scams, or manipulation of engagement metrics.")}
+
+          <CustomText style={styles.sectionTitle}>Marketplace Transactions</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            Tomo acts only as a platform connecting buyers and sellers. Tomo is not responsible for payment disputes, delivery issues, vehicle condition, or agreements made between users.
+          </CustomText>
+
+          {renderBulletPoint("Users must conduct their own due diligence before buying or selling vehicles.")}
+          {renderBulletPoint("Tomo is not involved in direct financial transactions between users unless explicitly stated.")}
+
+          <CustomText style={styles.sectionTitle}>Safety & Responsibility</CustomText>
+
+          {renderBulletPoint("Users must ensure safe interactions when meeting buyers or sellers offline.")}
+          {renderBulletPoint("Never share sensitive financial or personal information with unknown users.")}
+
+          <CustomText style={styles.sectionTitle}>Account Suspension</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            Tomo reserves the right to suspend or terminate accounts that violate these Terms, post illegal content, or misuse the platform.
+          </CustomText>
+
+          <CustomText style={styles.sectionTitle}>Data & Privacy</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            Your use of Tomo is also governed by our Privacy Policy. Tomo collects certain information such as account data, device data, and usage data to operate and improve the platform.
+          </CustomText>
+
+          <CustomText style={styles.sectionTitle}>Limitation of Liability</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            Tomo is not responsible for any losses, damages, or disputes arising from interactions between users, vehicle listings, or third-party services.
+          </CustomText>
+
+          <CustomText style={styles.sectionTitle}>Changes to Terms</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            Tomo may update these Terms & Conditions from time to time. Continued use of the app after updates indicates acceptance of the revised terms.
+          </CustomText>
+
+          <CustomText style={styles.sectionTitle}>Contact</CustomText>
+
+          <CustomText style={styles.paragraph}>
+            If you have questions regarding these Terms & Conditions, contact us at:
+          </CustomText>
+
+          <CustomText style={styles.paragraph}>
+            <CustomText style={styles.highlightText}>letstalktomo@gmail.com</CustomText>
+          </CustomText>
+        </View>
+        {/* <View style={styles.contentContainer}>
           <CustomText style={styles.title}>Terms & Conditions</CustomText>
           
           <CustomText style={styles.paragraph}>
@@ -221,7 +301,7 @@ const TermsAndConditions = ({ navigation }) => {
           <CustomText style={styles.lastUpdated}>
             Last Updated: May 10, 2025
           </CustomText>
-        </View>
+        </View> */}
       </ScrollView>
     </View>
   );

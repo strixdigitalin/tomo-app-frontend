@@ -181,6 +181,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation project(':react-native-vector-icons')
     implementation project(':react-native-camera-roll_camera-roll')
+       implementation project(':react-native-screenshot-prevent')
 
     // ✅ Hermes enabled for better performance
     implementation("com.facebook.react:hermes-android")

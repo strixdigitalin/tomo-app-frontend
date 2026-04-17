@@ -50,6 +50,7 @@
     "react-native-restart": "^0.0.27",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.6.0",
+    "react-native-screenshot-prevent": "^1.2.2",
     "react-native-size-matters": "^0.4.2",
     "react-native-snap-carousel": "^4.0.0-beta.6",
     "react-native-star-rating-widget": "^1.10.0",

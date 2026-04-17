@@ -139,7 +139,7 @@ const PrivacyPolicy = ({ navigation }) => {
       
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.contentContainer}>
-          <CustomText style={styles.title}>Privacy Policy</CustomText>
+          {/* <CustomText style={styles.title}>Privacy Policy</CustomText>
           
           <CustomText style={styles.paragraph}>
             This Privacy Policy describes how your personal information is collected, used, and shared when you use our mobile application ("App").
@@ -220,7 +220,84 @@ const PrivacyPolicy = ({ navigation }) => {
           
           <CustomText style={styles.lastUpdated}>
             Last Updated: May 10, 2025
-          </CustomText>
+          </CustomText> */}
+          <CustomText style={styles.title}>Privacy Policy</CustomText>
+
+<CustomText style={styles.paragraph}>
+This Privacy Policy describes how Tomo ("we", "our", or "us") collects, uses, and protects your information when you use our mobile application.
+</CustomText>
+
+<CustomText style={styles.sectionTitle}>Information We Collect</CustomText>
+
+<CustomText style={styles.paragraph}>
+When you use the Tomo application, we may collect the following types of information:
+</CustomText>
+
+{renderBulletPoint("Personal information such as your name, phone number, and email address when you create an account.")}
+{renderBulletPoint("Profile information that you choose to provide while using the app.")}
+{renderBulletPoint("Your activity in the app such as favorite brands, interactions, and preferences.")}
+{renderBulletPoint("Device information including device model, operating system, and unique identifiers.")}
+{renderBulletPoint("Usage data such as how you interact with brands and content in the application.")}
+
+<CustomText style={styles.sectionTitle}>How We Use Your Information</CustomText>
+
+<CustomText style={styles.paragraph}>
+We use the collected information to:
+</CustomText>
+
+{renderBulletPoint("Provide and improve the functionality of the Tomo application.")}
+{renderBulletPoint("Show relevant brands, offers, and recommendations to users.")}
+{renderBulletPoint("Allow users to mark brands as favorites and interact with brand content.")}
+{renderBulletPoint("Maintain security and prevent unauthorized use of the application.")}
+{renderBulletPoint("Improve user experience and application performance.")}
+
+<CustomText style={styles.sectionTitle}>Sharing of Information</CustomText>
+
+<CustomText style={styles.paragraph}>
+We do not sell or rent your personal information. However, we may share information in the following situations:
+</CustomText>
+
+{renderBulletPoint("With service providers who help us operate and maintain the application.")}
+{renderBulletPoint("When required by law or government authorities.")}
+{renderBulletPoint("To protect the rights, safety, and security of our users and services.")}
+
+<CustomText style={styles.sectionTitle}>Data Security</CustomText>
+
+<CustomText style={styles.paragraph}>
+We implement appropriate technical and organizational security measures to protect your personal information. However, no method of transmission over the internet is completely secure.
+</CustomText>
+
+<CustomText style={styles.sectionTitle}>User Controls</CustomText>
+
+<CustomText style={styles.paragraph}>
+Users can update or modify their profile information within the application. Users may also manage their favorite brands and preferences anytime.
+</CustomText>
+
+<CustomText style={styles.sectionTitle}>Children's Privacy</CustomText>
+
+<CustomText style={styles.paragraph}>
+Tomo is not intended for users under the age of 13. We do not knowingly collect personal information from children under 13.
+</CustomText>
+
+<CustomText style={styles.sectionTitle}>Changes to This Privacy Policy</CustomText>
+
+<CustomText style={styles.paragraph}>
+We may update this Privacy Policy from time to time. Any updates will be posted within the application.
+</CustomText>
+
+<CustomText style={styles.sectionTitle}>Contact Us</CustomText>
+
+<CustomText style={styles.paragraph}>
+If you have any questions about this Privacy Policy, please contact us at:
+</CustomText>
+
+<CustomText style={styles.paragraph}>
+<CustomText style={styles.highlightText}>support@tomoapp.com</CustomText>
+</CustomText>
+
+<CustomText style={styles.lastUpdated}>
+Last Updated: March 2026
+</CustomText>
         </View>
       </ScrollView>
     </View>
