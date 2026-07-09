@@ -33,7 +33,7 @@ const SignUp = ({ navigation }) => {
     const { showLoader, hideLoader } = useLoader()
 
     const onSignup = async () => {
-        console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
+        // console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
 
         const emailError = inValidEmail(userInfo?.Email);
         if (emailError) {
@@ -113,6 +113,7 @@ const SignUp = ({ navigation }) => {
             }}>
                 <ScrollView contentContainerStyle={{ paddingBottom: 100 }}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
                     <CustomText style={{
                         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
@@ -148,6 +149,7 @@ const SignUp = ({ navigation }) => {
                         />
                         <CustomInputField
                             placeholder={'Enter Password '}
+                              isPasswordField={true} 
                             Lefticon={isDarkMode ? <LockWhite /> : <LockIcon />}
                             icon={isDarkMode ? <EyeIconWhite /> : <EyeIcon />}
                             value={userInfo?.Password}
@@ -156,6 +158,7 @@ const SignUp = ({ navigation }) => {
                         <CustomInputField
                             placeholder={'Enter confirm Password '}
                             Lefticon={<LockIcon />}
+                              isPasswordField={true} 
                             icon={<EyeIcon />}
                             value={userInfo?.Confirm}
                             onChangeText={(value) => handleInputChange('Confirm', value)}
@@ -172,11 +175,12 @@ const SignUp = ({ navigation }) => {
                             fontFamily: FONTS_FAMILY.SourceSans3_Regular
                         }}>
                             Already have an account?{" "}
+                            
                             <CustomText style={{
                                 fontSize: 16,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Medium,
                                 color: 'green'
-                            }}>
+                            }} onPress={()=>navigation.goBack()}>
                                 Sign In
                             </CustomText>
                         </CustomText>
@@ -193,14 +197,17 @@ const SignUp = ({ navigation }) => {
                                 fontSize: 15,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Regular,
                                 color: 'green'
-                            }}>
+                            }} onPress={()=>navigation.navigate('TermsAndConditions')}>
                                 Terms & Conditions
                             </CustomText>{" "}and agree to{" "}
+
                             <CustomText style={{
                                 fontSize: 15,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Regular,
                                 color: 'green'
-                            }}>
+                            }}
+                            onPress={()=>navigation.navigate('PrivacyPolicy')}
+                            >
                                 Privacy Policy
                             </CustomText>
                         </CustomText>

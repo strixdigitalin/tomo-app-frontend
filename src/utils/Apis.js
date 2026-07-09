@@ -11,8 +11,8 @@ export async function getHeaders() {
   console.log("token in api", token);
   if (token) {
     return {
-      // Authorization: 'Bearer ' + token,
-      Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTY5YjY3OWM3NDY1OGY3MjI2YjcwZiIsImlhdCI6MTc0MzIyNzgyNn0.4AnKNo_IvtQDCX2H6Z4IJGlx_nSkoaQmWCZTfLUf__Q',
+      Authorization: 'Bearer ' + token,
+      // Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTY5YjY3OWM3NDY1OGY3MjI2YjcwZiIsImlhdCI6MTc0MzIyNzgyNn0.4AnKNo_IvtQDCX2H6Z4IJGlx_nSkoaQmWCZTfLUf__Q',
 
     };
   }
@@ -114,7 +114,7 @@ export async function apiReq(
       })
       .catch(error => {
         console.log(error);
-        console.log(error && error.response, 'the error response');
+        // console.log(error && error.response, 'the error response');
         if (error && error.response && error.response.status === 401) {
           showError('User is not authorized');
           clearAsyncStorage();
@@ -181,8 +181,23 @@ export function removeItem(key) {
   return AsyncStorage.removeItem(key);
 }
 
-export function clearAsyncStorage() {
-  return AsyncStorage.clear();
+const CLEAR_KEYS = [
+  'token',
+  
+];
+
+// export function clearAsyncStorage() {
+//   return AsyncStorage.clear();
+// }
+
+export async function clearAsyncStorage() {
+  try {
+    await AsyncStorage.multiRemove(CLEAR_KEYS);
+        navigation.replace('MainScreen')
+    console.log('Session data cleared, biometric data preserved');
+  } catch (error) {
+    console.log('Error clearing storage:', error);
+  }
 }
 
 export function setUserData(data) {

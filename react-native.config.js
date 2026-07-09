@@ -1,10 +1,12 @@
 module.exports = {
   project: {
     android: {
-      packageName: 'com.roadresq360customer',
+      packageName: 'com.tomo',
     },
   },
-  assets: ["./src/assets/Fonts/"],
+  assets: [
+    './src/assets/Fonts/',
+  ],
   // dependencies: {
   //   'react-native-vector-icons': {
   //     platforms: {
