@@ -348,7 +348,7 @@ import { ToastMsg } from "../../utils/helperFunctions";
 import { apiGet, apiPost, getItem, setItem } from "../../utils/Apis";
 import urls from "../../config/urls";
 import useLoader from "../../utils/LoaderHook";
-import { setUser } from "../../redux/reducer/user";
+import { setUser, setSeller } from "../../redux/reducer/user";
 import useKeyboardStatus from "../../utils/KeyBoardHook";
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -367,6 +367,7 @@ const Login = ({ navigation }) => {
     const [userInfo, setUserInfor] = useState({})
     const [biometricAvailable, setBiometricAvailable] = useState(false)
     const [biometricEnabled, setBiometricEnabled] = useState(false)
+    const [loginAs, setLoginAs] = useState('User') // 'User' | 'Seller'
 
     const rnBiometrics = new ReactNativeBiometrics()
 
@@ -504,6 +505,7 @@ const Login = ({ navigation }) => {
 
                 // Store token
                 setItem('token', response?.data?.token);
+                setItem('accountType', 'User');
                 const token = await getItem('token');
 
                 if (token) {
@@ -536,9 +538,33 @@ const Login = ({ navigation }) => {
         }
     };
 
-    const onLogin = async () => {
-        console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
+    const performSellerLogin = async () => {
+        try {
+            showLoader();
+            const data = {
+                Email: userInfo?.Email,
+                Password: userInfo?.Password,
+            };
+            const response = await apiPost(urls.sellerLogin, data, {
+                headers: { 'Content-Type': 'application/json' }
+            });
 
+            if (response?.statusCode === 200) {
+                ToastMsg(response?.message);
+                setItem('token', response?.data?.token);
+                setItem('accountType', 'Seller');
+                dispatch(setSeller(JSON.stringify(response?.data?.Seller || response?.data)));
+                setUserInfor({});
+                navigation.navigate('SellerTab');
+            }
+            hideLoader();
+        } catch (error) {
+            hideLoader();
+            ToastMsg(error?.message || 'Network Error');
+        }
+    };
+
+    const onLogin = async () => {
         const emailError = inValidEmail(userInfo?.Email);
         if (emailError) {
             return ToastMsg(emailError);
@@ -548,7 +574,11 @@ const Login = ({ navigation }) => {
             return ToastMsg(passwordError);
         }
 
-        await performLogin(userInfo?.Email, userInfo?.Password);
+        if (loginAs === 'Seller') {
+            await performSellerLogin();
+        } else {
+            await performLogin(userInfo?.Email, userInfo?.Password);
+        }
     };
 
     const renderHeader = () => {
@@ -560,7 +590,7 @@ const Login = ({ navigation }) => {
                     </TouchableOpacity>
                     <CustomText style={styles.backText}>Back</CustomText>
                 </Row> */}
-                <CustomText style={styles.signInText}>Sign In</CustomText>
+                <CustomText style={styles.signInText}>{loginAs === 'Seller' ? 'Seller Sign In' : 'Sign In'}</CustomText>
             </Animated.View>
         );
     };
@@ -577,7 +607,19 @@ const Login = ({ navigation }) => {
                 <CustomText style={styles.welcomeText}>Welcome</CustomText>
 
                 <CustomText style={styles.descriptionText}>
-                    Create Account to keep exploring amazing destinations around the world!
+                    {loginAs === 'Seller'
+                        ? 'Login to your Seller account to manage your shop'
+                        : 'Create Account to keep exploring amazing destinations around the world!'}
+                </CustomText>
+
+                <CustomText style={styles.switchModeText}>
+                    {loginAs === 'Seller' ? 'Are you a User? ' : 'Are you a Seller? '}
+                    <CustomText
+                        style={styles.switchModeLink}
+                        onPress={() => setLoginAs(loginAs === 'Seller' ? 'User' : 'Seller')}
+                    >
+                        {loginAs === 'Seller' ? 'Login as User' : 'Login as Seller'}
+                    </CustomText>
                 </CustomText>
 
                 <View style={styles.inputContainer}>
@@ -634,7 +676,7 @@ const Login = ({ navigation }) => {
                     {!isKeyboardOpen && <CustomText style={styles.signupText}>
                         Don't you have an account?{' '}
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Singnup')}
+                            onPress={() => navigation.navigate('Singnup', { signupAs: loginAs })}
                         >
                             <CustomText style={styles.signupLink}>Sign up</CustomText>
                         </TouchableOpacity>
@@ -690,6 +732,16 @@ const Login = ({ navigation }) => {
             fontSize: 16,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             color: 'rgba(137, 138, 131, 1)',
+        },
+        switchModeText: {
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            marginTop: 10,
+        },
+        switchModeLink: {
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+            color: 'green',
         },
         inputContainer: {
             marginTop: 35,

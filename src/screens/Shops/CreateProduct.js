@@ -293,13 +293,17 @@ const CreateProducts = ({ navigation, route }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const slideAnim = useRef(new Animated.Value(300)).current;
 
+    const editingProduct = route?.params?.product || null;
+    const isEditMode = !!editingProduct;
+
     const [selectedImages, setSelectedImages] = useState([]);
-    const [productName, setproductName] = useState('');
-    const [productDetails, setproductDetails] = useState('');
-    const [description, setDescription] = useState('');
-    const [address, setAddress] = useState('');
-    const [services, setServices] = useState('');
-    const [price, setPrice] = useState('');
+    const [existingImages, setExistingImages] = useState(editingProduct?.Images || []);
+    const [productName, setproductName] = useState(editingProduct?.ProductName || '');
+    const [productDetails, setproductDetails] = useState(editingProduct?.ProductDetails || '');
+    const [description, setDescription] = useState(editingProduct?.Description || '');
+    const [address, setAddress] = useState(editingProduct?.Address || '');
+    const [services, setServices] = useState(editingProduct?.Services || '');
+    const [price, setPrice] = useState(editingProduct?.Price ? String(editingProduct.Price) : '');
 
     useEffect(() => {
         Animated.timing(slideAnim, {
@@ -312,28 +316,16 @@ const CreateProducts = ({ navigation, route }) => {
     const { showLoader, hideLoader } = useLoader();
 
     const onSubmit = async () => {
-              console.log('               ',
-productName,productDetails,
-description,
-address,
-services,
-price
-
-            );
-
-            // return
         try {
             const token = await getItem('token');
             showLoader();
 
-            if (!selectedImages || selectedImages.length === 0) {
+            if (!isEditMode && (!selectedImages || selectedImages.length === 0)) {
                 ToastMsg('Please select at least one image');
                 hideLoader();
                 return;
             }
 
-      
-            
             if (!productName || !productDetails || !price) {
                 ToastMsg('Please fill all required fields');
                 hideLoader();
@@ -342,7 +334,7 @@ price
 
             const formData = new FormData();
 
-            // Append multiple images
+            // Append newly picked images
             selectedImages.forEach((image, index) => {
                 formData.append("Images", {
                     uri: Platform.OS === "android" ? image.uri : image.uri.replace('file://', ''),
@@ -352,27 +344,35 @@ price
             });
 
             formData.append("ProductName", productName);
-            formData.append("Shop", route?.params?.shopId);
             formData.append("ProductDetails", productDetails);
             formData.append("Description", description);
             formData.append("Address", address);
             formData.append("Services", services);
             formData.append("Price", price);
 
-            const response = await fetch(
-                `${BASE_URL}/api/user/CreateProduct`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                    },
-                    body: formData,
-                }
-            );
+            if (isEditMode) {
+                formData.append("ExistingImages", JSON.stringify(existingImages));
+            } else {
+                formData.append("Shop", route?.params?.shopId);
+            }
+
+            const endpoint = isEditMode
+                ? `${BASE_URL}${urls.updateListingProduct}/${editingProduct._id}`
+                : `${BASE_URL}/api/user/CreateProduct`;
+
+            const response = await fetch(endpoint, {
+                method: isEditMode ? "PUT" : "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData,
+            });
             const result = await response.json();
-            ToastMsg(result?.message);
-            navigation.goBack();
+            ToastMsg(result?.message || (isEditMode ? 'Product updated' : 'Product added'));
             hideLoader();
+            if (response.ok) {
+                navigation.goBack();
+            }
 
         } catch (error) {
             hideLoader();
@@ -418,10 +418,33 @@ price
                 <CustomText style={{
                     fontSize: 18,
                     fontFamily: FONTS_FAMILY.SourceSans3_Bold
-                }}>Add Product</CustomText>
+                }}>{isEditMode ? 'Update Product' : 'Add Product'}</CustomText>
             </Row>
         )
     }
+
+    const renderExistingImages = () => {
+        if (existingImages.length === 0) return null;
+
+        return (
+            <View style={styles.imageContainer}>
+                <CustomText style={styles.imageLabel}>Current Images ({existingImages.length})</CustomText>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {existingImages.map((uri, index) => (
+                        <View key={index} style={styles.imageWrapper}>
+                            <Image source={{ uri }} style={styles.selectedImage} />
+                            <TouchableOpacity
+                                style={styles.removeButton}
+                                onPress={() => setExistingImages(prev => prev.filter((_, i) => i !== index))}
+                            >
+                                <Text style={styles.removeButtonText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+                </ScrollView>
+            </View>
+        );
+    };
 
     const renderSelectedImages = () => {
         if (selectedImages.length === 0) return null;
@@ -520,6 +543,7 @@ price
                             />
                         </TouchableOpacity>
 
+                        {renderExistingImages()}
                         {renderSelectedImages()}
 
                         <TouchableOpacity onPress={onSubmit}>
@@ -530,7 +554,7 @@ price
                                 style={styles.followButton}
                             >
                                 <Text style={styles.followText}>
-                                    Add Product
+                                    {isEditMode ? 'Update Product' : 'Add Product'}
                                 </Text>
                             </LinearGradient>
                         </TouchableOpacity>

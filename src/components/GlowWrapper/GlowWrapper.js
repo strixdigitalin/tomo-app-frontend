@@ -1,18 +1,14 @@
 
 import React, { useEffect, useRef, useMemo, memo } from 'react';
-import { View, Animated, StyleSheet, Dimensions, Platform } from 'react-native';
-
-const { width: screenWidth } = Dimensions.get('window');
+import { View, Animated, StyleSheet } from 'react-native';
 
 /**
  * GlowWrapper - Reusable animated glow effect component
- * 
+ *
  * Props:
  * - children: Component to wrap
  * - isDarkMode: boolean for theme
  * - borderRadius: number (default: 30)
- * - showStars: boolean (default: true)
- * - starCount: number (default: 12)
  * - showShinePatches: boolean (default: true)
  * - containerStyle: additional styles for container
  * - intensity: 'low' | 'medium' | 'high' (default: 'medium')
@@ -24,8 +20,6 @@ const GlowWrapper = memo(({
   children,
   isDarkMode = false,
   borderRadius = 30,
-  showStars = true,
-  starCount = 100,
   showShinePatches = true,
   containerStyle = {},
   intensity = 'medium',
@@ -39,22 +33,6 @@ const GlowWrapper = memo(({
   const shine3 = useRef(new Animated.Value(0)).current;
   const isMounted = useRef(true);
   const animationsRef = useRef([]);
-
-  // Create star refs at the top level
-  const starsRef = useRef(null);
-  
-  // Initialize stars only once
-  if (!starsRef.current) {
-    const validStarCount = Math.min(Math.max(1, starCount || 12), 20);
-    starsRef.current = Array.from({ length: validStarCount }, () => ({
-      x: new Animated.Value(Math.random() * (screenWidth * 0.3)),
-      y: new Animated.Value(20 + Math.random() * 80),
-      opacity: new Animated.Value(0),
-      scale: new Animated.Value(0.5),
-    }));
-  }
-
-  const stars = showStars && !disabled ? starsRef.current : [];
 
   // Convert hex to rgba
   const hexToRgba = (hex, alpha) => {
@@ -88,17 +66,6 @@ const GlowWrapper = memo(({
     };
     return configs[intensity] || configs.medium;
   }, [intensity]);
-
-  // Generate star colors based on glowColors
-  const starColors = useMemo(() => {
-    const [color1, color2] = glowColors;
-    // Create variations of the two main colors
-    return [
-      color1, color2, color1, color2,
-      color1, color2, color1, color2,
-      color1, color2, color1, color2
-    ];
-  }, [glowColors]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -176,87 +143,6 @@ const GlowWrapper = memo(({
         animationsRef.current.push(shine1Animation, shine2Animation, shine3Animation);
       }
 
-      // Star animations
-      if (showStars && Array.isArray(stars) && stars.length > 0) {
-        stars.forEach((star, i) => {
-          if (!star || !star.x || !star.y || !star.opacity || !star.scale) return;
-          
-          try {
-            const delay = i * 800;
-            const duration = 2000 + (i % 3) * 500;
-            const moveDistance = 3 + (i % 5);
-            const startX = star.x._value || 0;
-            const startY = star.y._value || 0;
-
-            const starAnimation = Animated.loop(
-              Animated.sequence([
-                Animated.delay(delay),
-                Animated.parallel([
-                  Animated.timing(star.x, {
-                    toValue: startX + moveDistance,
-                    duration: duration,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(star.y, {
-                    toValue: startY - moveDistance,
-                    duration: duration,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(star.opacity, {
-                    toValue: intensityConfig.starOpacity,
-                    duration: duration / 2,
-                    useNativeDriver: true,
-                  }),
-                  Animated.sequence([
-                    Animated.timing(star.scale, {
-                      toValue: 1.5,
-                      duration: duration / 3,
-                      useNativeDriver: true,
-                    }),
-                    Animated.timing(star.scale, {
-                      toValue: 1.2,
-                      duration: duration / 4,
-                      useNativeDriver: true,
-                    }),
-                    Animated.timing(star.scale, {
-                      toValue: 1.4,
-                      duration: duration / 3,
-                      useNativeDriver: true,
-                    }),
-                  ]),
-                ]),
-                Animated.parallel([
-                  Animated.timing(star.x, {
-                    toValue: startX,
-                    duration: duration,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(star.y, {
-                    toValue: startY,
-                    duration: duration,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(star.opacity, {
-                    toValue: 0,
-                    duration: duration / 2,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(star.scale, {
-                    toValue: 0.5,
-                    duration: duration / 2,
-                    useNativeDriver: true,
-                  }),
-                ]),
-              ])
-            );
-
-            animationsRef.current.push(starAnimation);
-          } catch (error) {
-            console.warn('GlowWrapper: Error creating star animation', error);
-          }
-        });
-      }
-
       // Start all animations if component is still mounted
       if (isMounted.current && animationsRef.current.length > 0) {
         animationsRef.current.forEach(anim => {
@@ -287,7 +173,7 @@ const GlowWrapper = memo(({
       }
       animationsRef.current = [];
     };
-  }, [showStars, showShinePatches, disabled, intensityConfig.glowDuration, intensityConfig.starOpacity]);
+  }, [showShinePatches, disabled, intensityConfig.glowDuration]);
 
   // Interpolations with custom colors
   const borderColor = useMemo(() => {
@@ -325,8 +211,6 @@ const GlowWrapper = memo(({
   }, [disabled, glowAnim, intensityConfig.shadowOpacity]);
 
   const shadowColor = glowColors[0]; // Use first color for shadow
-
-  const starSizes = useMemo(() => [5, 4, 6, 4, 5, 6, 5, 6, 5, 4, 6, 5], []);
 
   return (
     <Animated.View
@@ -427,41 +311,6 @@ const GlowWrapper = memo(({
         </>
       )}
 
-      {/* Animated Stars with custom colors */}
-      {showStars && !disabled && Array.isArray(stars) && stars.length > 0 && stars.map((star, i) => {
-        if (!star || !star.opacity || !star.x || !star.y || !star.scale) return null;
-        
-        return (
-          <Animated.View
-            key={`star-${i}`}
-            style={[
-              styles.star,
-              {
-                opacity: star.opacity,
-                transform: [
-                  { translateX: star.x },
-                  { translateY: star.y },
-                  { scale: star.scale },
-                ],
-              }
-            ]}
-            pointerEvents="none"
-          >
-            <Animated.Text 
-              style={{ 
-                fontSize: starSizes[i % starSizes.length], 
-                color: starColors[i % starColors.length],
-                textShadowColor: hexToRgba(glowColors[0], 0.5),
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 4,
-              }}
-            >
-              ✦
-            </Animated.Text>
-          </Animated.View>
-        );
-      })}
-
       {/* Content */}
       <View style={styles.content}>
         {children}
@@ -490,10 +339,6 @@ const styles = StyleSheet.create({
   shinePatch: {
     position: 'absolute',
     zIndex: 1,
-  },
-  star: {
-    position: 'absolute',
-    zIndex: 15,
   },
   content: {
     zIndex: 10,

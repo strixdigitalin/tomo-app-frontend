@@ -199,7 +199,7 @@ import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import { initializeTheme } from "../../redux/actions/themeActions";
 import { apiGet, apiPut, getItem } from "../../utils/Apis";
-import { setUser } from "../../redux/reducer/user";
+import { setUser, setSeller } from "../../redux/reducer/user";
 import { useDispatch } from "react-redux";
 import urls from "../../config/urls";
 import { ToastMsg } from "../../utils/helperFunctions";
@@ -351,18 +351,40 @@ const Splash = ({ navigation }) => {
         }, 1000);
     };
 
+    const navigateToSellerDashboard = async (sellerData) => {
+        if (loginNavigationTimerRef.current) {
+            clearTimeout(loginNavigationTimerRef.current);
+        }
+
+        loginNavigationTimerRef.current = setTimeout(() => {
+            dispatch(setSeller(JSON.stringify(sellerData)));
+            ToastMsg('Successfully logged in');
+            navigation.navigate('SellerTab');
+        }, 1000);
+    };
+
     const fetchData = async () => {
         const token = await getItem('token');
+        const accountType = await getItem('accountType');
         setLoading(true);
 
         try {
-            if (token) {
-        
+            if (token && accountType === 'Seller') {
+                const getSellerDetails = await apiGet(urls.sellerProfile);
+
+                if (getSellerDetails?.statusCode === 200 || getSellerDetails?.data) {
+                    await navigateToSellerDashboard(getSellerDetails?.data);
+                } else {
+                    navigation.replace('Onboarding');
+                }
+                setLoading(false);
+            } else if (token) {
+
                 const updateLastSeen = await apiGet('/api/user/UserUpdateLastActive');
                 if(updateLastSeen?.statusCode==200){
 
                     const getUserDetails = await apiGet(urls.userProfile);
-    
+
                     if (getUserDetails?.statusCode === 200 || getUserDetails?.data) {
                         await navigateToUserDashboard(getUserDetails?.data);
                     } else {

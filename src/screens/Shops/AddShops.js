@@ -22,18 +22,27 @@ import { Platform, PermissionsAndroid } from 'react-native';
 import axios from "axios";
 import LinearGradient from "react-native-linear-gradient";
 
-const AddShops = ({ navigation }) => {
+const AddShops = ({ navigation, route }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const slideAnim = useRef(new Animated.Value(300)).current;
 
+    const editingShop = route?.params?.shop || null;
+    const isEditMode = !!editingShop;
+
     const [fileName, setFileName] = useState({});
-    const [shopName, setShopName] = useState(null);
-    const [shopServices, setShopServices] = useState(null);
+    const [existingImageUrl, setExistingImageUrl] = useState(editingShop?.Image || null);
+    const [shopName, setShopName] = useState(editingShop?.Name || null);
+    const [shopServices, setShopServices] = useState(editingShop?.Services || null);
 
     // Multiple addresses state
-    const [addresses, setAddresses] = useState([
-        { locationName: '', coordinates: [76.7794, 30.7333] } // Default with static coordinates
-    ]);
+    const [addresses, setAddresses] = useState(
+        editingShop?.Address?.length
+            ? editingShop.Address.map(a => ({
+                locationName: a?.LocationName || '',
+                coordinates: a?.coordinates || [76.7794, 30.7333],
+            }))
+            : [{ locationName: '', coordinates: [76.7794, 30.7333] }] // Default with static coordinates
+    );
 
     // Shop categories state
     const [allCategories, setAllCategories] = useState([]);
@@ -52,6 +61,15 @@ const AddShops = ({ navigation }) => {
         // Fetch categories on component mount
         fetchCategories();
     }, []);
+
+    // Once categories load, resolve the shop's saved category names (plain
+    // strings from the API) back into the {_id, Name} objects the toggle UI needs.
+    useEffect(() => {
+        if (isEditMode && allCategories.length > 0 && Array.isArray(editingShop?.ShopCategory)) {
+            const matched = allCategories.filter(cat => editingShop.ShopCategory.includes(cat.Name));
+            setSelectedCategories(matched);
+        }
+    }, [allCategories]);
 
     // Fetch all shop categories
     const fetchCategories = async () => {
@@ -112,7 +130,7 @@ const AddShops = ({ navigation }) => {
                 return;
             }
 
-            if (!fileName || !fileName.uri) {
+            if (!isEditMode && (!fileName || !fileName.uri)) {
                 ToastMsg('Shop license image is required');
                 hideLoader();
                 return;
@@ -141,34 +159,38 @@ const AddShops = ({ navigation }) => {
 
             // Prepare category data
             const categoryNames = selectedCategories.map(cat => cat.Name);
-            console.log('categoryNames:::::', categoryNames);
 
             const formData = new FormData();
-            formData.append("Image", {
-                uri: Platform.OS === "android" ? fileName.uri : fileName.uri.replace('file://', ''),
-                type: fileName.type || "application/octet-stream",
-                name: fileName.fileName || fileName.name || "upload.pdf",
-            });
+            if (fileName?.uri) {
+                formData.append("Image", {
+                    uri: Platform.OS === "android" ? fileName.uri : fileName.uri.replace('file://', ''),
+                    type: fileName.type || "application/octet-stream",
+                    name: fileName.fileName || fileName.name || "upload.pdf",
+                });
+            }
 
             formData.append("Name", shopName);
             formData.append("Address", JSON.stringify(addressData));
             formData.append("Services", shopServices);
             formData.append("ShopCategory", JSON.stringify(categoryNames));
 
-            const response = await fetch(
-                `${BASE_URL}/api/user/CreateShop`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                    },
-                    body: formData,
-                }
-            );
+            const endpoint = isEditMode
+                ? `${BASE_URL}${urls.updateMyShop}/${editingShop._id}`
+                : `${BASE_URL}${urls.createMyShop}`;
+
+            const response = await fetch(endpoint, {
+                method: isEditMode ? "PUT" : "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData,
+            });
             const result = await response.json();
-            ToastMsg(result?.message);
-            navigation.goBack();
+            ToastMsg(result?.message || (isEditMode ? 'Listing updated' : 'Listing created'));
             hideLoader();
+            if (response.ok) {
+                navigation.goBack();
+            }
 
         } catch (error) {
             hideLoader();
@@ -210,7 +232,7 @@ const AddShops = ({ navigation }) => {
                 <CustomText style={{
                     fontSize: 18,
                     fontFamily: FONTS_FAMILY.SourceSans3_Bold
-                }}>Add Shop</CustomText>
+                }}>{isEditMode ? 'Update Listing' : 'Add Listing'}</CustomText>
             </Row>
         )
     };
@@ -371,7 +393,15 @@ const AddShops = ({ navigation }) => {
                                 editable={false}
                                 label={'Shop License'}
                                 lableStyle={true}
-                                value={fileName?.name || fileName?.fileName || (fileName?.uri ? 'File Selected' : '')}
+                                value={
+                                    fileName?.name || fileName?.fileName
+                                        ? (fileName.name || fileName.fileName)
+                                        : fileName?.uri
+                                            ? 'File Selected'
+                                            : existingImageUrl
+                                                ? 'Current image on file'
+                                                : ''
+                                }
                             />
                         </TouchableOpacity>
 
@@ -396,7 +426,7 @@ const AddShops = ({ navigation }) => {
                                     styles.followText,
                                     { color: '#fff' }
                                 ]}>
-                                    Add shop
+                                    {isEditMode ? 'Update Listing' : 'Add Listing'}
                                 </Text>
                             </TouchableOpacity>
                         </LinearGradient>

@@ -13,9 +13,11 @@ import urls from "../../config/urls";
 import { ToastMsg } from "../../utils/helperFunctions";
 import { inValidEmail, inValidPassword } from "../../utils/CheckValidation";
 
-const SignUp = ({ navigation }) => {
+const SignUp = ({ navigation, route }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const slideAnim = useRef(new Animated.Value(300)).current; // Start off-screen
+
+    const [signupAs, setSignupAs] = useState(route?.params?.signupAs === 'Seller' ? 'Seller' : 'User');
 
     useEffect(() => {
         Animated.timing(slideAnim, {
@@ -33,38 +35,63 @@ const SignUp = ({ navigation }) => {
     const { showLoader, hideLoader } = useLoader()
 
     const onSignup = async () => {
-        // console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
-
         const emailError = inValidEmail(userInfo?.Email);
         if (emailError) {
-            // return showWarning(emailError);
             return ToastMsg(emailError);
         }
 
+        if (!userInfo?.UserName) {
+            return ToastMsg('UserName is required');
+        }
+        if (!userInfo?.FullName) {
+            return ToastMsg('FullName is required');
+        }
+        if (signupAs === 'Seller' && !userInfo?.StoreName) {
+            return ToastMsg('Store Name is required');
+        }
 
         if (userInfo?.Password !== userInfo?.Confirm) {
-            // return showWarning(emailError);
             return ToastMsg('Password & Confirm password should be same');
         }
 
         const passwordError = inValidPassword(userInfo?.Password);
         if (passwordError) {
-            // return showWarning(emailError);
             return ToastMsg(passwordError);
         }
         try {
             showLoader();
+
+            if (signupAs === 'Seller') {
+                const data = {
+                    UserName: userInfo?.UserName,
+                    FullName: userInfo?.FullName,
+                    Email: userInfo.Email,
+                    MobileNumber: userInfo?.MobileNumber,
+                    Password: userInfo?.Password,
+                    StoreName: userInfo?.StoreName,
+                };
+                const response = await apiPost(urls.sellerSignup, data, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response?.statusCode === 200) {
+                    ToastMsg(response?.message);
+                    hideLoader();
+                    setUserInfor({});
+                    navigation.goBack();
+                }
+                return;
+            }
+
             const data = {
                 UserName: userInfo?.UserName,
                 FullName: userInfo?.FullName,
                 Email: userInfo.Email,
                 Password: userInfo?.Password
             };
-            console.log(data, 'DATA');
             const response = await apiPost(urls.userSignup, data, {
                 headers: { 'Content-Type': 'application/json' }
             });
-            console.log("response", response);
 
             if (response?.statusCode === 200) {
                 ToastMsg(response?.message)
@@ -76,7 +103,6 @@ const SignUp = ({ navigation }) => {
             hideLoader();
             if (error?.message) {
                 ToastMsg(error?.message);
-                // response?.message
             } else {
                 ToastMsg('Network Error');
             }
@@ -95,7 +121,7 @@ const SignUp = ({ navigation }) => {
                 <CustomText style={{
                     fontSize: 18,
                     fontFamily: FONTS_FAMILY.SourceSans3_Bold
-                }}>Sign up</CustomText>
+                }}>{signupAs === 'Seller' ? 'Seller Sign up' : 'Sign up'}</CustomText>
             </Row>
         )
     }
@@ -125,10 +151,28 @@ const SignUp = ({ navigation }) => {
                         fontFamily: FONTS_FAMILY.SourceSans3_Regular,
                         color: 'rgba(137, 138, 131, 1)'
                     }}>
-                        Create Account to keep exploring amazing destinations around the world!
+                        {signupAs === 'Seller'
+                            ? 'Create a Seller account to start listing your shop & products!'
+                            : 'Create Account to keep exploring amazing destinations around the world!'}
                     </CustomText>
 
-
+                    <CustomText style={{
+                        fontSize: 14,
+                        fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+                        marginTop: 8,
+                    }}>
+                        {signupAs === 'Seller' ? 'Are you a User? ' : 'Are you a Seller? '}
+                        <CustomText
+                            style={{
+                                fontSize: 14,
+                                fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+                                color: 'green',
+                            }}
+                            onPress={() => setSignupAs(signupAs === 'Seller' ? 'User' : 'Seller')}
+                        >
+                            {signupAs === 'Seller' ? 'Sign up as User' : 'Sign up as Seller'}
+                        </CustomText>
+                    </CustomText>
 
                     <View style={{ marginTop: 15, alignItems: 'center', }}>
                         <CustomInputField
@@ -147,6 +191,21 @@ const SignUp = ({ navigation }) => {
                             value={userInfo?.Email}
                             onChangeText={(value) => handleInputChange('Email', value)}
                         />
+                        {signupAs === 'Seller' && (
+                            <>
+                                <CustomInputField
+                                    placeholder={'Enter your Mobile Number'}
+                                    keyboardType={'number-pad'}
+                                    value={userInfo?.MobileNumber}
+                                    onChangeText={(value) => handleInputChange('MobileNumber', value)}
+                                />
+                                <CustomInputField
+                                    placeholder={'Enter your Store Name'}
+                                    value={userInfo?.StoreName}
+                                    onChangeText={(value) => handleInputChange('StoreName', value)}
+                                />
+                            </>
+                        )}
                         <CustomInputField
                             placeholder={'Enter Password '}
                               isPasswordField={true} 

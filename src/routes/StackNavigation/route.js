@@ -132,6 +132,10 @@ import ProductDetail from '../../screens/Buyer/ProductDetail';
 import PrivacyPolicy from '../../screens/PrivacyPolicy/PrivacyPolicy';
 import TermsAndConditions from '../../screens/PrivacyPolicy/Terms&Conditions';
 import AllProductsOfAShops from '../../screens/Shops/AllProductsOfaShop';
+import ListingProducts from '../../screens/Shops/ListingProducts';
+import ListingProductDetail from '../../screens/Shops/ListingProductDetail';
+import AddPostPromotion from '../../screens/Promotion/AddPostPromotion';
+import MyPostPromotions from '../../screens/Promotion/MyPostPromotions';
 import CreateProducts from '../../screens/Shops/CreateProduct';
 import AllPostOfAUser from '../../screens/AllPostOfAUser/AllPostOfaUser';
 import FeedBack from '../../screens/Feedback/FeedBack';
@@ -151,6 +155,11 @@ import EcomProductDetailScreen from '../../screens/E-commerce/ProductDetail';
 import CartScreen from '../../screens/E-commerce/CartScreen';
 import OrdersScreen from '../../screens/E-commerce/Orders/Orders';
 import OrderDetailScreen from '../../screens/E-commerce/Orders/OrderDetails';
+import SellerTabNavigation from '../TabNavigation.js/SellerTabNavigation';
+import SellerAddShop from '../../screens/SellerFlow/SellerAddShop';
+import SellerAddProduct from '../../screens/SellerFlow/SellerAddProduct';
+import SellerProductDetail from '../../screens/SellerFlow/SellerProductDetail';
+import SellerChatScreen from '../../screens/SellerFlow/SellerChatScreen';
 const Stack = createNativeStackNavigator();
 
 const StackNavigation = () => {
@@ -342,6 +351,34 @@ const StackNavigation = () => {
         <Stack.Screen
           name={'AllProductsOfAShops'}
           component={AllProductsOfAShops}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'ListingProducts'}
+          component={ListingProducts}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'ListingProductDetail'}
+          component={ListingProductDetail}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'AddPostPromotion'}
+          component={AddPostPromotion}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'MyPostPromotions'}
+          component={MyPostPromotions}
           options={{
             animation: 'slide_from_right',
           }}
@@ -542,6 +579,42 @@ const StackNavigation = () => {
           }}
         />
 
+        {/* Seller Flow */}
+        <Stack.Screen
+          name={'SellerTab'}
+          component={SellerTabNavigation}
+          options={{
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name={'SellerAddShop'}
+          component={SellerAddShop}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'SellerAddProduct'}
+          component={SellerAddProduct}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'SellerProductDetail'}
+          component={SellerProductDetail}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'SellerChatScreen'}
+          component={SellerChatScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
 
       </Stack.Navigator>
     </NavigationContainer>

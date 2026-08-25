@@ -118,12 +118,20 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                     activeOpacity={0.8}
                 >
                     <Image
-                        source={item?.Images[0] ? { uri: item?.Images[0] } : IMG.PostImage}
+                        source={item?.Images?.[0] ? { uri: item?.Images[0] } : IMG.PostImage}
                         style={styles.productImage}
                         resizeMode="cover"
                     />
 
-                    {/* Boost Badge if product is boosted */}
+                    {!!item?.Price && (
+                        <View style={styles.priceBadge}>
+                            <CustomText style={styles.priceBadgeText}>
+                                ₹{Number(item.Price).toLocaleString()}
+                            </CustomText>
+                        </View>
+                    )}
+
+                    {/* ❌ Not on web (AllProductofaShop.jsx has no Boost feature) — disabled to match web
                     {item?.isBoosted && (
                         <View style={styles.boostBadge}>
                             <LinearGradient
@@ -141,7 +149,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                                 <CustomText style={styles.boostBadgeText}>Boosted</CustomText>
                             </LinearGradient>
                         </View>
-                    )}
+                    )} */}
 
                     <View style={styles.productInfo}>
                         <CustomText
@@ -150,6 +158,18 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                         >
                             {item?.ProductName}
                         </CustomText>
+
+                        {!!item?.VehicleInfo && (
+                            <CustomText
+                                style={[styles.vehicleInfo, { color: isDarkMode ? '#aaa' : '#7d7d7d' }]}
+                                numberOfLines={1}
+                            >
+                                {[item.VehicleInfo?.make, item.VehicleInfo?.model, item.VehicleInfo?.year]
+                                    .filter(Boolean)
+                                    .join(' • ')}
+                            </CustomText>
+                        )}
+
                         <View style={styles.detailsRow}>
                             <GradientIcon
                                 colors={glowColors} // ✅ THEME COLOR
@@ -168,7 +188,16 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                             </CustomText>
                         </View>
 
-                        {/* Boost Button */}
+                        {!!item?.SellerShop?.Name && (
+                            <CustomText
+                                style={[styles.shopNameText, { color: isDarkMode ? '#8a8a8a' : '#999' }]}
+                                numberOfLines={1}
+                            >
+                                🏪 {item.SellerShop.Name}
+                            </CustomText>
+                        )}
+
+                        {/* ❌ Not on web (AllProductofaShop.jsx has no Boost feature) — disabled to match web
                         <TouchableOpacity
                             style={styles.boostButton}
                             onPress={() => onBoostPress(item)}
@@ -190,7 +219,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                                     {item?.isBoosted ? 'Manage Boost' : 'Boost'}
                                 </CustomText>
                             </LinearGradient>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </TouchableOpacity>
             </GlowWrapper>
@@ -231,12 +260,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
     ), [isDarkMode, handleProductPress, handleBoostPress]);
 
     const keyExtractor = useCallback((item) => item?._id?.toString(), []);
-
-    const getItemLayout = useCallback((data, index) => ({
-        length: 200,
-        offset: 200 * Math.floor(index / 2),
-        index,
-    }), []);
 
     const styles = StyleSheet.create({
         container: {
@@ -298,6 +321,28 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         productDetails: {
             fontSize: 10,
             flex: 1,
+        },
+        vehicleInfo: {
+            fontSize: 11,
+            marginBottom: 4,
+        },
+        shopNameText: {
+            fontSize: 10,
+            marginTop: 6,
+        },
+        priceBadge: {
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 8,
+        },
+        priceBadgeText: {
+            color: '#fff',
+            fontSize: 11,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
         },
         boostButton: {
             marginTop: 8,
@@ -423,7 +468,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 maxToRenderPerBatch={10}
                 windowSize={5}
                 initialNumToRender={6}
-                getItemLayout={getItemLayout}
                 ListEmptyComponent={
                     <CustomText style={styles.emptyText}>
                         No Products found!
@@ -431,6 +475,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 }
             />
 
+            {/* ❌ Not on web (AllProductofaShop.jsx has no "Create Product" action) — disabled to match web
             {selector?.SellerStatus === 'Approved' && (
                 <View style={styles.createButtonWrapper}>
                     <TouchableOpacity
@@ -450,7 +495,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                         </LinearGradient>
                     </TouchableOpacity>
                 </View>
-            )}
+            )} */}
 
             <View style={{ height: 50 }} />
         </View>

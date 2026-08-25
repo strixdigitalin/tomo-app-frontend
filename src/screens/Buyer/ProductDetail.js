@@ -1941,7 +1941,9 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { BackIcon, Search } from '../../assets/SVGs/index';
+import IMG from '../../assets/Images';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
+import Row from '../../components/wrapper/row';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { App_Primary_color } from '../../common/Colors/colors';
@@ -1954,11 +1956,41 @@ import urls from '../../config/urls';
 import StarRating from 'react-native-star-rating-widget';
 import { ToastMsg } from '../../utils/helperFunctions';
 
-const suggestedGroups = [
-    { id: '1', name: 'Used Cars for Sale at Hyderabad', members: '163,104 members', image: 'https://picsum.photos/id/133/200/200' },
-    { id: '2', name: 'Deal For Property', members: '22,754 members', image: 'https://picsum.photos/id/134/200/200' },
-    { id: '3', name: 'USED CARS & BIKES', members: '18,911 members', image: 'https://picsum.photos/id/135/200/200' },
-];
+// Small label/value row used across the spec sections below (Power, Modifications,
+// Style, Status & Performance, Seller) — mirrors the web's <DetailRow />.
+const SpecRow = ({ label, value, last }) => {
+    const { isDarkMode } = useSelector(state => state.theme);
+    if (!value) return null;
+    return (
+        <View
+            style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingVertical: 8,
+                borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
+                borderBottomColor: isDarkMode ? '#2a2a2a' : '#eee',
+            }}
+        >
+            <Text style={{ fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>
+                {label}
+            </Text>
+            <Text
+                style={{
+                    fontSize: 14,
+                    fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+                    color: isDarkMode ? 'white' : '#111827',
+                    flexShrink: 1,
+                    textAlign: 'right',
+                    maxWidth: '60%',
+                    marginLeft: 12,
+                }}
+                numberOfLines={2}
+            >
+                {value}
+            </Text>
+        </View>
+    );
+};
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -1967,15 +1999,9 @@ const ProductDetail = ({ navigation, route }) => {
     const [message, setMessage] = useState('Is this still available? 😊');
     const isFocused = useIsFocused();
     const [productData, setProductData] = useState(null);
-    const [reviews, setReviews] = useState([
-        { id: '1', userName: 'John Doe', userImage: 'https://picsum.photos/id/1005/200/200', rating: 4.5, comment: 'Great product! Highly recommend. The quality exceeded my expectations.', date: '2 days ago', helpful: 12 },
-        { id: '2', userName: 'Jane Smith', userImage: 'https://picsum.photos/id/1027/200/200', rating: 5, comment: 'Excellent condition and fast delivery. Seller was very responsive.', date: '1 week ago', helpful: 8 },
-        { id: '3', userName: 'Mike Johnson', userImage: 'https://picsum.photos/id/1011/200/200', rating: 4, comment: 'Good value for money. Minor scratches but overall satisfied.', date: '2 weeks ago', helpful: 5 }
-    ]);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
-    const [filterRating, setFilterRating] = useState('all');
     const { showLoader, hideLoader } = useLoader();
     const [reviewData, setReviewData]=useState(null)
 
@@ -2039,56 +2065,19 @@ const ProductDetail = ({ navigation, route }) => {
 
        
 
-        // const newReview = {
-        //     id: Date.now().toString(),
-        //     userName: 'You',
-        //     userImage: 'https://picsum.photos/id/1025/200/200',
-        //     rating: rating,
-        //     comment: reviewText,
-        //     date: 'Just now',
-        //     helpful: 0
-        // };
-
-        // setReviews([newReview, ...reviews]);
         setRating(0);
         setReviewText('');
         setShowReviewModal(false);
     };
 
-    const calculateAverageRating = () => {
-        if (reviews.length === 0) return 0;
-        const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-        return (sum / reviews.length).toFixed(1);
-    };
-
-    const getRatingDistribution = () => {
-        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-        reviews.forEach(review => {
-            const roundedRating = Math.round(review.rating);
-            distribution[roundedRating]++;
-        });
-        return distribution;
-    };
-
-    const getFilteredReviews = () => {
-        if (filterRating === 'all') return reviews;
-        return reviews.filter(review => Math.round(review.rating) === parseInt(filterRating));
-    };
-
-    // ✅ Extract images from API response
+    // ✅ Extract images from API response — a single local placeholder when there's none, same as web
     const productImages = productData?.Images || [];
-    const displayImages = productImages.length > 0 ? productImages : [
-        'https://picsum.photos/id/111/800/600',
-        'https://picsum.photos/id/112/800/600',
-        'https://picsum.photos/id/133/800/600',
-        'https://picsum.photos/id/114/800/600',
-        'https://picsum.photos/id/115/800/600',
-    ];
+    const displayImages = productImages.length > 0 ? productImages : [];
 
     // ✅ Extract shop/seller data
-    const shopData = productData?.Shop || {};
+    const shopData = productData?.SellerShop || productData?.Shop || {};
     const shopName = shopData?.Name || 'Unknown Shop';
-    const shopImage = shopData?.Image || 'https://picsum.photos/id/1012/200/200';
+    const shopImage = shopData?.Image || null;
     const shopLocation = shopData?.Address?.[0]?.LocationName || 'Unknown Location';
 
     // ✅ Product details
@@ -2096,6 +2085,27 @@ const ProductDetail = ({ navigation, route }) => {
     const productPrice = productData?.Price ? `₹${productData.Price}` : '₹0';
     const productDescription = productData?.Description || 'No description available';
     const productDetails = productData?.ProductDetails || '';
+
+    // ✅ Seller (product owner) — used to open a chat, same as the web "Message" button
+    const sellerUser = productData?.Seller || shopData?.Seller || null;
+
+    // ✅ Extra spec sections — same fields the web product-detail page shows
+    const vehicleInfo = productData?.VehicleInfo || null;
+    const ownerNote = productData?.OwnerNote || '';
+    const power = productData?.Power || null;
+    const modifications = productData?.Modifications || null;
+    const style = productData?.Style || null;
+    const status = productData?.Status || null;
+    const performanceStats = productData?.PerformanceStats || null;
+    const shopCategories = shopData?.ShopCategory || [];
+
+    const handleMessageSeller = () => {
+        if (!sellerUser?._id) {
+            ToastMsg('Seller info not available right now');
+            return;
+        }
+        navigation.navigate('Chat', { userId: sellerUser._id, userForChat: sellerUser });
+    };
 
     const styles = StyleSheet.create({
         container: { flex: 1, backgroundColor: isDarkMode ? 'black' : '#f0f2f5' },
@@ -2111,6 +2121,20 @@ const ProductDetail = ({ navigation, route }) => {
         title: { fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black' },
         price: { fontSize: 26, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginTop: 5 },
         listedInfo: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', marginTop: 5 },
+        buildStageBadge: { backgroundColor: App_Primary_color, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+        buildStageBadgeText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 12 },
+        specSection: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
+        specSectionTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginBottom: 10 },
+        specRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDarkMode ? '#2a2a2a' : '#eee' },
+        specRowLast: { borderBottomWidth: 0 },
+        specLabel: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        specValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black', flexShrink: 1, textAlign: 'right', maxWidth: '60%' },
+        ownerNoteText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontStyle: 'italic', color: isDarkMode ? '#e4e6eb' : '#374151', lineHeight: 22 },
+        shopCategoryChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: isDarkMode ? 'rgba(46,125,50,0.2)' : 'rgba(46,125,50,0.1)', marginRight: 6, marginBottom: 6 },
+        shopCategoryChipText: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: App_Primary_color },
+        sellerCard: { backgroundColor: isDarkMode ? '#1e1e1e' : '#f8f9fa', borderRadius: 12, padding: 16 },
+        verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+        verifiedBadgeText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: '#1877f2' },
         messageContainer: { padding: 16, backgroundColor: isDarkMode ? '#121212' : 'white', marginVertical: 8, borderRadius: 12 },
         messageInput: { padding: 12, backgroundColor: isDarkMode ? '#3a3b3c' : '#f0f2f5', borderRadius: 20, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 16, marginBottom: 10 },
         sendButton: { backgroundColor: App_Primary_color, borderRadius: 6, padding: 14, alignItems: 'center' },
@@ -2194,45 +2218,21 @@ const ProductDetail = ({ navigation, route }) => {
         submitReviewButtonText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 17 },
     });
 
-    const renderRatingDistribution = () => {
-        const distribution = getRatingDistribution();
-        const total = reviews.length;
-        return (
-            <View style={styles.rightRatingSection}>
-                {[5, 4, 3, 2, 1].map(star => (
-                    <View key={star} style={styles.ratingBar}>
-                        <CustomText style={styles.ratingBarLabel}>{star}★</CustomText>
-                        <View style={styles.ratingBarContainer}>
-                            <View style={[styles.ratingBarFill, { width: `${(distribution[star] / total) * 100}%` }]} />
-                        </View>
-                        <CustomText style={styles.ratingBarCount}>{distribution[star]}</CustomText>
-                    </View>
-                ))}
-            </View>
-        );
-    };
-
     const renderReviewItem = ({ item }) => (
         <View style={styles.reviewCard}>
-           
-         
             <View style={styles.reviewHeader}>
-                <Image source={{ uri: item.User?.Image }} style={styles.reviewUserImage} />
+                <Image source={item.User?.Image ? { uri: item.User.Image } : IMG.ProfileImagePost} style={styles.reviewUserImage} />
                 <View style={styles.reviewUserInfo}>
-                    <CustomText style={styles.reviewUserName}>{item.User?.UserName}</CustomText>
+                    <CustomText style={styles.reviewUserName}>{item.User?.FullName || item.User?.UserName}</CustomText>
                     <View style={styles.reviewRatingRow}>
                         <StarRating rating={item.Rating} onChange={() => { }} starSize={16} color="#FFD700" enableHalfStar={true} disabled={true} />
-                        {/* <CustomText style={styles.reviewDate}>• {item.date}</CustomText> */}
+                        {!!item?.createdAt && (
+                            <CustomText style={styles.reviewDate}>• {new Date(item.createdAt).toLocaleDateString()}</CustomText>
+                        )}
                     </View>
                 </View>
             </View>
             <CustomText style={styles.reviewComment}>{item?.Review}</CustomText>
-            <View style={styles.reviewFooter}>
-                <TouchableOpacity style={styles.helpfulButton}>
-                    <CustomText>👍</CustomText>
-                    <CustomText style={styles.helpfulText}>Helpful)</CustomText>
-                </TouchableOpacity>
-            </View>
         </View>
     );
 
@@ -2253,6 +2253,9 @@ const ProductDetail = ({ navigation, route }) => {
                 {/* ✅ IMAGES SECTION - From API */}
                 <View style={styles.imageGrid}>
                     <View style={styles.imageContainer}>
+                        {displayImages.length === 0 && (
+                            <Image source={IMG.PostImage} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                        )}
                         {displayImages.length >= 1 && (
                             <Image source={{ uri: displayImages[0] }} style={styles.mainImage} />
                         )}
@@ -2280,17 +2283,31 @@ const ProductDetail = ({ navigation, route }) => {
 
                 {/* ✅ PRODUCT DETAILS - From API */}
                 <View style={styles.productDetailsContainer}>
-                    <CustomText style={styles.title}>{productName}</CustomText>
+                    <SpaceBetweenRow>
+                        <CustomText style={[styles.title, { flex: 1 }]}>{productName}</CustomText>
+                        {!!status?.buildStage && (
+                            <View style={styles.buildStageBadge}>
+                                <CustomText style={styles.buildStageBadgeText}>{status.buildStage}</CustomText>
+                            </View>
+                        )}
+                    </SpaceBetweenRow>
                     <CustomText style={styles.price}>{productPrice}</CustomText>
                     <CustomText style={styles.listedInfo}>
                         Listed in {shopLocation}
                     </CustomText>
+                    {!!vehicleInfo && (
+                        <CustomText style={[styles.listedInfo, { marginTop: 4 }]}>
+                            {[vehicleInfo?.make, vehicleInfo?.model, vehicleInfo?.year, vehicleInfo?.bodyType]
+                                .filter(Boolean)
+                                .join(' • ')}
+                        </CustomText>
+                    )}
                 </View>
 
                 {/* MESSAGE SECTION */}
                 <View style={styles.messageContainer}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                        <Image source={{ uri: shopImage }} style={{ width: 24, height: 24, borderRadius: 12 }} />
+                        <Image source={shopImage ? { uri: shopImage } : IMG.PostImage} style={{ width: 24, height: 24, borderRadius: 12 }} />
                         <CustomText style={{ marginLeft: 8, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold }}>
                             Send seller a message
                         </CustomText>
@@ -2301,21 +2318,9 @@ const ProductDetail = ({ navigation, route }) => {
                         onChangeText={setMessage}
                         placeholderTextColor={isDarkMode ? '#b0b3b8' : '#65676b'}
                     />
-                    <TouchableOpacity style={styles.sendButton}>
+                    <TouchableOpacity style={styles.sendButton} onPress={handleMessageSeller}>
                         <CustomText style={styles.sendButtonText}>Send</CustomText>
                     </TouchableOpacity>
-                </View>
-
-                {/* ACTIONS */}
-                <View style={styles.actionsContainer}>
-                    {[{ emoji: '🔔', text: 'Alert' }, { emoji: '💬', text: 'Message' }, { emoji: '🔖', text: 'Save' }, { emoji: '⋯', text: 'More' }].map((action, i) => (
-                        <TouchableOpacity key={i} style={styles.actionButton}>
-                            <View style={styles.actionCircle}>
-                                <CustomText style={{ fontSize: 20 }}>{action.emoji}</CustomText>
-                            </View>
-                            <CustomText style={styles.actionText}>{action.text}</CustomText>
-                        </TouchableOpacity>
-                    ))}
                 </View>
 
                 {/* ✅ DESCRIPTION - From API */}
@@ -2329,128 +2334,145 @@ const ProductDetail = ({ navigation, route }) => {
                     ) : null}
                 </View>
 
-                {/* ✅ SELLER INFO - From API */}
+                {/* ✅ OWNER NOTE - From API */}
+                {!!ownerNote && (
+                    <View style={[styles.productDetailsContainer, { marginTop: 8 }]}>
+                        <CustomText style={styles.sectionTitle}>Owner Note</CustomText>
+                        <CustomText style={styles.ownerNoteText}>"{ownerNote}"</CustomText>
+                    </View>
+                )}
+
+                {/* ⚡ POWER - From API */}
+                {!!power && (
+                    <View style={styles.specSection}>
+                        <CustomText style={styles.specSectionTitle}>⚡ Power</CustomText>
+                        <SpecRow label="Engine" value={power?.engine} />
+                        <SpecRow label="HP / Torque" value={power?.horsepower ? `${power.horsepower} HP / ${power.torque} Nm` : null} />
+                        <SpecRow label="Drivetrain" value={power?.drivetrain} />
+                        <SpecRow label="Transmission" value={power?.transmission} last />
+                    </View>
+                )}
+
+                {/* 🛠️ MODIFICATIONS - From API */}
+                {!!modifications && (
+                    <View style={styles.specSection}>
+                        <CustomText style={styles.specSectionTitle}>🛠️ Modifications</CustomText>
+                        <SpecRow label="Performance" value={modifications?.performance?.join(', ') || 'Stock'} />
+                        <SpecRow label="Suspension" value={modifications?.suspension?.join(', ') || 'Stock'} />
+                        <SpecRow label="Brakes" value={modifications?.brakes?.join(', ') || 'Stock'} last />
+                    </View>
+                )}
+
+                {/* 🎨 STYLE - From API */}
+                {!!style && (
+                    <View style={styles.specSection}>
+                        <CustomText style={styles.specSectionTitle}>🎨 Style</CustomText>
+                        <SpecRow label="Paint / Wrap" value={style?.paintWrap || 'None'} />
+                        <SpecRow label="Exterior Mods" value={style?.exteriorMods?.join(', ') || 'None'} />
+                        <SpecRow label="Interior Mods" value={style?.interiorMods?.join(', ') || 'None'} last />
+                    </View>
+                )}
+
+                {/* 📊 STATUS & PERFORMANCE - From API */}
+                {(!!status || !!performanceStats) && (
+                    <View style={styles.specSection}>
+                        <CustomText style={styles.specSectionTitle}>📊 Status & Performance</CustomText>
+                        <SpecRow label="Mileage" value={status?.mileage ? `${Number(status.mileage).toLocaleString()} km` : null} />
+                        <SpecRow label="Build Stage" value={status?.buildStage} />
+                        <SpecRow label="0-60" value={performanceStats?.zeroToSixty} />
+                        <SpecRow label="Quarter Mile" value={performanceStats?.quarterMile} last />
+                    </View>
+                )}
+
+                {/* ✅ SELLER SHOP INFO - From API */}
                 <View style={styles.sellerContainer}>
                     <SpaceBetweenRow style={styles.sellerInfoContainer}>
                         <View style={styles.sellerProfileContainer}>
-                            <Image source={{ uri: shopImage }} style={styles.sellerImage} />
+                            <Image source={shopImage ? { uri: shopImage } : IMG.PostImage} style={styles.sellerImage} />
                             <CustomText style={styles.sellerName}>{shopName}</CustomText>
                         </View>
-                        <TouchableOpacity>
-                            <LinearGradient
-                                colors={['#ff00ff', '#6a5acd']}
-                                start={{ x: 1, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.followButton}
-                            >
-                                <Text style={[styles.followText, { color: isDarkMode ? '#fff' : '#000' }]}>
-                                    Follow
-                                </Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
                     </SpaceBetweenRow>
-                    <View style={styles.mapContainer}>
-                        <Image
-                            source={{ uri: 'https://www.mapsofindia.com/maps/madhyapradesh/indore.gif' }}
-                            style={{ height: 150, width: '100%', borderRadius: 7 }}
-                        />
-                        <CustomText style={styles.mapText}>{shopLocation}</CustomText>
-                    </View>
+                    {!!shopLocation && (
+                        <CustomText style={[styles.listedInfo, { marginTop: -8 }]}>{shopLocation}</CustomText>
+                    )}
+                    {shopCategories.length > 0 && (
+                        <Row style={{ flexWrap: 'wrap', marginTop: 10 }}>
+                            {shopCategories.map((cat, idx) => (
+                                <View key={idx} style={styles.shopCategoryChip}>
+                                    <CustomText style={styles.shopCategoryChipText}>{cat}</CustomText>
+                                </View>
+                            ))}
+                        </Row>
+                    )}
                 </View>
+
+                {/* 👤 SELLER (person) INFO - From API */}
+                {!!sellerUser && (
+                    <View style={[styles.specSection]}>
+                        <SpaceBetweenRow style={{ marginBottom: 4 }}>
+                            <CustomText style={styles.specSectionTitle}>👤 Seller</CustomText>
+                            {!!sellerUser?.IsVerified && (
+                                <Row style={styles.verifiedBadge}>
+                                    <CustomText style={styles.verifiedBadgeText}>✔ Verified</CustomText>
+                                </Row>
+                            )}
+                        </SpaceBetweenRow>
+                        <View style={styles.sellerCard}>
+                            <SpecRow label="Name" value={sellerUser?.FullName} />
+                            <SpecRow label="Store" value={sellerUser?.StoreName} />
+                            {!!sellerUser?.ShowEmail && <SpecRow label="Email" value={sellerUser?.Email} />}
+                            {!!sellerUser?.ShowMobile && <SpecRow label="Mobile" value={sellerUser?.MobileNumber} />}
+                            {!!sellerUser?.ShowAddress && <SpecRow label="Location" value={sellerUser?.Location?.City} />}
+                            <SpecRow label="Website" value={sellerUser?.Website} last />
+                        </View>
+                    </View>
+                )}
 
                 {/* REVIEWS SECTION */}
                 <View style={styles.reviewsContainer}>
                     <CustomText style={styles.sectionTitle}>Reviews & Ratings</CustomText>
                     <View style={styles.reviewsHeaderCard}>
-                        <View style={styles.ratingOverviewContainer}>
-                            <View style={styles.leftRatingSection}>
-                                {/* <CustomText style={styles.averageRatingText}>{calculateAverageRating()}</CustomText> */}
-                                <CustomText style={styles.averageRatingText}>{reviewData?.averageRating}</CustomText>
-
-                                <CustomText style={styles.outOfText}>out of 5</CustomText>
-                                <StarRating
-                                    rating={parseFloat(calculateAverageRating())}
-                                    onChange={() => { }}
-                                    starSize={24}
-                                    color="#FFD700"
-                                    enableHalfStar
-                                    disabled
-                                    style={{ marginTop: 8 }}
-                                />
-                                <CustomText style={styles.totalReviewsText}>
-                                    {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
-                                </CustomText>
-                            </View>
-                            {renderRatingDistribution()}
+                        <View style={styles.leftRatingSection}>
+                            <CustomText style={styles.averageRatingText}>{reviewData?.averageRating || 0}</CustomText>
+                            <CustomText style={styles.outOfText}>out of 5</CustomText>
+                            <StarRating
+                                rating={parseFloat(reviewData?.averageRating) || 0}
+                                onChange={() => { }}
+                                starSize={24}
+                                color="#FFD700"
+                                enableHalfStar
+                                disabled
+                                style={{ marginTop: 8 }}
+                            />
+                            <CustomText style={styles.totalReviewsText}>
+                                {reviewData?.totalReviews || 0} {reviewData?.totalReviews === 1 ? 'review' : 'reviews'}
+                            </CustomText>
+                            <TouchableOpacity
+                                style={styles.writeReviewButton}
+                                onPress={() => setShowReviewModal(true)}
+                            >
+                                <CustomText style={styles.writeReviewButtonText}>✍️ Write a Review</CustomText>
+                            </TouchableOpacity>
                         </View>
                     </View>
 
-                    <TouchableOpacity
-                        style={styles.writeReviewButton}
-                        onPress={() => setShowReviewModal(true)}
-                    >
-                        <CustomText style={styles.writeReviewButtonText}>✍️ Write a Review</CustomText>
-                    </TouchableOpacity>
-
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterContainer}>
-                        <TouchableOpacity
-                            style={[styles.filterChip, filterRating === 'all' && styles.filterChipActive]}
-                            onPress={() => setFilterRating('all')}
-                        >
-                            <CustomText style={[styles.filterChipText, filterRating === 'all' && styles.filterChipTextActive]}>
-                                All
-                            </CustomText>
-                        </TouchableOpacity>
-                        {[5, 4, 3, 2, 1].map(star => (
-                            <TouchableOpacity
-                                key={star}
-                                style={[styles.filterChip, filterRating === star.toString() && styles.filterChipActive]}
-                                onPress={() => setFilterRating(star.toString())}
-                            >
-                                <CustomText style={[styles.filterChipText, filterRating === star.toString() && styles.filterChipTextActive]}>
-                                    {star} ★
-                                </CustomText>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-
-{console.log('REVIEW DATA ::::::::::::NEW:::::>>>>>>>>>>', JSON.stringify(reviewData?.reviews))
-}
-                    {reviewData?.reviews.length > 0 ? (
+                    {reviewData?.reviews?.length > 0 ? (
                         <FlatList
-                            data={reviewData?.reviews}
+                            data={reviewData.reviews}
                             renderItem={renderReviewItem}
-                            // keyExtractor={item => item._id}
+                            keyExtractor={(item) => item?._id}
                             scrollEnabled={false}
                             style={styles.reviewsList}
                         />
                     ) : (
                         <View style={styles.emptyReviewsContainer}>
                             <CustomText style={styles.emptyReviewsText}>
-                                No reviews for this rating yet.
+                                No reviews yet
                             </CustomText>
                         </View>
                     )}
                 </View>
 
-                {/* SUGGESTED GROUPS */}
-                <View style={styles.groupsContainer}>
-                    <CustomText style={styles.sectionTitle}>Suggested buy-and-sell shops</CustomText>
-                    {suggestedGroups.map(group => (
-                        <View key={group.id} style={styles.groupItem}>
-                            <View style={styles.groupInfoContainer}>
-                                <Image source={{ uri: group.image }} style={styles.groupImage} />
-                                <View style={styles.groupTextContainer}>
-                                    <CustomText style={styles.groupName}>{group.name}</CustomText>
-                                    <CustomText style={styles.groupMembers}>{group.members}</CustomText>
-                                </View>
-                            </View>
-                            <TouchableOpacity style={styles.joinButton}>
-                                <CustomText style={styles.joinText}>JOIN</CustomText>
-                            </TouchableOpacity>
-                        </View>
-                    ))}
-                </View>
                 <View style={{ height: 20 }} />
             </ScrollView>
 

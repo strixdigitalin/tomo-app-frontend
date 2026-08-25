@@ -606,8 +606,8 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
   }));
 
   const handlePressIn = useCallback(() => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 150 });
-    imageScale.value = withSpring(1.1, { damping: 12, stiffness: 100 });
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 150 });
+    imageScale.value = withSpring(1.08, { damping: 12, stiffness: 100 });
   }, []);
 
   const handlePressOut = useCallback(() => {
@@ -619,6 +619,10 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
   const delay = Math.min(index * 80, 240);
   const glowColorsArr = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
 
+  const seller = item?.Seller || null;
+  const categories = Array.isArray(item?.ShopCategory) ? item.ShopCategory : [];
+  const addresses = Array.isArray(item?.Address) ? item.Address : [];
+
   return (
     <Animated.View
       entering={FadeInUp.duration(350).delay(delay)}
@@ -626,7 +630,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
     >
       <GlowWrapper
         isDarkMode={isDarkMode}
-        borderRadius={10}
+        borderRadius={14}
         showStars={false}
         showShinePatches={true}
         intensity="low"
@@ -634,38 +638,95 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
         glowColors={glowColorsArr}
       >
         <TouchableOpacity
-          style={[cardStyles.container, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f0f0f0' }]}
-          activeOpacity={0.8}
+          style={[cardStyles.container, { backgroundColor: isDarkMode ? '#1a1a1a' : '#fff' }]}
+          activeOpacity={0.9}
           onPress={onPress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >
-          <Animated.View style={[cardStyles.imageWrapper, imageStyle]}>
-            <Image
-              source={item?.Image ? { uri: item.Image } : IMG.PostImage}
-              style={cardStyles.shopImage}
-              resizeMode="cover"
-              progressiveRenderingEnabled // ✅ Images load faster
-              fadeDuration={150}
-            />
-          </Animated.View>
-          <View style={cardStyles.overlay} />
+          <View style={cardStyles.imageBox}>
+            <Animated.View style={[cardStyles.imageWrapper, imageStyle]}>
+              <Image
+                source={item?.Image ? { uri: item.Image } : IMG.PostImage}
+                style={cardStyles.shopImage}
+                resizeMode="cover"
+                progressiveRenderingEnabled
+                fadeDuration={150}
+              />
+            </Animated.View>
+            {!!seller?.IsVerified && (
+              <View style={cardStyles.verifiedBadge}>
+                <Text style={cardStyles.verifiedBadgeText}>✔</Text>
+              </View>
+            )}
+          </View>
+
           <Animated.View
             entering={FadeIn.duration(350).delay(Math.min(delay + 150, 350))}
-            style={cardStyles.textContainer}
+            style={cardStyles.body}
           >
-            <Text style={cardStyles.shopName} numberOfLines={1}>{item?.Name}</Text>
-            <View style={cardStyles.locationRow}>
-              <GradientIcon
-                colors={glowColorsArr}
-                size={12}
-                iconType="FontAwesome6"
-                name="location-dot"
-              />
-              <Text style={cardStyles.locationText} numberOfLines={1}>
-                {item?.Address?.[0]?.LocationName || 'No location'}
+            <View style={cardStyles.titleRow}>
+              <Text style={[cardStyles.shopName, { color: isDarkMode ? '#fff' : '#111' }]} numberOfLines={1}>
+                {item?.Name}
               </Text>
+              {!!seller?.SellerStatus && (
+                <View
+                  style={[
+                    cardStyles.statusBadge,
+                    { backgroundColor: seller.SellerStatus === 'Active' ? 'rgba(46,125,50,0.15)' : (isDarkMode ? '#2a2a2a' : '#eee') },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      cardStyles.statusBadgeText,
+                      { color: seller.SellerStatus === 'Active' ? '#2E7D32' : (isDarkMode ? '#aaa' : '#666') },
+                    ]}
+                  >
+                    {seller.SellerStatus}
+                  </Text>
+                </View>
+              )}
             </View>
+
+            {!!item?.Services && (
+              <Text style={[cardStyles.services, { color: isDarkMode ? '#aaa' : '#555' }]} numberOfLines={1}>
+                {item.Services.split(/\r?\n/).join(', ')}
+              </Text>
+            )}
+
+            {(categories.length > 0 || addresses.length > 0) && (
+              <View style={cardStyles.chipRow}>
+                {categories.slice(0, 1).map((cat, idx) => (
+                  <View key={idx} style={cardStyles.categoryChip}>
+                    <Text style={cardStyles.categoryChipText} numberOfLines={1}>{cat}</Text>
+                  </View>
+                ))}
+                {addresses.length > 0 && (
+                  <View style={cardStyles.addressChip}>
+                    <GradientIcon colors={glowColorsArr} size={9} iconType="FontAwesome6" name="location-dot" />
+                    <Text style={cardStyles.addressChipText} numberOfLines={1}>{addresses[0]?.LocationName}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {!!seller && (
+              <View style={[cardStyles.ownerBox, { borderTopColor: isDarkMode ? '#2a2a2a' : '#eee' }]}>
+                <Text style={[cardStyles.ownerName, { color: isDarkMode ? '#eee' : '#222' }]} numberOfLines={1}>
+                  👤 {seller?.FullName || seller?.StoreName}
+                </Text>
+                {!!seller?.Email && (
+                  <Text style={[cardStyles.ownerMeta, { color: isDarkMode ? '#999' : '#777' }]} numberOfLines={1}>
+                    {seller.Email}
+                  </Text>
+                )}
+                {!!seller?.MobileNumber && (
+                  <Text style={[cardStyles.ownerMeta, { color: isDarkMode ? '#999' : '#777' }]} numberOfLines={1}>
+                    📞 {seller.MobileNumber}
+                  </Text>
+                )}
+              </View>
+            )}
           </Animated.View>
         </TouchableOpacity>
       </GlowWrapper>
@@ -676,24 +737,34 @@ ShopCard.displayName = 'ShopCard';
 
 // ─── Static card styles (outside component — never recreated) ────────────────
 const cardStyles = StyleSheet.create({
-  wrapper: { flex: 1, margin: 4 },
-  container: { height: 160, borderRadius: 10, overflow: 'hidden', position: 'relative' },
+  wrapper: { flex: 1, margin: 6 },
+  container: { borderRadius: 14, overflow: 'hidden' },
+  imageBox: { width: '100%', height: 90, position: 'relative' },
   imageWrapper: { width: '100%', height: '100%' },
   shopImage: { width: '100%', height: '100%' },
-  overlay: {
-    position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderBottomLeftRadius: 10, borderBottomRightRadius: 10,
+  verifiedBadge: {
+    position: 'absolute', top: 8, left: 8,
+    backgroundColor: '#1877f2', width: 20, height: 20, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
   },
-  textContainer: { position: 'absolute', bottom: 12, left: 12, right: 12 },
-  shopName: {
-    color: '#fff', fontSize: 16, fontWeight: '600',
-    fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-    textShadowColor: 'rgba(0,0,0,0.8)', textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3, marginBottom: 4,
+  verifiedBadgeText: { color: '#fff', fontSize: 10, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  body: { padding: 8 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  shopName: { flex: 1, fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  statusBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 20 },
+  statusBadgeText: { fontSize: 9, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  services: { fontSize: 10, marginTop: 3 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 4, marginTop: 5 },
+  categoryChip: { backgroundColor: 'rgba(24,119,242,0.12)', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20, maxWidth: '55%' },
+  categoryChipText: { fontSize: 9, color: '#1877f2', fontFamily: FONTS_FAMILY.SourceSans3_Medium },
+  addressChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: 'rgba(46,125,50,0.12)', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 20, maxWidth: '55%',
   },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  locationText: { fontSize: 11, color: '#ccc', flex: 1 },
+  addressChipText: { fontSize: 9, color: '#2E7D32', fontFamily: FONTS_FAMILY.SourceSans3_Medium },
+  ownerBox: { marginTop: 6, paddingTop: 6, borderTopWidth: 1 },
+  ownerName: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  ownerMeta: { fontSize: 10, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 1 },
 });
 
 // ─── AnimatedHeader ──────────────────────────────────────────────────────────
@@ -741,7 +812,7 @@ const AnimatedHeader = React.memo(({ navigation, isDarkMode, primaryColor }) => 
       </Animated.View>
 
       <Animated.View style={titleStyle}>
-        <CustomText style={styles.headerTitle}>Market Place</CustomText>
+        <CustomText style={styles.headerTitle}>Shop</CustomText>
       </Animated.View>
 
       <Animated.View style={rightStyle}>
@@ -906,13 +977,6 @@ const Shops = ({ navigation }) => {
   const keyExtractor = useCallback((item, index) =>
     item?._id?.toString() || `item-${index}`, []);
 
-  // ✅ getItemLayout for 2-col grid — removes layout measurement overhead
-  const getItemLayout = useCallback((_, index) => ({
-    length: 168, // card height 160 + margin 4*2
-    offset: 168 * Math.floor(index / 2),
-    index,
-  }), []);
-
   return (
     <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
       <StatusBar
@@ -946,12 +1010,12 @@ const Shops = ({ navigation }) => {
             windowSize={5}
             initialNumToRender={6}
             removeClippedSubviews={true}
-            getItemLayout={getItemLayout}
           />
 
-          {selector?.SellerStatus === 'Approved' && (
+          {/* ❌ Not on web's Marketplace (AllShops.jsx has no "Add Shop" action) — disabled to match web */}
+          {/* {selector?.SellerStatus === 'Approved' && (
             <AnimatedFAB onPress={() => navigation?.navigate('AddShops')} primaryColor={primaryColor} />
-          )}
+          )} */}
 
           {!isKeyboardOpen && <View style={{ height: 100 }} />}
         </>

@@ -9,15 +9,20 @@ export const userSlice = createSlice({
     isFreeAccess: true,
     isFirstTime: true,
     skip: false,
-    statusBarBGColor: App_Primary_color
+    statusBarBGColor: App_Primary_color,
+    accountType: 'User', // 'User' | 'Seller'
   },
   reducers: {
     setUser(state, action) {
       const user = action.payload;
-      return {...state, userData: user, login: true};
+      return {...state, userData: user, login: true, accountType: 'User'};
+    },
+    setSeller(state, action) {
+      const seller = action.payload;
+      return {...state, userData: seller, login: true, accountType: 'Seller'};
     },
     removeUser(state, action) {
-      return {...state, userData: {}, login: false};
+      return {...state, userData: {}, login: false, accountType: 'User'};
     },
     setIsFirstTime(state, action) {
       return {...state, isFirstTime: action.payload};
@@ -31,6 +36,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const {setUser, removeUser, setIsFirstTime, setSkip, setStatusBarColor} = userSlice.actions;
+export const {setUser, setSeller, removeUser, setIsFirstTime, setSkip, setStatusBarColor} = userSlice.actions;
 
 export default userSlice.reducer;

@@ -43,6 +43,7 @@ import MessageList from '../../screens/Message/MessageList';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import { useSelector } from 'react-redux';
 import Shops from '../../screens/Shops/Shops';
+import MyListings from '../../screens/Shops/MyListings';
 import { THEMES } from '../../redux/reducer/theme';
 import IMG from '../../assets/Images';
 
@@ -345,22 +346,22 @@ function TabNavigation() {
         }}
       />
 
+      {/* ✅ Matches web's "My Listings" (renamed from "Shop") under its More menu —
+          a regular user's own shop/listing management, not a browse-all-products feed. */}
       <Tab.Screen
-        name="E-Commerce"
-        component={StoreScreen}
+        name="Listing"
+        component={MyListings}
         options={{
-          unmountOnBlur: true,
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
               {focused ? (
                 <>
-                  {/* <SearchActiveTabNew /> */}
-                  <Image source={IMG.ecomerce} style={{ width: 24, height: 24 , tintColor:isDarkMode? white : 'black' }} />
+                  <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: isDarkMode ? white : 'black' }} />
                   <AnimatedBottomLine />
                 </>
               ) : (
-                <>{isDarkMode ? <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor:white }} /> : <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor:'black' }} />}</>
+                <>{isDarkMode ? <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: white }} /> : <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: 'black' }} />}</>
               )}
             </AnimatedTabIcon>
           ),
