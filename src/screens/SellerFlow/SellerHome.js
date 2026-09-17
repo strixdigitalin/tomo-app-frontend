@@ -217,7 +217,7 @@ const SellerHome = ({ navigation }) => {
             <TouchableOpacity
                 activeOpacity={0.85}
                 style={[styles.card, { marginHorizontal: 0, marginBottom: 0 }]}
-                onPress={() => navigation.navigate('SellerAddProduct', { shopId: item?._id, shopName: item?.Name })}
+                onPress={() => navigation.navigate('SellerShopProducts', { shopId: item?._id, shopName: item?.Name })}
             >
                 <SafeImage uri={item?.Image} style={styles.cardImage} />
                 <TouchableOpacity

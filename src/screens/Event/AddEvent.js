@@ -7,6 +7,7 @@ import {
     StatusBar,
     TextInput,
     KeyboardAvoidingView,
+    Keyboard,
     Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -134,7 +135,10 @@ const AddEvent = ({ navigation, route }) => {
                     ? result.message
                     : (isEditMode ? 'Event updated successfully' : 'Event created successfully');
             ToastMsg(successText);
-            if (response.ok) navigation.goBack();
+            if (response.ok) {
+                Keyboard.dismiss();
+                setTimeout(() => navigation.goBack(), 50);
+            }
         } catch (error) {
             console.log('AddEvent submit error', error);
             ToastMsg('Failed to submit event');

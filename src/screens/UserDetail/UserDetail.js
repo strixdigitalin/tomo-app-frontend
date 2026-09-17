@@ -28,6 +28,7 @@ import GradientIcon from '../../components/GradientIcon'
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper'
 import { THEMES } from '../../redux/reducer/theme'
 import Row from '../../components/wrapper/row'
+import CarRatingModal from './CarRatingModal'
 
 // ─── Static styles — module level, never recreated ───────────────────────────
 const S = StyleSheet.create({
@@ -166,6 +167,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   const [hasCarSpec, setHasCarSpec] = useState(false)
   const [isSpecExpanded, setIsSpecExpanded] = useState(false)
   const [visibleCount, setVisibleCount] = useState(15)
+  const [showRatingModal, setShowRatingModal] = useState(false)
 
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default
@@ -206,11 +208,14 @@ const OtherUserDetail = ({ navigation, route }) => {
 
   const fetchCarSpecs = useCallback(async () => {
     try {
-      const res = await apiGet('/api/user/GetUserCurrentCar')
+      // ✅ Viewing someone else's profile must fetch THEIR car, not the logged-in user's own
+      const endpoint = isOtherUser ? `/api/user/GetAUserCurrentCar/${userId}` : '/api/user/GetUserCurrentCar'
+      const res = await apiGet(endpoint)
       if (res?.data?.length > 0) {
         const c = res.data[0]
         setCarSpec({
           _id: c._id,
+          avgRating: c.avgRating || 0,
           vehicle: c.VehicleInfo?.vehicleName || 'N/A',
           make: c.VehicleInfo?.make || 'N/A',
           model: c.VehicleInfo?.model || 'N/A',
@@ -237,7 +242,7 @@ const OtherUserDetail = ({ navigation, route }) => {
         setHasCarSpec(true)
       } else { setHasCarSpec(false) }
     } catch (e) { setHasCarSpec(false) }
-  }, [])
+  }, [isOtherUser, userId])
 
   const fetchMyPost = useCallback(async () => {
     try {
@@ -565,6 +570,23 @@ const OtherUserDetail = ({ navigation, route }) => {
                     <Text style={[S.editSpecText, { color: primaryColor }]}>Edit</Text>
                   </TouchableOpacity>
                 )}
+                {isOtherUser && (
+                  <TouchableOpacity style={S.editSpecButton} onPress={() => setShowRatingModal(true)}>
+                    <Feather name="star" size={14} color={primaryColor} />
+                    <Text style={[S.editSpecText, { color: primaryColor }]}>Add Rating</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Feather
+                    key={s} name="star" size={14}
+                    color={s <= Math.round(carSpec.avgRating || 0) ? primaryColor : (isDarkMode ? '#333' : '#E5E7EB')}
+                  />
+                ))}
+                <Text style={[S.specLabel, dyn.specLabelColor, { marginLeft: 4 }]}>
+                  {carSpec.avgRating ? carSpec.avgRating.toFixed(1) : 'New'}
+                </Text>
               </View>
               {[['Vehicle', carSpec.vehicle], ['Make', carSpec.make], ['Model', carSpec.model], ['Year', carSpec.year], ['Body Type', carSpec.bodyType]].map(([label, value]) => (
                 <View key={label} style={S.specRow}>
@@ -699,6 +721,13 @@ const OtherUserDetail = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
       )}
+
+      <CarRatingModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        carId={carSpec?._id}
+        onSubmitted={fetchCarSpecs}
+      />
     </View>
   )
 }

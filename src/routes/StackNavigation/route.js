@@ -136,10 +136,15 @@ import ListingProducts from '../../screens/Shops/ListingProducts';
 import ListingProductDetail from '../../screens/Shops/ListingProductDetail';
 import AddPostPromotion from '../../screens/Promotion/AddPostPromotion';
 import MyPostPromotions from '../../screens/Promotion/MyPostPromotions';
+import PostPromotionDetail from '../../screens/Promotion/PostPromotionDetail';
 import AllEvents from '../../screens/Event/AllEvents';
 import MyEvents from '../../screens/Event/MyEvents';
 import AddEvent from '../../screens/Event/AddEvent';
 import EventDetail from '../../screens/Event/EventDetail';
+import BuyerSellerChatScreen from '../../screens/Buyer/BuyerSellerChatScreen';
+import AddGroup from '../../screens/Group/AddGroup';
+import JoinGroup from '../../screens/Group/JoinGroup';
+import GroupDetail from '../../screens/Group/GroupDetail';
 import CreateProducts from '../../screens/Shops/CreateProduct';
 import AllPostOfAUser from '../../screens/AllPostOfAUser/AllPostOfaUser';
 import FeedBack from '../../screens/Feedback/FeedBack';
@@ -162,6 +167,7 @@ import OrderDetailScreen from '../../screens/E-commerce/Orders/OrderDetails';
 import SellerTabNavigation from '../TabNavigation.js/SellerTabNavigation';
 import SellerAddShop from '../../screens/SellerFlow/SellerAddShop';
 import SellerAddProduct from '../../screens/SellerFlow/SellerAddProduct';
+import SellerShopProducts from '../../screens/SellerFlow/SellerShopProducts';
 import SellerProductDetail from '../../screens/SellerFlow/SellerProductDetail';
 import SellerChatScreen from '../../screens/SellerFlow/SellerChatScreen';
 const Stack = createNativeStackNavigator();
@@ -289,7 +295,7 @@ const StackNavigation = () => {
         />
         <Stack.Screen
           name={'OtherUserDetail'}
-          component={OtherUserDetail}
+          component={UserDetail}
           options={{
             animation: 'slide_from_right',
           }}
@@ -388,6 +394,13 @@ const StackNavigation = () => {
           }}
         />
         <Stack.Screen
+          name={'PostPromotionDetail'}
+          component={PostPromotionDetail}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
           name={'AllEvents'}
           component={AllEvents}
           options={{
@@ -411,6 +424,34 @@ const StackNavigation = () => {
         <Stack.Screen
           name={'EventDetail'}
           component={EventDetail}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'BuyerSellerChatScreen'}
+          component={BuyerSellerChatScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'AddGroup'}
+          component={AddGroup}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'JoinGroup'}
+          component={JoinGroup}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'GroupDetail'}
+          component={GroupDetail}
           options={{
             animation: 'slide_from_right',
           }}
@@ -631,6 +672,13 @@ const StackNavigation = () => {
           component={SellerAddProduct}
           options={{
             animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'SellerShopProducts'}
+          component={SellerShopProducts}
+          options={{
+            animation: 'slide_from_right',
           }}
         />
         <Stack.Screen

@@ -557,9 +557,10 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   View, TextInput, FlatList, Image, StyleSheet,
-  TouchableOpacity, StatusBar, Text,
+  TouchableOpacity, StatusBar, Text, ActivityIndicator,
   Animated as RNAnimated, // ✅ RN Animated — lighter than Reanimated for simple entrance
 } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import Animated, {
   FadeInUp,
@@ -913,6 +914,34 @@ const Shops = ({ navigation }) => {
   const { isKeyboardOpen } = useKeyboardStatus();
   const hasFetched = useRef(false); // ✅ Prevent re-fetch on every focus
 
+  // ✅ Shop / Chat tab switch — Chat tab is the buyer's inbox of chats with
+  // sellers (same data as BuyerSellerChatList.js), embedded here instead of
+  // as a separate screen, matching the Chats/Groups pattern in MessageList.js.
+  const [activeTab, setActiveTab] = useState('shop');
+  const [sellerChats, setSellerChats] = useState([]);
+  const [chatsLoading, setChatsLoading] = useState(false);
+  const chatsLoadedRef = useRef(false);
+
+  const fetchSellerChats = useCallback(async () => {
+    try {
+      setChatsLoading(true);
+      const res = await apiGet(urls.getAllChatedSellers);
+      setSellerChats(res?.data || []);
+    } catch (e) {
+      console.error('Shops fetchSellerChats error:', e);
+    } finally {
+      setChatsLoading(false);
+    }
+  }, []);
+
+  const onSelectChatTab = useCallback(() => {
+    setActiveTab('chat');
+    if (!chatsLoadedRef.current) {
+      chatsLoadedRef.current = true;
+      fetchSellerChats();
+    }
+  }, [fetchSellerChats]);
+
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
   const primaryColor = currentTheme.primary;
@@ -977,6 +1006,26 @@ const Shops = ({ navigation }) => {
   const keyExtractor = useCallback((item, index) =>
     item?._id?.toString() || `item-${index}`, []);
 
+  const chatKeyExtractor = useCallback((item, index) => item?._id || String(index), []);
+  const renderSellerChat = useCallback(({ item }) => (
+    <TouchableOpacity
+      style={[chatStyles.row, { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' }]}
+      onPress={() => navigation.navigate('BuyerSellerChatScreen', { userForChat: item })}
+      activeOpacity={0.7}
+    >
+      <Image source={item?.Image ? { uri: item.Image } : IMG.MessageProfile} style={chatStyles.avatar} />
+      <View style={{ flex: 1 }}>
+        <Text style={[chatStyles.name, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
+          {item?.StoreName || item?.UserName}
+        </Text>
+        <Text style={[chatStyles.meta, { color: isDarkMode ? '#999' : '#666' }]} numberOfLines={1}>
+          {item?.FullName}
+        </Text>
+      </View>
+      <Icon name="chevron-right" size={18} color={isDarkMode ? '#666' : '#bbb'} />
+    </TouchableOpacity>
+  ), [isDarkMode, navigation]);
+
   return (
     <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
       <StatusBar
@@ -987,42 +1036,103 @@ const Shops = ({ navigation }) => {
 
       <AnimatedHeader navigation={navigation} isDarkMode={isDarkMode} primaryColor={primaryColor} />
 
-      {loading ? (
-        <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={6} />
+      {/* Shop / Chat tab switch */}
+      <View style={[chatStyles.tabBar, { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' }]}>
+        <TouchableOpacity
+          style={[chatStyles.tabBtn, activeTab === 'shop' && { backgroundColor: primaryColor }]}
+          onPress={() => setActiveTab('shop')}
+        >
+          <Text style={[chatStyles.tabBtnText, { color: activeTab === 'shop' ? '#fff' : (isDarkMode ? '#aaa' : '#666') }]}>
+            Shop
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[chatStyles.tabBtn, activeTab === 'chat' && { backgroundColor: primaryColor }]}
+          onPress={onSelectChatTab}
+        >
+          <Text style={[chatStyles.tabBtnText, { color: activeTab === 'chat' ? '#fff' : (isDarkMode ? '#aaa' : '#666') }]}>
+            Chat
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === 'shop' ? (
+        loading ? (
+          <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={6} />
+        ) : (
+          <>
+            <AnimatedSearchBar
+              searchQuery={searchQuery}
+              handleSearch={handleSearch}
+              isDarkMode={isDarkMode}
+              primaryColor={primaryColor}
+            />
+
+            <FlatList
+              data={filteredShops}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              numColumns={2}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              // ✅ FlatList perf props
+              maxToRenderPerBatch={8}
+              windowSize={5}
+              initialNumToRender={6}
+              removeClippedSubviews={true}
+            />
+
+            {/* ❌ Not on web's Marketplace (AllShops.jsx has no "Add Shop" action) — disabled to match web */}
+            {/* {selector?.SellerStatus === 'Approved' && (
+              <AnimatedFAB onPress={() => navigation?.navigate('AddShops')} primaryColor={primaryColor} />
+            )} */}
+
+            {!isKeyboardOpen && <View style={{ height: 100 }} />}
+          </>
+        )
       ) : (
-        <>
-          <AnimatedSearchBar
-            searchQuery={searchQuery}
-            handleSearch={handleSearch}
-            isDarkMode={isDarkMode}
-            primaryColor={primaryColor}
-          />
-
-          <FlatList
-            data={filteredShops}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            numColumns={2}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            // ✅ FlatList perf props
-            maxToRenderPerBatch={8}
-            windowSize={5}
-            initialNumToRender={6}
-            removeClippedSubviews={true}
-          />
-
-          {/* ❌ Not on web's Marketplace (AllShops.jsx has no "Add Shop" action) — disabled to match web */}
-          {/* {selector?.SellerStatus === 'Approved' && (
-            <AnimatedFAB onPress={() => navigation?.navigate('AddShops')} primaryColor={primaryColor} />
-          )} */}
-
-          {!isKeyboardOpen && <View style={{ height: 100 }} />}
-        </>
+        <View style={{ flex: 1 }}>
+          {chatsLoading ? (
+            <View style={chatStyles.centerWrap}>
+              <ActivityIndicator color={primaryColor} size="large" />
+            </View>
+          ) : (
+            <FlatList
+              data={sellerChats}
+              keyExtractor={chatKeyExtractor}
+              renderItem={renderSellerChat}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              ListEmptyComponent={
+                <View style={chatStyles.centerWrap}>
+                  <Icon name="message-circle" size={30} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                  <Text style={{ marginTop: 10, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular }}>
+                    No seller chats yet
+                  </Text>
+                </View>
+              }
+            />
+          )}
+        </View>
       )}
     </View>
   );
 };
+
+// ─── Chat tab styles ───────────────────────────────────────────────────────────
+const chatStyles = StyleSheet.create({
+  tabBar: { flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 4 },
+  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center' },
+  tabBtnText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  row: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+  },
+  avatar: { width: 52, height: 52, borderRadius: 26, marginRight: 12 },
+  name: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  meta: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
+  centerWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100 },
+});
 
 // ─── Static styles ────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({

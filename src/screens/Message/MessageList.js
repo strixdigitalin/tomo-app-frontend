@@ -413,7 +413,7 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View, TextInput, FlatList, Image, StyleSheet,
-  TouchableOpacity, StatusBar, Text,
+  TouchableOpacity, StatusBar, Text, ActivityIndicator,
 } from 'react-native';
 import { Editsq, PrimaryBackArrow, PrimaryBackWhite } from '../../assets/SVGs';
 import CustomText from '../../components/TextComponent';
@@ -425,9 +425,41 @@ import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import MessageListShimmer from '../../components/Skeletons/MessageListShimmer';
 import GradientIcon from '../../components/GradientIcon';
+import Icon from 'react-native-vector-icons/Feather';
+import SafeImage from '../../components/SafeImage';
 import { useFocusEffect } from '@react-navigation/native';
 import Row from '../../components/wrapper/row';
 import { THEMES } from '../../redux/reducer/theme';
+import { groupApiGet } from '../../utils/GroupApi';
+import { ToastMsg } from '../../utils/helperFunctions';
+import moment from 'moment';
+
+// ─── Matches web's Pages/Chat/ChatedUsers.jsx helpers exactly — mobile was
+// fetching the same GetAllChatedUser response but never rendering its
+// lastMessage/unreadCount fields, only a static "Tap to chat" placeholder.
+const getMessagePreview = (lastMessage) => {
+  if (!lastMessage) return 'No messages yet';
+  switch (lastMessage.type) {
+    case 'image': return '📷 Photo';
+    case 'video': return '🎥 Video';
+    case 'audio': return '🎵 Audio';
+    case 'document': return '📄 Document';
+    case 'sticker': return '😊 Sticker';
+    case 'gift': return '🎁 Gift';
+    case 'location': return '📍 Location';
+    default: return lastMessage.message || '';
+  }
+};
+
+const formatChatTime = (dateStr) => {
+  if (!dateStr) return '';
+  const date = moment(dateStr);
+  const now = moment();
+  if (date.isSame(now, 'day')) return date.format('hh:mm A');
+  if (date.isSame(now.clone().subtract(1, 'day'), 'day')) return 'Yesterday';
+  if (date.isSame(now, 'week')) return date.format('ddd');
+  return date.format('DD/MM/YY');
+};
 
 // ─── Static styles — module level, never recreated ──────────────────────────
 const S = StyleSheet.create({
@@ -472,18 +504,45 @@ const S = StyleSheet.create({
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60 },
   emptyText: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
   gradColors: ['#21B7FF', '#0084F8'],
+  tabBar: { flexDirection: 'row', marginHorizontal: 16, marginTop: 14, borderRadius: 14, padding: 4 },
+  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center' },
+  tabBtnText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  groupActionsRow: { flexDirection: 'row', gap: 10, marginHorizontal: 16, marginTop: 14, marginBottom: 4 },
+  groupActionBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 12, borderRadius: 14,
+  },
+  groupActionText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  groupRow: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16,
+    borderBottomWidth: 0.5,
+  },
+  groupAvatar: { width: 52, height: 52, borderRadius: 26, marginRight: 12 },
+  groupName: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  groupMeta: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
+  adminPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginLeft: 8 },
+  adminPillText: { fontSize: 10, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: '#fff' },
+  timeText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_Regular, flexShrink: 0, marginLeft: 8 },
+  messageUnread: { fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  unreadBadge: {
+    minWidth: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 5, marginLeft: 8,
+  },
+  unreadBadgeText: { color: '#fff', fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
 });
 
 const GRADIENT_COLORS = ['#21B7FF', '#0084F8'];
 
 // ─── MessageCard — extracted as proper component (not inline function) ────────
 // ✅ Was defined inside MessageList body — caused remount on every render
-const MessageCard = React.memo(({ item, isDarkMode, onPress, onAvatarPress, userHasStory }) => {
+const MessageCard = React.memo(({ item, isDarkMode, primaryColor, onPress, onAvatarPress, userHasStory }) => {
   const borderColor = isDarkMode ? '#000' : '#fff';
   const noBorderColor = isDarkMode ? '#1a1a1a' : '#E0E0E0';
   const cardBorder = { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' };
   const nameColor = { color: isDarkMode ? '#fff' : '#000' };
   const msgColor = { color: isDarkMode ? '#999' : '#666' };
+
+  const hasUnread = (item?.unreadCount || 0) > 0;
 
   return (
     <TouchableOpacity style={[S.card, cardBorder]} onPress={onPress} activeOpacity={0.7}>
@@ -505,7 +564,7 @@ const MessageCard = React.memo(({ item, isDarkMode, onPress, onAvatarPress, user
         ) : (
           <Image
             source={item?.Image ? { uri: item.Image } : IMG.MessageProfile}
-            style={[S.avatarNoStory, { borderColor: noBorderColor }]}
+            style={[S.avatarNoStory, { borderColor: hasUnread ? primaryColor : noBorderColor }]}
             progressiveRenderingEnabled
             fadeDuration={150}
           />
@@ -515,16 +574,60 @@ const MessageCard = React.memo(({ item, isDarkMode, onPress, onAvatarPress, user
       {/* Details */}
       <View style={S.detailsContainer}>
         <View style={S.nameRow}>
-          <Text style={[S.name, nameColor]} numberOfLines={1}>
+          <Text style={[S.name, nameColor, hasUnread && S.messageUnread]} numberOfLines={1}>
             {item.FullName || item.UserName}
           </Text>
+          <Text style={[S.timeText, { color: hasUnread ? primaryColor : (isDarkMode ? '#666' : '#999') }]}>
+            {formatChatTime(item?.lastMessage?.createdAt)}
+          </Text>
         </View>
-        <Text style={[S.message, msgColor]} numberOfLines={1}>Tap to chat</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text
+            style={[S.message, hasUnread ? [S.messageUnread, { color: isDarkMode ? '#fff' : '#000' }] : msgColor, { flex: 1 }]}
+            numberOfLines={1}
+          >
+            {getMessagePreview(item?.lastMessage)}
+          </Text>
+          {hasUnread && (
+            <View style={[S.unreadBadge, { backgroundColor: primaryColor }]}>
+              <Text style={S.unreadBadgeText}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
+            </View>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
 });
 MessageCard.displayName = 'MessageCard';
+
+// ─── GroupCard — the Groups tab's row ──────────────────────────────────────
+const GroupCard = React.memo(({ item, isDarkMode, primaryColor, onPress }) => {
+  const g = item?.Group || {};
+  const cardBorder = { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' };
+  const nameColor = { color: isDarkMode ? '#fff' : '#000' };
+  const metaColor = { color: isDarkMode ? '#999' : '#666' };
+
+  return (
+    <TouchableOpacity style={[S.groupRow, cardBorder]} onPress={onPress} activeOpacity={0.7}>
+      <SafeImage uri={g?.Avatar} style={S.groupAvatar} />
+      <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={[S.groupName, nameColor]} numberOfLines={1}>{g?.Name}</Text>
+          {item?.Role === 'admin' && (
+            <View style={[S.adminPill, { backgroundColor: primaryColor }]}>
+              <Text style={S.adminPillText}>Admin</Text>
+            </View>
+          )}
+        </View>
+        <Text style={[S.groupMeta, metaColor]} numberOfLines={1}>
+          {g?.MembersCount ?? 0} members · {g?.Type}
+        </Text>
+      </View>
+      <Icon name="chevron-right" size={18} color={isDarkMode ? '#666' : '#bbb'} />
+    </TouchableOpacity>
+  );
+});
+GroupCard.displayName = 'GroupCard';
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const MessageList = ({ navigation }) => {
@@ -545,6 +648,35 @@ const MessageList = ({ navigation }) => {
   const [followedStories, setFollowedStories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+
+  // ✅ Groups tab — lives inside this same screen (not a separate Drawer
+  // destination), talks to the local dev backend since group chat isn't
+  // live in production yet (see GroupApi.js).
+  const [activeTab, setActiveTab] = useState('chats');
+  const [myGroups, setMyGroups] = useState([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const groupsLoadedRef = useRef(false);
+
+  const fetchGroups = useCallback(async () => {
+    try {
+      setGroupsLoading(true);
+      const res = await groupApiGet('/api/user/GetAllMyGroups');
+      setMyGroups(res?.data || []);
+    } catch (error) {
+      console.log('MessageList fetchGroups error', error);
+      ToastMsg(error?.message || 'Could not reach local group backend — is it running?');
+    } finally {
+      setGroupsLoading(false);
+    }
+  }, []);
+
+  const onSelectGroupsTab = useCallback(() => {
+    setActiveTab('groups');
+    if (!groupsLoadedRef.current) {
+      groupsLoadedRef.current = true;
+      fetchGroups();
+    }
+  }, [fetchGroups]);
 
   // ✅ useFocusEffect with stable callback
   useFocusEffect(
@@ -620,6 +752,7 @@ const MessageList = ({ navigation }) => {
       <MessageCard
         item={item}
         isDarkMode={isDarkMode}
+        primaryColor={primaryColor}
         userHasStory={userHasStory}
         onPress={() => navigation.navigate('Chat', { userId: item?._id, userForChat: item })}
         onAvatarPress={() =>
@@ -629,7 +762,17 @@ const MessageList = ({ navigation }) => {
         }
       />
     );
-  }, [isDarkMode, storyMap, navigation, navigateToStory]);
+  }, [isDarkMode, primaryColor, storyMap, navigation, navigateToStory]);
+
+  const groupKeyExtractor = useCallback((item, index) => item?._id || String(index), []);
+  const renderGroupItem = useCallback(({ item }) => (
+    <GroupCard
+      item={item}
+      isDarkMode={isDarkMode}
+      primaryColor={primaryColor}
+      onPress={() => navigation.navigate('GroupDetail', { groupId: item?.Group?._id })}
+    />
+  ), [isDarkMode, primaryColor, navigation]);
 
   // ✅ Dynamic colors memoized
   const dynStyles = useMemo(() => ({
@@ -665,44 +808,109 @@ const MessageList = ({ navigation }) => {
         <CustomText style={[S.headerTitle, dynStyles.titleColor]}>Messages</CustomText>
       </Row>
 
-      {/* Search */}
-      <View style={[S.searchContainer, dynStyles.searchBg]}>
-        <GradientIcon colors={glowColors} size={18} iconType="FontAwesome5" name="search" />
-        <TextInput
-          style={[S.searchInput, dynStyles.searchColor]}
-          placeholder="Search messages"
-          placeholderTextColor={isDarkMode ? '#666' : '#A0A0A0'}
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText('')}>
-            <GradientIcon colors={glowColors} size={16} iconType="AntDesign" name="closecircle" />
-          </TouchableOpacity>
-        )}
+      {/* Chats / Groups tab switch */}
+      <View style={[S.tabBar, dynStyles.searchBg]}>
+        <TouchableOpacity
+          style={[S.tabBtn, activeTab === 'chats' && { backgroundColor: primaryColor }]}
+          onPress={() => setActiveTab('chats')}
+        >
+          <Text style={[S.tabBtnText, { color: activeTab === 'chats' ? '#fff' : (isDarkMode ? '#aaa' : '#666') }]}>
+            Chats
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[S.tabBtn, activeTab === 'groups' && { backgroundColor: primaryColor }]}
+          onPress={onSelectGroupsTab}
+        >
+          <Text style={[S.tabBtnText, { color: activeTab === 'groups' ? '#fff' : (isDarkMode ? '#aaa' : '#666') }]}>
+            Groups
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* List */}
-      <View style={S.ftContainer}>
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          maxToRenderPerBatch={10}
-          initialNumToRender={12}
-          windowSize={7}
-          removeClippedSubviews={true}
-          ListEmptyComponent={
-            <View style={S.emptyContainer}>
-              <Text style={[S.emptyText, dynStyles.emptyColor]}>
-                {searchText ? 'No results found' : 'No messages yet'}
-              </Text>
-            </View>
-          }
-        />
-        <View style={{ height: 100 }} />
-      </View>
+      {activeTab === 'chats' ? (
+        <>
+          {/* Search */}
+          <View style={[S.searchContainer, dynStyles.searchBg]}>
+            <GradientIcon colors={glowColors} size={18} iconType="FontAwesome5" name="search" />
+            <TextInput
+              style={[S.searchInput, dynStyles.searchColor]}
+              placeholder="Search messages"
+              placeholderTextColor={isDarkMode ? '#666' : '#A0A0A0'}
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchText('')}>
+                <GradientIcon colors={glowColors} size={16} iconType="AntDesign" name="closecircle" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* List */}
+          <View style={S.ftContainer}>
+            <FlatList
+              data={filteredUsers}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              maxToRenderPerBatch={10}
+              initialNumToRender={12}
+              windowSize={7}
+              removeClippedSubviews={true}
+              ListEmptyComponent={
+                <View style={S.emptyContainer}>
+                  <Text style={[S.emptyText, dynStyles.emptyColor]}>
+                    {searchText ? 'No results found' : 'No messages yet'}
+                  </Text>
+                </View>
+              }
+            />
+            <View style={{ height: 100 }} />
+          </View>
+        </>
+      ) : (
+        <>
+          {/* Create / Join group */}
+          <View style={S.groupActionsRow}>
+            <TouchableOpacity
+              style={[S.groupActionBtn, { backgroundColor: primaryColor }]}
+              onPress={() => navigation.navigate('AddGroup')}
+            >
+              <Icon name="plus" size={15} color="#fff" />
+              <Text style={[S.groupActionText, { color: '#fff' }]}>Create Group</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[S.groupActionBtn, { borderWidth: 1.5, borderColor: primaryColor }]}
+              onPress={() => navigation.navigate('JoinGroup')}
+            >
+              <Icon name="log-in" size={15} color={primaryColor} />
+              <Text style={[S.groupActionText, { color: primaryColor }]}>Join Group</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={S.ftContainer}>
+            {groupsLoading ? (
+              <View style={S.emptyContainer}>
+                <ActivityIndicator color={primaryColor} size="large" />
+              </View>
+            ) : (
+              <FlatList
+                data={myGroups}
+                keyExtractor={groupKeyExtractor}
+                renderItem={renderGroupItem}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                  <View style={S.emptyContainer}>
+                    <Text style={[S.emptyText, dynStyles.emptyColor]}>No groups yet</Text>
+                  </View>
+                }
+              />
+            )}
+            <View style={{ height: 100 }} />
+          </View>
+        </>
+      )}
     </View>
   );
 };

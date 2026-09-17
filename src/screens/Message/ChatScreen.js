@@ -17,15 +17,18 @@ import {
     Alert,
     ScrollView,
     ImageBackground,
+    ActivityIndicator,
 } from "react-native";
 import LinearGradient from 'react-native-linear-gradient';
-import ImagePicker from "react-native-image-picker";
+import { launchImageLibrary } from "react-native-image-picker";
 import IMG from "../../assets/Images";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { FONTS_FAMILY } from "../../assets/Fonts";
 import urls from "../../config/urls";
 import { ToastMsg } from "../../utils/helperFunctions";
-import { apiGet, apiPut, getItem } from "../../utils/Apis";
+import { apiGet, apiPut, getItem, BASE_URL } from "../../utils/Apis";
+import { uploadChatImage } from "../../utils/uploadHelpers";
+import MediaViewerModal from "../../components/MediaViewerModal";
 import { io } from "socket.io-client";
 import moment from "moment";
 import Icon from 'react-native-vector-icons/Feather';
@@ -119,7 +122,8 @@ const ChatScreen = ({ route, navigation }) => {
     const [ChatMessages, setChatMessages]   = useState([]);
     const [inputText, setInputText]         = useState('');
     const [cursorPosition, setCursorPosition] = useState(0);
-    const [selectedImage, setSelectedImage]  = useState(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [viewerUri, setViewerUri] = useState(null);
 
     // ── Socket ───────────────────────────────────────────────────────────────
     const socket = useRef(null);
@@ -177,7 +181,9 @@ const ChatScreen = ({ route, navigation }) => {
 
     // ── Socket setup ──────────────────────────────────────────────────────────
     useEffect(() => {
-        socket.current = io('http://192.168.158.149:8080');
+        // Was hardcoded to a stale local dev machine's LAN IP — real-time
+        // messaging here couldn't have worked for anyone but that one machine.
+        socket.current = io(BASE_URL, { transports: ['websocket'] });
         socket.current.emit('joinRoom', { userId: currentUserId });
 
         socket.current.on('receiveMessage', (msg) => {
@@ -275,6 +281,41 @@ const ChatScreen = ({ route, navigation }) => {
         }
     };
 
+    const handlePickImage = () => {
+        launchImageLibrary({ mediaType: 'photo', selectionLimit: 1, quality: 0.8 }, async (response) => {
+            if (response.didCancel || response.errorMessage) return;
+            const asset = response.assets?.[0];
+            if (!asset?.uri) return;
+
+            try {
+                setUploadingImage(true);
+                const mediaUrl = await uploadChatImage(asset);
+
+                const messageData = {
+                    sender: currentUserId,
+                    receiver: userId,
+                    message: '',
+                    type: 'image',
+                    mediaUrl,
+                    fileName: asset.fileName || null,
+                    fileSize: asset.fileSize || 0,
+                    isSent: true,
+                    isRead: false,
+                    timestamp: new Date(),
+                };
+                socket.current.emit('sendMessage', messageData);
+                setChatMessages(prev => [
+                    { ...messageData, _id: Date.now().toString(), sender: { _id: currentUserId } },
+                    ...prev,
+                ]);
+            } catch (error) {
+                ToastMsg(error?.message || 'Failed to send photo');
+            } finally {
+                setUploadingImage(false);
+            }
+        });
+    };
+
     const handleEmojiSelect = (emoji) => {
         const newText = inputText.slice(0, cursorPosition) + emoji + inputText.slice(cursorPosition);
         setInputText(newText);
@@ -350,7 +391,11 @@ const ChatScreen = ({ route, navigation }) => {
                             elevation: isGlass ? 4 : 1,
                         },
                     ]}>
-                        {item.message && (
+                        {item.type === 'image' && item.mediaUrl ? (
+                            <TouchableOpacity onPress={() => setViewerUri(item.mediaUrl)} activeOpacity={0.85}>
+                                <Image source={{ uri: item.mediaUrl }} style={styles.imageBubble} resizeMode="cover" />
+                            </TouchableOpacity>
+                        ) : item.message && (
                             <Text style={[
                                 styles.messageText,
                                 {
@@ -574,6 +619,18 @@ const ChatScreen = ({ route, navigation }) => {
                             size={24}
                             color={showStickerPicker ? '#4F52FE' : (isDarkMode ? '#888' : '#666')}
                         />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={handlePickImage}
+                        style={styles.iconButton}
+                        disabled={uploadingImage}
+                    >
+                        {uploadingImage ? (
+                            <ActivityIndicator size="small" color={isDarkMode ? '#888' : '#666'} />
+                        ) : (
+                            <Icon name="image" size={22} color={isDarkMode ? '#888' : '#666'} />
+                        )}
                     </TouchableOpacity>
 
                     <TextInput
@@ -805,6 +862,12 @@ const ChatScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </Modal>
+
+            <MediaViewerModal
+                visible={!!viewerUri}
+                uri={viewerUri}
+                onClose={() => setViewerUri(null)}
+            />
         </BackgroundWrapper>
     );
 };
@@ -836,6 +899,7 @@ const styles = StyleSheet.create({
     myMessage:        { justifyContent: 'flex-end' },
     messageBubble:    { padding: 12, maxWidth: '75%', minWidth: 60 },
     messageText:      { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Medium, lineHeight: 20 },
+    imageBubble:      { width: 200, height: 200, borderRadius: 12 },
     metaContainer:    { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 4, gap: 4 },
     editedText:       { fontSize: 9, fontStyle: 'italic' },
     timestamp:        { fontSize: 10 },

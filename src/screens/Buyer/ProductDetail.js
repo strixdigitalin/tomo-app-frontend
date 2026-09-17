@@ -172,7 +172,7 @@ const ProductDetail = ({ navigation, route }) => {
             ToastMsg('Seller info not available right now');
             return;
         }
-        navigation.navigate('Chat', { userId: sellerUser._id, userForChat: sellerUser });
+        navigation.navigate('BuyerSellerChatScreen', { userForChat: sellerUser });
     };
 
     const styles = StyleSheet.create({

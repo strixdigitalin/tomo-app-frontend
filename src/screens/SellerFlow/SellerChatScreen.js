@@ -9,17 +9,22 @@ import {
     TextInput,
     KeyboardAvoidingView,
     Platform,
+    ActivityIndicator,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import moment from 'moment';
+import { launchImageLibrary } from 'react-native-image-picker';
 import CustomText from '../../components/TextComponent';
 import Row from '../../components/wrapper/row';
+import MediaViewerModal from '../../components/MediaViewerModal';
 import { Back, BackOuterWhite } from '../../assets/SVGs';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { white } from '../../common/Colors/colors';
 import useThemeColor from '../../utils/useThemeColor';
 import { apiGet, BASE_URL } from '../../utils/Apis';
+import { uploadChatImage } from '../../utils/uploadHelpers';
+import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
 import Icon from 'react-native-vector-icons/Feather';
 import IMG from '../../assets/Images';
@@ -37,6 +42,8 @@ const SellerChatScreen = ({ navigation, route }) => {
     const [chat, setChat] = useState([]);
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [viewerUri, setViewerUri] = useState(null);
     const socket = useRef(null);
 
     const fetchHistory = async () => {
@@ -128,6 +135,52 @@ const SellerChatScreen = ({ navigation, route }) => {
         setInputText('');
     };
 
+    const handlePickImage = () => {
+        launchImageLibrary({ mediaType: 'photo', selectionLimit: 1, quality: 0.8 }, async (response) => {
+            if (response.didCancel || response.errorMessage) return;
+            const asset = response.assets?.[0];
+            if (!asset?.uri || !userForChat?._id || !currentSellerId || !socket.current) return;
+
+            try {
+                setUploadingImage(true);
+                const mediaUrl = await uploadChatImage(asset);
+
+                const messageData = {
+                    sender: currentSellerId,
+                    senderType: 'Seller',
+                    receiver: userForChat._id,
+                    receiverType: 'User',
+                    message: '',
+                    type: 'image',
+                    mediaUrl,
+                    fileName: asset.fileName || null,
+                    fileSize: asset.fileSize || 0,
+                    stickerUrl: null,
+                    giftDetails: null,
+                };
+
+                socket.current.emit('sendUserSellerMessage', messageData);
+
+                setChat((prev) => [
+                    {
+                        ...messageData,
+                        sender: { _id: currentSellerId },
+                        receiver: { _id: userForChat._id },
+                        isSent: true,
+                        isDelivered: false,
+                        isRead: false,
+                        createdAt: new Date(),
+                    },
+                    ...prev,
+                ]);
+            } catch (error) {
+                ToastMsg(error?.message || 'Failed to send photo');
+            } finally {
+                setUploadingImage(false);
+            }
+        });
+    };
+
     const styles = StyleSheet.create({
         container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff' },
         header: {
@@ -159,6 +212,7 @@ const SellerChatScreen = ({ navigation, route }) => {
             borderBottomLeftRadius: 4,
         },
         msgText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        imageBubble: { width: 200, height: 200, borderRadius: 12 },
         msgMeta: { fontSize: 10, marginTop: 4, opacity: 0.7, alignSelf: 'flex-end' },
         inputBar: {
             flexDirection: 'row',
@@ -210,9 +264,15 @@ const SellerChatScreen = ({ navigation, route }) => {
                     return (
                         <View style={styles.bubbleRow}>
                             <View style={[styles.bubble, isMine ? styles.myBubble : styles.theirBubble]}>
-                                <CustomText style={[styles.msgText, { color: isMine ? white : (isDarkMode ? '#fff' : '#111827') }]}>
-                                    {item?.message}
-                                </CustomText>
+                                {item?.type === 'image' && item?.mediaUrl ? (
+                                    <TouchableOpacity onPress={() => setViewerUri(item.mediaUrl)} activeOpacity={0.85}>
+                                        <Image source={{ uri: item.mediaUrl }} style={styles.imageBubble} resizeMode="cover" />
+                                    </TouchableOpacity>
+                                ) : (
+                                    <CustomText style={[styles.msgText, { color: isMine ? white : (isDarkMode ? '#fff' : '#111827') }]}>
+                                        {item?.message}
+                                    </CustomText>
+                                )}
                                 <Row style={{ justifyContent: 'flex-end', gap: 4 }}>
                                     <CustomText style={[styles.msgMeta, { color: isMine ? white : (isDarkMode ? '#9CA3AF' : '#6B7280') }]}>
                                         {moment(item?.timestamp || item?.createdAt).format('hh:mm A')}
@@ -240,6 +300,17 @@ const SellerChatScreen = ({ navigation, route }) => {
             />
 
             <View style={styles.inputBar}>
+                <TouchableOpacity
+                    onPress={handlePickImage}
+                    style={{ padding: 8, marginRight: 4 }}
+                    disabled={uploadingImage}
+                >
+                    {uploadingImage ? (
+                        <ActivityIndicator size="small" color={primaryColor} />
+                    ) : (
+                        <Icon name="image" size={22} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                    )}
+                </TouchableOpacity>
                 <TextInput
                     style={styles.input}
                     placeholder="Write a message..."
@@ -252,6 +323,12 @@ const SellerChatScreen = ({ navigation, route }) => {
                     <Icon name="send" size={18} color={white} />
                 </TouchableOpacity>
             </View>
+
+            <MediaViewerModal
+                visible={!!viewerUri}
+                uri={viewerUri}
+                onClose={() => setViewerUri(null)}
+            />
         </KeyboardAvoidingView>
     );
 };

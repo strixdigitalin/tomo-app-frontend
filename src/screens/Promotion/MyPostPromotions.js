@@ -15,9 +15,12 @@ import SafeImage from '../../components/SafeImage';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import Row from '../../components/wrapper/row';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
+import { ActionMenu, ConfirmDialog } from '../../components/ActionMenu';
+import EditPostPromotionModal from './EditPostPromotionModal';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { white } from '../../common/Colors/colors';
-import { apiGet } from '../../utils/Apis';
+import { apiGet, apiDelete } from '../../utils/Apis';
+import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
 import useThemeColor from '../../utils/useThemeColor';
 
@@ -36,6 +39,9 @@ const MyPostPromotions = ({ navigation }) => {
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [menuItem, setMenuItem] = useState(null);
+    const [editItem, setEditItem] = useState(null);
+    const [confirmItem, setConfirmItem] = useState(null);
 
     const fetchPromotions = async () => {
         try {
@@ -59,6 +65,24 @@ const MyPostPromotions = ({ navigation }) => {
         setRefreshing(true);
         fetchPromotions();
     };
+
+    const deletePromotion = async (item) => {
+        try {
+            const res = await apiDelete(`${urls.deletePostPromotion}/${item?._id}`);
+            ToastMsg(res?.message || 'Promotion deleted successfully');
+            fetchPromotions();
+        } catch (error) {
+            ToastMsg(error?.message || 'Failed to delete promotion');
+        }
+    };
+
+    const menuOptions = menuItem
+        ? [
+              { label: 'View Details', icon: 'eye', onPress: () => navigation.navigate('PostPromotionDetail', { id: menuItem._id }) },
+              { label: 'Update Promotion', icon: 'edit-2', onPress: () => setEditItem(menuItem) },
+              { label: 'Delete Promotion', icon: 'trash-2', destructive: true, onPress: () => setConfirmItem(menuItem) },
+          ]
+        : [];
 
     const styles = StyleSheet.create({
         container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
@@ -100,6 +124,10 @@ const MyPostPromotions = ({ navigation }) => {
         goalChipText: { color: '#2563EB' },
         dateRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
         dateText: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        menuBtn: {
+            position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: 16,
+            alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 5,
+        },
         statsRow: {
             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
             marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: isDarkMode ? '#2A2A2A' : '#EEE',
@@ -131,9 +159,20 @@ const MyPostPromotions = ({ navigation }) => {
                 containerStyle={{ marginBottom: 16 }}
                 glowColors={[primaryColor, primaryColor]}
             >
-            <View style={[styles.card, { marginBottom: 0 }]}>
+            <TouchableOpacity
+                activeOpacity={0.9}
+                style={[styles.card, { marginBottom: 0 }]}
+                onPress={() => navigation.navigate('PostPromotionDetail', { id: item?._id })}
+            >
                 <View style={styles.imageBox}>
                     <SafeImage uri={post?.media} style={styles.image} />
+                    <TouchableOpacity
+                        style={styles.menuBtn}
+                        onPress={() => setMenuItem(item)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                        <Icon name="more-vertical" size={18} color={white} />
+                    </TouchableOpacity>
                     {!!item?.Status && (
                         <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                             <CustomText style={[styles.statusText, { color: statusStyle.text }]}>{item.Status}</CustomText>
@@ -194,7 +233,7 @@ const MyPostPromotions = ({ navigation }) => {
                         <CustomText style={styles.statText}>{item?.Currency}</CustomText>
                     </SpaceBetweenRow>
                 </View>
-            </View>
+            </TouchableOpacity>
             </GlowWrapper>
         );
     };
@@ -234,6 +273,26 @@ const MyPostPromotions = ({ navigation }) => {
                         </View>
                     )
                 }
+            />
+
+            <ActionMenu
+                visible={!!menuItem}
+                onClose={() => setMenuItem(null)}
+                title={menuItem?.Post?.caption || 'Promotion'}
+                options={menuOptions}
+            />
+            <ConfirmDialog
+                visible={!!confirmItem}
+                onClose={() => setConfirmItem(null)}
+                title="Delete Promotion"
+                message="Are you sure you want to delete this promotion? This cannot be undone."
+                onConfirm={() => deletePromotion(confirmItem)}
+            />
+            <EditPostPromotionModal
+                visible={!!editItem}
+                onClose={() => setEditItem(null)}
+                promotion={editItem}
+                onUpdated={fetchPromotions}
             />
         </View>
     );

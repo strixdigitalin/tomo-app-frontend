@@ -56,6 +56,18 @@ export default {
     // ─── Post Promotion (web: Pages/PaidPromotion) ────────────────────────────
     createPostPromotion: '/api/user/CreatePostPromotion',
     getMyPostPromotions: '/api/user/GetMyPostPromotions',
+    postPromotionDetail: '/api/user/GetPostPromotionDetail',
+    updatePostPromotion: '/api/user/UpdatePostPromotion',
+    deletePostPromotion: '/api/user/DeletePostPromotion',
+
+    // ─── Buyer↔Seller chat (web: Pages/MarketPlace/SellerChat) — separate from
+    // social DMs and from the seller-side chat screen ───────────────────────
+    getAllChatedSellers: '/api/user/GetAllChatedSeller',
+    userSellerChatHistory: '/api/user/GetUserSellerChatHistory',
+
+    // ─── Car ratings (web: Pages/AllUsers/CreateCarReviewModal) ──────────────
+    createCarRating: '/api/user/CreateCarRating',
+    getCarRatings: '/api/user/GetCarRatings',
 
     // ─── Events (web: Pages/Event) ─────────────────────────────────────────
     createEvent: '/api/user/UserCreateEvent',
@@ -75,6 +87,7 @@ export default {
     sellerUpdateShop: '/api/seller/SellerUpdateShop',
     sellerDeleteShop: '/api/seller/SellerDeleteMyShop',
     sellerAllProducts: '/api/seller/GetAllProductsOfSeller',
+    sellerShopProducts: '/api/seller/GetAllProductsOfSellerShop',
     sellerCreateProduct: '/api/seller/SellerCreateProduct',
     sellerUpdateProduct: '/api/seller/UpdateASellerProduct',
     sellerDeleteProduct: '/api/seller/DeleteASellerProduct',
