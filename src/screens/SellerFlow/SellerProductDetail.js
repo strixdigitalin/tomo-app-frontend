@@ -16,14 +16,15 @@ import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 import IMG from '../../assets/Images';
 
 const { width } = Dimensions.get('window');
 
 const SellerProductDetail = ({ navigation, route }) => {
     const { id } = route.params || {};
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ const SellerProductDetail = ({ navigation, route }) => {
         },
         body: { padding: 20 },
         name: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        price: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: App_Primary_color, marginTop: 6 },
+        price: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: primaryColor, marginTop: 6 },
         sectionTitle: {
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
@@ -84,7 +85,7 @@ const SellerProductDetail = ({ navigation, route }) => {
 
             {loading ? (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <ActivityIndicator color={App_Primary_color} size="large" />
+                    <ActivityIndicator color={primaryColor} size="large" />
                 </View>
             ) : (
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>

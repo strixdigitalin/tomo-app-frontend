@@ -2,31 +2,31 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     FlatList,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
     RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { ActionMenu, ConfirmDialog } from '../../components/ActionMenu';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
 import { apiGet, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import IMG from '../../assets/Images';
+import useThemeColor from '../../utils/useThemeColor';
 
 // Products of a "Listing" (a regular user's own shop) — matches web's
 // Pages/MarketPlace/Product/AllProductofShop.jsx (a separate page + endpoint
 // from the Marketplace browsing flow's AllProductofaShop.jsx).
 const ListingProducts = ({ navigation, route }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
     const shopId = route?.params?.shopId;
     const shopName = route?.params?.shopName;
@@ -87,7 +87,7 @@ const ListingProducts = ({ navigation, route }) => {
         },
         addBtn: {
             width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
         },
         grid: { paddingHorizontal: 14, paddingBottom: 120 },
         card: {
@@ -113,7 +113,7 @@ const ListingProducts = ({ navigation, route }) => {
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
         emptyIconWrap: {
             width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: App_Primary_color, marginBottom: 16,
+            backgroundColor: primaryColor, marginBottom: 16,
         },
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
@@ -123,35 +123,44 @@ const ListingProducts = ({ navigation, route }) => {
     });
 
     const renderProduct = ({ item }) => (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={() => navigation.navigate('ListingProductDetail', { productId: item?._id })}
+        <GlowWrapper
+            isDarkMode={isDarkMode}
+            borderRadius={16}
+            showStars={false}
+            showShinePatches
+            intensity="low"
+            containerStyle={{ flex: 1, margin: 6 }}
+            glowColors={[primaryColor, primaryColor]}
         >
-            <Image
-                source={Array.isArray(item?.Images) && item.Images.length > 0 ? { uri: item.Images[0] } : IMG.PostImage}
-                style={styles.cardImage}
-                resizeMode="cover"
-            />
-            {!!item?.Price && (
-                <View style={styles.priceBadge}>
-                    <CustomText style={styles.priceBadgeText}>₹{Number(item.Price).toLocaleString()}</CustomText>
-                </View>
-            )}
             <TouchableOpacity
-                style={styles.menuBtn}
-                onPress={() => setMenuProduct(item)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                activeOpacity={0.85}
+                style={[styles.card, { margin: 0 }]}
+                onPress={() => navigation.navigate('ListingProductDetail', { productId: item?._id })}
             >
-                <Icon name="more-vertical" size={16} color={white} />
-            </TouchableOpacity>
-            <View style={styles.cardBody}>
-                <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
-                {!!item?.ProductDetails && (
-                    <CustomText numberOfLines={2} style={styles.productDetails}>{item.ProductDetails}</CustomText>
+                <SafeImage
+                    uri={Array.isArray(item?.Images) && item.Images.length > 0 ? item.Images[0] : null}
+                    style={styles.cardImage}
+                />
+                {!!item?.Price && (
+                    <View style={styles.priceBadge}>
+                        <CustomText style={styles.priceBadgeText}>₹{Number(item.Price).toLocaleString()}</CustomText>
+                    </View>
                 )}
-            </View>
-        </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.menuBtn}
+                    onPress={() => setMenuProduct(item)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Icon name="more-vertical" size={16} color={white} />
+                </TouchableOpacity>
+                <View style={styles.cardBody}>
+                    <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
+                    {!!item?.ProductDetails && (
+                        <CustomText numberOfLines={2} style={styles.productDetails}>{item.ProductDetails}</CustomText>
+                    )}
+                </View>
+            </TouchableOpacity>
+        </GlowWrapper>
     );
 
     return (
@@ -178,7 +187,7 @@ const ListingProducts = ({ navigation, route }) => {
                 contentContainerStyle={styles.grid}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 ListEmptyComponent={
                     !loading && (

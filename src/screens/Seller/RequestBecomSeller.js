@@ -22,13 +22,14 @@ import urls from "../../config/urls";
 import { ToastMsg } from "../../utils/helperFunctions";
 import { launchImageLibrary } from "react-native-image-picker";
 import { Platform } from "react-native";
-import { App_Primary_color, white } from "../../common/Colors/colors";
+import { white } from "../../common/Colors/colors";
+import useThemeColor from "../../utils/useThemeColor";
 
 // Matches web's Pages/More/BecomeSeller.jsx — same statuses (NotAdded/Rejected →
 // upload form, Pending → in-review message, Approved → success message), same
 // single field (Aadhar Card image), same endpoint.
 const RequestBecomSeller = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
     const { showLoader, hideLoader } = useLoader();
 
@@ -116,7 +117,7 @@ const RequestBecomSeller = ({ navigation }) => {
             textAlign: "center",
             marginTop: 10,
             marginBottom: 24,
-            color: App_Primary_color,
+            color: primaryColor,
         },
         uploadBox: {
             width: "100%",
@@ -124,7 +125,7 @@ const RequestBecomSeller = ({ navigation }) => {
             borderRadius: 20,
             borderWidth: 2,
             borderStyle: "dashed",
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
@@ -141,12 +142,12 @@ const RequestBecomSeller = ({ navigation }) => {
         uploadLink: {
             fontSize: 15,
             fontFamily: FONTS_FAMILY.SourceSans3_SemiBold,
-            color: App_Primary_color,
+            color: primaryColor,
             marginTop: 12,
         },
         submitBtn: {
             marginTop: 24,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingVertical: 15,
             borderRadius: 16,
             alignItems: "center",
@@ -168,7 +169,7 @@ const RequestBecomSeller = ({ navigation }) => {
         if (loading) {
             return (
                 <View style={{ paddingTop: 100, alignItems: "center" }}>
-                    <ActivityIndicator color={App_Primary_color} size="large" />
+                    <ActivityIndicator color={primaryColor} size="large" />
                 </View>
             );
         }
@@ -205,7 +206,7 @@ const RequestBecomSeller = ({ navigation }) => {
                         <Image source={{ uri: fileName.uri }} style={styles.uploadImage} resizeMode="cover" />
                     ) : (
                         <>
-                            <Icon name="credit-card" size={32} color={App_Primary_color} />
+                            <Icon name="credit-card" size={32} color={primaryColor} />
                             <CustomText style={styles.uploadHint}>
                                 {status === "Rejected"
                                     ? "Your request was rejected. Please verify and upload your Aadhar Card again."

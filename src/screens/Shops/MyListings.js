@@ -2,30 +2,30 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     FlatList,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
     RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { ActionMenu, ConfirmDialog } from '../../components/ActionMenu';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
 import { apiGet, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import IMG from '../../assets/Images';
+import useThemeColor from '../../utils/useThemeColor';
 
 // "My Listings" — a regular user's own shop(s), matching web's AllMyShop.jsx
 // (web relabeled this from "My Shops" to "My Listings").
 const MyListings = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [shops, setShops] = useState([]);
@@ -86,7 +86,7 @@ const MyListings = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingHorizontal: 14,
             paddingVertical: 10,
             borderRadius: 14,
@@ -128,7 +128,7 @@ const MyListings = ({ navigation }) => {
             borderRadius: 20,
             backgroundColor: isDarkMode ? 'rgba(46,125,50,0.2)' : 'rgba(46,125,50,0.1)',
         },
-        chipText: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: App_Primary_color },
+        chipText: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: primaryColor },
         addressChip: {
             paddingHorizontal: 10,
             paddingVertical: 4,
@@ -139,7 +139,7 @@ const MyListings = ({ navigation }) => {
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
         emptyIconWrap: {
             width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: App_Primary_color, marginBottom: 16,
+            backgroundColor: primaryColor, marginBottom: 16,
         },
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
@@ -148,50 +148,56 @@ const MyListings = ({ navigation }) => {
         },
         emptyBtn: {
             marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6,
-            backgroundColor: App_Primary_color, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 16,
+            backgroundColor: primaryColor, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 16,
         },
     });
 
     const renderShop = ({ item }) => (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={() => navigation.navigate('ListingProducts', { shopId: item?._id, shopName: item?.Name })}
+        <GlowWrapper
+            isDarkMode={isDarkMode}
+            borderRadius={18}
+            showStars={false}
+            showShinePatches
+            intensity="low"
+            containerStyle={{ marginHorizontal: 20, marginBottom: 16 }}
+            glowColors={[primaryColor, primaryColor]}
         >
-            <Image
-                source={item?.Image ? { uri: item.Image } : IMG.PostImage}
-                style={styles.cardImage}
-                resizeMode="cover"
-            />
             <TouchableOpacity
-                style={styles.menuBtn}
-                onPress={() => setMenuShop(item)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                activeOpacity={0.85}
+                style={[styles.card, { marginHorizontal: 0, marginBottom: 0 }]}
+                onPress={() => navigation.navigate('ListingProducts', { shopId: item?._id, shopName: item?.Name })}
             >
-                <Icon name="more-vertical" size={18} color={white} />
+                <SafeImage uri={item?.Image} style={styles.cardImage} />
+                <TouchableOpacity
+                    style={styles.menuBtn}
+                    onPress={() => setMenuShop(item)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Icon name="more-vertical" size={18} color={white} />
+                </TouchableOpacity>
+                <View style={styles.cardBody}>
+                    <CustomText style={styles.shopName}>{item?.Name}</CustomText>
+                    {!!item?.Services && (
+                        <CustomText numberOfLines={1} style={styles.shopMeta}>{item?.Services}</CustomText>
+                    )}
+                    {(Array.isArray(item?.ShopCategory) && item.ShopCategory.length > 0) ||
+                    (Array.isArray(item?.Address) && item.Address.length > 0) ? (
+                        <View style={styles.chipRow}>
+                            {item?.ShopCategory?.slice(0, 3).map((cat, i) => (
+                                <View key={`cat-${i}`} style={styles.chip}>
+                                    <CustomText style={styles.chipText}>{cat}</CustomText>
+                                </View>
+                            ))}
+                            {item?.Address?.slice(0, 2).map((addr, i) => (
+                                <View key={`addr-${i}`} style={styles.addressChip}>
+                                    <CustomText style={styles.addressChipText}>📍 {addr?.LocationName}</CustomText>
+                                </View>
+                            ))}
+                        </View>
+                    ) : null}
+                </View>
             </TouchableOpacity>
-            <View style={styles.cardBody}>
-                <CustomText style={styles.shopName}>{item?.Name}</CustomText>
-                {!!item?.Services && (
-                    <CustomText numberOfLines={1} style={styles.shopMeta}>{item?.Services}</CustomText>
-                )}
-                {(Array.isArray(item?.ShopCategory) && item.ShopCategory.length > 0) ||
-                (Array.isArray(item?.Address) && item.Address.length > 0) ? (
-                    <View style={styles.chipRow}>
-                        {item?.ShopCategory?.slice(0, 3).map((cat, i) => (
-                            <View key={`cat-${i}`} style={styles.chip}>
-                                <CustomText style={styles.chipText}>{cat}</CustomText>
-                            </View>
-                        ))}
-                        {item?.Address?.slice(0, 2).map((addr, i) => (
-                            <View key={`addr-${i}`} style={styles.addressChip}>
-                                <CustomText style={styles.addressChipText}>📍 {addr?.LocationName}</CustomText>
-                            </View>
-                        ))}
-                    </View>
-                ) : null}
-            </View>
-        </TouchableOpacity>
+        </GlowWrapper>
     );
 
     return (
@@ -212,7 +218,7 @@ const MyListings = ({ navigation }) => {
                 contentContainerStyle={{ paddingTop: 8, paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 ListEmptyComponent={
                     !loading && (

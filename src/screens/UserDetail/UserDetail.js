@@ -165,6 +165,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   const [carSpec, setCarSpec] = useState(null)
   const [hasCarSpec, setHasCarSpec] = useState(false)
   const [isSpecExpanded, setIsSpecExpanded] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(15)
 
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default
@@ -185,6 +186,9 @@ const OtherUserDetail = ({ navigation, route }) => {
   const glowColors = useMemo(() => [primaryColor, secondaryColor], [primaryColor, secondaryColor])
   const isOtherUser = !!route?.params?.userId
   const userId = route?.params?.userId || selector?._id
+
+  // ✅ Guard so useFocusEffect only fetches once per userId, not on every tab re-focus
+  const hasFetchedForUserRef = useRef(null)
 
   // ✅ Stable fetch functions — wrapped in useCallback so refs are stable across renders
   const fetchData = useCallback(async () => {
@@ -263,9 +267,14 @@ const OtherUserDetail = ({ navigation, route }) => {
     } catch (e) { console.error('fetchAllProducts:', e) }
   }, [])
 
-  // ✅ Load critical data immediately, defer secondary calls until after nav animation
+  // ✅ Load critical data immediately, defer secondary calls until after nav animation.
+  // Fetches only once per userId — refocusing the same profile tab no longer
+  // re-triggers all 6 API calls / the loading spinner. Direct fetchData() calls
+  // elsewhere (e.g. after profile edit) are unaffected since they bypass this guard.
   useFocusEffect(
     useCallback(() => {
+      if (hasFetchedForUserRef.current === userId) return
+      hasFetchedForUserRef.current = userId
       fetchData()
       fetchCarSpecs()
       const task = InteractionManager.runAfterInteractions(() => {
@@ -373,6 +382,19 @@ const OtherUserDetail = ({ navigation, route }) => {
     if (activeTab === 'tagged') return (taggedPosts || []).filter(i => i?.media && !isVideo(i.media))
     return (allProducts || []).filter(i => i?.Image && !isVideo(i.Image))
   }, [activeTab, allPosts, savedPosts, taggedPosts, allProducts])
+
+  // ✅ Reset the 15-item pagination window whenever the tab changes
+  useEffect(() => { setVisibleCount(15) }, [activeTab])
+
+  // ✅ Paginate "All posts" & "Products" tabs — 15 visible at a time, "Load More" for rest
+  const displayedPosts = useMemo(() => {
+    if (activeTab === 'all' || activeTab === 'Marketplace') return filteredPosts.slice(0, visibleCount)
+    return filteredPosts
+  }, [filteredPosts, activeTab, visibleCount])
+
+  const canLoadMore = (activeTab === 'all' || activeTab === 'Marketplace') && filteredPosts.length > visibleCount
+
+  const loadMorePosts = useCallback(() => setVisibleCount(v => v + 15), [])
 
   // ✅ Dynamic colors memoized
   const dyn = useMemo(() => ({
@@ -624,18 +646,29 @@ const OtherUserDetail = ({ navigation, route }) => {
               </Text>
             </View>
           ) : (
-            <FlatList
-              data={filteredPosts}
-              numColumns={2}
-              renderItem={renderPostItem}
-              keyExtractor={keyExtractor}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={false}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              maxToRenderPerBatch={8}
-              initialNumToRender={6}
-              removeClippedSubviews={true}
-            />
+            <>
+              <FlatList
+                data={displayedPosts}
+                numColumns={2}
+                renderItem={renderPostItem}
+                keyExtractor={keyExtractor}
+                showsVerticalScrollIndicator={false}
+                scrollEnabled={false}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                maxToRenderPerBatch={8}
+                initialNumToRender={6}
+                removeClippedSubviews={true}
+              />
+              {canLoadMore && (
+                <TouchableOpacity
+                  style={[S.seeMoreButton, { borderWidth: 1, borderColor: primaryColor, borderRadius: 20, alignSelf: 'center', paddingHorizontal: 20 }]}
+                  onPress={loadMorePosts}
+                >
+                  <Text style={[S.seeMoreText, { color: primaryColor }]}>Load More</Text>
+                  <Feather name="chevron-down" size={16} color={primaryColor} />
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </ScrollView>

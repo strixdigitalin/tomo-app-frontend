@@ -136,6 +136,10 @@ import ListingProducts from '../../screens/Shops/ListingProducts';
 import ListingProductDetail from '../../screens/Shops/ListingProductDetail';
 import AddPostPromotion from '../../screens/Promotion/AddPostPromotion';
 import MyPostPromotions from '../../screens/Promotion/MyPostPromotions';
+import AllEvents from '../../screens/Event/AllEvents';
+import MyEvents from '../../screens/Event/MyEvents';
+import AddEvent from '../../screens/Event/AddEvent';
+import EventDetail from '../../screens/Event/EventDetail';
 import CreateProducts from '../../screens/Shops/CreateProduct';
 import AllPostOfAUser from '../../screens/AllPostOfAUser/AllPostOfaUser';
 import FeedBack from '../../screens/Feedback/FeedBack';
@@ -379,6 +383,34 @@ const StackNavigation = () => {
         <Stack.Screen
           name={'MyPostPromotions'}
           component={MyPostPromotions}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'AllEvents'}
+          component={AllEvents}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'MyEvents'}
+          component={MyEvents}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'AddEvent'}
+          component={AddEvent}
+          options={{
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name={'EventDetail'}
+          component={EventDetail}
           options={{
             animation: 'slide_from_right',
           }}

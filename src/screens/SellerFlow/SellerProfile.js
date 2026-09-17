@@ -17,7 +17,8 @@ import CustomText from '../../components/TextComponent';
 import Row from '../../components/wrapper/row';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 import { apiGet, apiPut, removeItem } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
@@ -25,7 +26,7 @@ import { removeUser } from '../../redux/reducer/user';
 import IMG from '../../assets/Images';
 
 const SellerProfile = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
 
@@ -260,7 +261,7 @@ const SellerProfile = ({ navigation }) => {
                             value={privacy.ShowEmail}
                             onValueChange={() => togglePrivacy('ShowEmail')}
                             disabled={savingKey === 'ShowEmail'}
-                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: App_Primary_color }}
+                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: primaryColor }}
                             thumbColor={white}
                             ios_backgroundColor={isDarkMode ? '#3A3A3A' : '#D1D5DB'}
                         />
@@ -274,7 +275,7 @@ const SellerProfile = ({ navigation }) => {
                             value={privacy.ShowMobile}
                             onValueChange={() => togglePrivacy('ShowMobile')}
                             disabled={savingKey === 'ShowMobile'}
-                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: App_Primary_color }}
+                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: primaryColor }}
                             thumbColor={white}
                             ios_backgroundColor={isDarkMode ? '#3A3A3A' : '#D1D5DB'}
                         />
@@ -288,7 +289,7 @@ const SellerProfile = ({ navigation }) => {
                             value={privacy.ShowAddress}
                             onValueChange={() => togglePrivacy('ShowAddress')}
                             disabled={savingKey === 'ShowAddress'}
-                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: App_Primary_color }}
+                            trackColor={{ false: isDarkMode ? '#3A3A3A' : '#D1D5DB', true: primaryColor }}
                             thumbColor={white}
                             ios_backgroundColor={isDarkMode ? '#3A3A3A' : '#D1D5DB'}
                         />
@@ -297,7 +298,7 @@ const SellerProfile = ({ navigation }) => {
 
                 <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('SellerHome')}>
                     <Row style={{ gap: 12 }}>
-                        <Icon name="shopping-bag" size={18} color={App_Primary_color} />
+                        <Icon name="shopping-bag" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>My Shops</CustomText>
                     </Row>
                     <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
@@ -305,7 +306,7 @@ const SellerProfile = ({ navigation }) => {
 
                 <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('SellerProduct')}>
                     <Row style={{ gap: 12 }}>
-                        <Icon name="package" size={18} color={App_Primary_color} />
+                        <Icon name="package" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>My Products</CustomText>
                     </Row>
                     <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
@@ -313,7 +314,7 @@ const SellerProfile = ({ navigation }) => {
 
                 <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('ThemeSettings')}>
                     <Row style={{ gap: 12 }}>
-                        <Icon name="sliders" size={18} color={App_Primary_color} />
+                        <Icon name="sliders" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>Theme Settings</CustomText>
                     </Row>
                     <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />

@@ -15,13 +15,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import IMG from '../../assets/Images';
 
 const SellerChatList = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [chatUsers, setChatUsers] = useState([]);
@@ -129,7 +129,7 @@ const SellerChatList = ({ navigation }) => {
                 contentContainerStyle={{ paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 renderItem={({ item }) => (
                     <TouchableOpacity

@@ -8,7 +8,6 @@ export const BASE_URL = 'https://tomo-backend-app.vercel.app';
 
 export async function getHeaders() {
   let token = await getItem('token');
-  console.log("token in api", token);
   if (token) {
     return {
       Authorization: 'Bearer ' + token,
@@ -113,7 +112,6 @@ export async function apiReq(
         return res(data);
       })
       .catch(error => {
-        console.log(error);
         // console.log(error && error.response, 'the error response');
         if (error && error.response && error.response.status === 401) {
           showError('User is not authorized');
@@ -194,9 +192,7 @@ export async function clearAsyncStorage() {
   try {
     await AsyncStorage.multiRemove(CLEAR_KEYS);
         navigation.replace('MainScreen')
-    console.log('Session data cleared, biometric data preserved');
   } catch (error) {
-    console.log('Error clearing storage:', error);
   }
 }
 

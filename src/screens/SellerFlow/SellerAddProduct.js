@@ -20,11 +20,12 @@ import { ToastMsg } from "../../utils/helperFunctions";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { App_Primary_color, white } from "../../common/Colors/colors";
+import { white } from "../../common/Colors/colors";
+import useThemeColor from "../../utils/useThemeColor";
 import urls from "../../config/urls";
 
 const SellerAddProduct = ({ navigation, route }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const { showLoader, hideLoader } = useLoader();
 
     const editingProduct = route?.params?.product || null;
@@ -159,12 +160,12 @@ const SellerAddProduct = ({ navigation, route }) => {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
             marginRight: 8,
             marginBottom: 8,
         },
         shopChipActive: {
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
         },
         imageRow: {
             flexDirection: 'row',
@@ -193,13 +194,13 @@ const SellerAddProduct = ({ navigation, route }) => {
             borderRadius: 12,
             borderWidth: 1,
             borderStyle: 'dashed',
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
             alignItems: 'center',
             justifyContent: 'center',
         },
         submitBtn: {
             marginTop: 30,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingVertical: 15,
             borderRadius: 16,
             alignItems: 'center',
@@ -247,7 +248,7 @@ const SellerAddProduct = ({ navigation, route }) => {
                                         style={[styles.shopChip, selectedShopId === shop._id && styles.shopChipActive]}
                                         onPress={() => setSelectedShopId(shop._id)}
                                     >
-                                        <CustomText style={{ fontSize: 13, color: selectedShopId === shop._id ? white : App_Primary_color }}>
+                                        <CustomText style={{ fontSize: 13, color: selectedShopId === shop._id ? white : primaryColor }}>
                                             {shop.Name}
                                         </CustomText>
                                     </TouchableOpacity>
@@ -276,7 +277,7 @@ const SellerAddProduct = ({ navigation, route }) => {
                         </View>
                     ))}
                     <TouchableOpacity style={styles.addImageBox} onPress={pickImages}>
-                        <Icon name="plus" size={22} color={App_Primary_color} />
+                        <Icon name="plus" size={22} color={primaryColor} />
                     </TouchableOpacity>
                 </View>
 

@@ -2,28 +2,28 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     FlatList,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
     RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { ActionMenu, ConfirmDialog } from '../../components/ActionMenu';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
 import { apiGet, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import IMG from '../../assets/Images';
+import useThemeColor from '../../utils/useThemeColor';
 
 const SellerProduct = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [products, setProducts] = useState([]);
@@ -98,7 +98,7 @@ const SellerProduct = ({ navigation }) => {
             borderRadius: 20,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
         },
         grid: {
             paddingHorizontal: 14,
@@ -138,7 +138,7 @@ const SellerProduct = ({ navigation }) => {
         productPrice: {
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-            color: App_Primary_color,
+            color: primaryColor,
             marginTop: 4,
         },
         emptyWrap: {
@@ -153,7 +153,7 @@ const SellerProduct = ({ navigation }) => {
             borderRadius: 36,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             marginBottom: 16,
         },
         emptyTitle: {
@@ -170,28 +170,37 @@ const SellerProduct = ({ navigation }) => {
     });
 
     const renderProduct = ({ item }) => (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={() => navigation.navigate('SellerProductDetail', { id: item?._id })}
+        <GlowWrapper
+            isDarkMode={isDarkMode}
+            borderRadius={16}
+            showStars={false}
+            showShinePatches
+            intensity="low"
+            containerStyle={{ flex: 1, margin: 6 }}
+            glowColors={[primaryColor, primaryColor]}
         >
-            <Image
-                source={Array.isArray(item?.Images) && item.Images.length > 0 ? { uri: item.Images[0] } : IMG.PostImage}
-                style={styles.cardImage}
-                resizeMode="cover"
-            />
             <TouchableOpacity
-                style={styles.menuBtn}
-                onPress={() => setMenuProduct(item)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                activeOpacity={0.85}
+                style={[styles.card, { margin: 0 }]}
+                onPress={() => navigation.navigate('SellerProductDetail', { id: item?._id })}
             >
-                <Icon name="more-vertical" size={16} color={white} />
+                <SafeImage
+                    uri={Array.isArray(item?.Images) && item.Images.length > 0 ? item.Images[0] : null}
+                    style={styles.cardImage}
+                />
+                <TouchableOpacity
+                    style={styles.menuBtn}
+                    onPress={() => setMenuProduct(item)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Icon name="more-vertical" size={16} color={white} />
+                </TouchableOpacity>
+                <View style={styles.cardBody}>
+                    <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
+                    {!!item?.Price && <CustomText style={styles.productPrice}>₹{Number(item.Price).toLocaleString()}</CustomText>}
+                </View>
             </TouchableOpacity>
-            <View style={styles.cardBody}>
-                <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
-                {!!item?.Price && <CustomText style={styles.productPrice}>₹{Number(item.Price).toLocaleString()}</CustomText>}
-            </View>
-        </TouchableOpacity>
+        </GlowWrapper>
     );
 
     return (
@@ -215,7 +224,7 @@ const SellerProduct = ({ navigation }) => {
                 contentContainerStyle={styles.grid}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 ListEmptyComponent={
                     !loading && (

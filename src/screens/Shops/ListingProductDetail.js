@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     ScrollView,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
@@ -12,19 +11,19 @@ import {
     Modal,
     FlatList,
 } from 'react-native';
-import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Feather';
 import StarRating from 'react-native-star-rating-widget';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
 import { ConfirmDialog } from '../../components/ActionMenu';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { apiGet, apiPost, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import { App_Primary_color, white } from '../../common/Colors/colors';
-import IMG from '../../assets/Images';
+import { white } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 
 const { width } = Dimensions.get('window');
 
@@ -33,7 +32,7 @@ const { width } = Dimensions.get('window');
 // browsing flow's SellerProductdetails.jsx).
 const ListingProductDetail = ({ navigation, route }) => {
     const { productId } = route?.params || {};
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [product, setProduct] = useState(null);
@@ -115,7 +114,7 @@ const ListingProductDetail = ({ navigation, route }) => {
         },
         body: { padding: 20 },
         name: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        price: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: App_Primary_color, marginTop: 6 },
+        price: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: primaryColor, marginTop: 6 },
         sectionTitle: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginTop: 20, marginBottom: 8 },
         text: {
             fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
@@ -130,7 +129,7 @@ const ListingProductDetail = ({ navigation, route }) => {
         outOf: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: -4 },
         totalReviews: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 6 },
         writeReviewBtn: {
-            marginTop: 14, backgroundColor: App_Primary_color, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12,
+            marginTop: 14, backgroundColor: primaryColor, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12,
         },
         writeReviewBtnText: { color: white, fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 14 },
         reviewCard: {
@@ -157,7 +156,7 @@ const ListingProductDetail = ({ navigation, route }) => {
             fontSize: 14, marginTop: 14,
         },
         submitBtn: {
-            marginTop: 16, backgroundColor: App_Primary_color, paddingVertical: 14, borderRadius: 14, alignItems: 'center',
+            marginTop: 16, backgroundColor: primaryColor, paddingVertical: 14, borderRadius: 14, alignItems: 'center',
         },
     });
 
@@ -172,15 +171,11 @@ const ListingProductDetail = ({ navigation, route }) => {
 
             {loading ? (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <ActivityIndicator color={App_Primary_color} size="large" />
+                    <ActivityIndicator color={primaryColor} size="large" />
                 </View>
             ) : (
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-                    <Image
-                        source={images ? { uri: images[0] } : IMG.PostImage}
-                        style={styles.image}
-                        resizeMode="cover"
-                    />
+                    <SafeImage uri={images ? images[0] : null} style={styles.image} />
                     <View style={styles.body}>
                         <CustomText style={styles.name}>{product?.ProductName}</CustomText>
                         {!!product?.Price && <CustomText style={styles.price}>₹{Number(product.Price).toLocaleString()}</CustomText>}
@@ -235,10 +230,7 @@ const ListingProductDetail = ({ navigation, route }) => {
                                 renderItem={({ item }) => (
                                     <View style={styles.reviewCard}>
                                         <View style={styles.reviewHeader}>
-                                            <Image
-                                                source={item?.User?.Image ? { uri: item.User.Image } : IMG.ProfileImagePost}
-                                                style={styles.reviewAvatar}
-                                            />
+                                            <SafeImage uri={item?.User?.Image} style={styles.reviewAvatar} />
                                             <View style={{ flex: 1 }}>
                                                 <CustomText style={styles.reviewName}>
                                                     {item?.User?.FullName || item?.User?.UserName}

@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     FlatList,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
@@ -13,17 +12,19 @@ import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { ActionMenu, ConfirmDialog } from '../../components/ActionMenu';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
 import { apiGet, apiDelete } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { ToastMsg } from '../../utils/helperFunctions';
-import IMG from '../../assets/Images';
+import useThemeColor from '../../utils/useThemeColor';
 
 const SellerHome = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     let seller = useSelector(state => state?.user?.userData);
@@ -101,7 +102,7 @@ const SellerHome = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingHorizontal: 14,
             paddingVertical: 10,
             borderRadius: 14,
@@ -163,7 +164,7 @@ const SellerHome = ({ navigation }) => {
         chipText: {
             fontSize: 11,
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-            color: App_Primary_color,
+            color: primaryColor,
         },
         emptyWrap: {
             alignItems: 'center',
@@ -177,7 +178,7 @@ const SellerHome = ({ navigation }) => {
             borderRadius: 36,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             marginBottom: 16,
         },
         emptyTitle: {
@@ -196,7 +197,7 @@ const SellerHome = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 6,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingHorizontal: 20,
             paddingVertical: 12,
             borderRadius: 16,
@@ -204,39 +205,45 @@ const SellerHome = ({ navigation }) => {
     });
 
     const renderShop = ({ item }) => (
-        <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={() => navigation.navigate('SellerAddProduct', { shopId: item?._id, shopName: item?.Name })}
+        <GlowWrapper
+            isDarkMode={isDarkMode}
+            borderRadius={18}
+            showStars={false}
+            showShinePatches
+            intensity="low"
+            containerStyle={{ marginHorizontal: 20, marginBottom: 16 }}
+            glowColors={[primaryColor, primaryColor]}
         >
-            <Image
-                source={item?.Image ? { uri: item.Image } : IMG.PostImage}
-                style={styles.cardImage}
-                resizeMode="cover"
-            />
             <TouchableOpacity
-                style={styles.menuBtn}
-                onPress={() => setMenuShop(item)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                activeOpacity={0.85}
+                style={[styles.card, { marginHorizontal: 0, marginBottom: 0 }]}
+                onPress={() => navigation.navigate('SellerAddProduct', { shopId: item?._id, shopName: item?.Name })}
             >
-                <Icon name="more-vertical" size={18} color={white} />
+                <SafeImage uri={item?.Image} style={styles.cardImage} />
+                <TouchableOpacity
+                    style={styles.menuBtn}
+                    onPress={() => setMenuShop(item)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Icon name="more-vertical" size={18} color={white} />
+                </TouchableOpacity>
+                <View style={styles.cardBody}>
+                    <CustomText style={styles.shopName}>{item?.Name}</CustomText>
+                    {!!item?.Services && (
+                        <CustomText numberOfLines={1} style={styles.shopMeta}>{item?.Services}</CustomText>
+                    )}
+                    {Array.isArray(item?.ShopCategory) && item.ShopCategory.length > 0 && (
+                        <View style={styles.chipRow}>
+                            {item.ShopCategory.slice(0, 4).map((cat, i) => (
+                                <View key={i} style={styles.chip}>
+                                    <CustomText style={styles.chipText}>{cat}</CustomText>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </View>
             </TouchableOpacity>
-            <View style={styles.cardBody}>
-                <CustomText style={styles.shopName}>{item?.Name}</CustomText>
-                {!!item?.Services && (
-                    <CustomText numberOfLines={1} style={styles.shopMeta}>{item?.Services}</CustomText>
-                )}
-                {Array.isArray(item?.ShopCategory) && item.ShopCategory.length > 0 && (
-                    <View style={styles.chipRow}>
-                        {item.ShopCategory.slice(0, 4).map((cat, i) => (
-                            <View key={i} style={styles.chip}>
-                                <CustomText style={styles.chipText}>{cat}</CustomText>
-                            </View>
-                        ))}
-                    </View>
-                )}
-            </View>
-        </TouchableOpacity>
+        </GlowWrapper>
     );
 
     return (
@@ -266,7 +273,7 @@ const SellerHome = ({ navigation }) => {
                 contentContainerStyle={{ paddingTop: 8, paddingBottom: 120 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 ListEmptyComponent={
                     !loading && (

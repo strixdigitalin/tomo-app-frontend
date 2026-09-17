@@ -2,24 +2,24 @@ import React, { useCallback, useState } from 'react';
 import {
     View,
     FlatList,
-    Image,
     StyleSheet,
     TouchableOpacity,
     StatusBar,
     RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import Row from '../../components/wrapper/row';
 import { SpaceBetweenRow } from '../../components/wrapper/spacebetween';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
-import IMG from '../../assets/Images';
+import useThemeColor from '../../utils/useThemeColor';
 
 const STATUS_COLORS = {
     Approved: { bg: '#16A34A', text: white },
@@ -30,7 +30,7 @@ const STATUS_COLORS = {
 // Matches web's Pages/PaidPromotion/AllMyPostPromotions.jsx — the user's own
 // post promotions (a different thing from boosting a shop product).
 const MyPostPromotions = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [promotions, setPromotions] = useState([]);
@@ -66,7 +66,7 @@ const MyPostPromotions = ({ navigation }) => {
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         addBtn: {
             width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
         },
         list: { paddingHorizontal: 16, paddingBottom: 120 },
         card: {
@@ -109,7 +109,7 @@ const MyPostPromotions = ({ navigation }) => {
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
         emptyIconWrap: {
             width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: App_Primary_color, marginBottom: 16,
+            backgroundColor: primaryColor, marginBottom: 16,
         },
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
@@ -122,9 +122,18 @@ const MyPostPromotions = ({ navigation }) => {
         const statusStyle = STATUS_COLORS[item?.Status] || STATUS_COLORS.Pending;
 
         return (
-            <View style={styles.card}>
+            <GlowWrapper
+                isDarkMode={isDarkMode}
+                borderRadius={18}
+                showStars={false}
+                showShinePatches
+                intensity="low"
+                containerStyle={{ marginBottom: 16 }}
+                glowColors={[primaryColor, primaryColor]}
+            >
+            <View style={[styles.card, { marginBottom: 0 }]}>
                 <View style={styles.imageBox}>
-                    <Image source={post?.media ? { uri: post.media } : IMG.PostImage} style={styles.image} resizeMode="cover" />
+                    <SafeImage uri={post?.media} style={styles.image} />
                     {!!item?.Status && (
                         <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                             <CustomText style={[styles.statusText, { color: statusStyle.text }]}>{item.Status}</CustomText>
@@ -186,6 +195,7 @@ const MyPostPromotions = ({ navigation }) => {
                     </SpaceBetweenRow>
                 </View>
             </View>
+            </GlowWrapper>
         );
     };
 
@@ -193,7 +203,12 @@ const MyPostPromotions = ({ navigation }) => {
         <View style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
             <SpaceBetweenRow style={styles.header}>
-                <CustomText style={styles.headerTitle}>My Promotions</CustomText>
+                <Row style={{ gap: 14 }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Icon name="arrow-left" size={22} color={isDarkMode ? white : '#111'} />
+                    </TouchableOpacity>
+                    <CustomText style={styles.headerTitle}>My Promotions</CustomText>
+                </Row>
                 <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddPostPromotion')}>
                     <Icon name="plus" size={20} color={white} />
                 </TouchableOpacity>
@@ -206,7 +221,7 @@ const MyPostPromotions = ({ navigation }) => {
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={App_Primary_color} />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primaryColor} />
                 }
                 ListEmptyComponent={
                     !loading && (

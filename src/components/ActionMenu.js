@@ -4,12 +4,12 @@ import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from './TextComponent';
 import { FONTS_FAMILY } from '../assets/Fonts';
-import { App_Primary_color } from '../common/Colors/colors';
+import useThemeColor from '../utils/useThemeColor';
 
 // A proper bottom-sheet action menu — replaces native Alert.alert action sheets
 // everywhere in the app. options: [{ label, icon, destructive, onPress }]
 export const ActionMenu = ({ visible, onClose, title, options = [] }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
 
     const styles = StyleSheet.create({
         overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
@@ -71,7 +71,7 @@ export const ActionMenu = ({ visible, onClose, title, options = [] }) => {
                                     <Icon
                                         name={opt.icon}
                                         size={18}
-                                        color={opt.destructive ? '#EF4136' : App_Primary_color}
+                                        color={opt.destructive ? '#EF4136' : primaryColor}
                                     />
                                 )}
                                 <CustomText
@@ -97,7 +97,7 @@ export const ActionMenu = ({ visible, onClose, title, options = [] }) => {
 // A small centered confirm dialog — replaces native Alert.alert confirmations
 // (e.g. "are you sure you want to delete this?").
 export const ConfirmDialog = ({ visible, onClose, title, message, confirmLabel = 'Delete', onConfirm }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
 
     const styles = StyleSheet.create({
         overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 30 },

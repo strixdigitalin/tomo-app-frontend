@@ -575,6 +575,7 @@ import Animated, {
 import { AddShopBtn, BackBlackSimple, BackIcon } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
 import { apiGet } from '../../utils/Apis';
@@ -646,10 +647,9 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
         >
           <View style={cardStyles.imageBox}>
             <Animated.View style={[cardStyles.imageWrapper, imageStyle]}>
-              <Image
-                source={item?.Image ? { uri: item.Image } : IMG.PostImage}
+              <SafeImage
+                uri={item?.Image}
                 style={cardStyles.shopImage}
-                resizeMode="cover"
                 progressiveRenderingEnabled
                 fadeDuration={150}
               />

@@ -25,11 +25,12 @@ import { ToastMsg } from "../../utils/helperFunctions";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { App_Primary_color, white } from "../../common/Colors/colors";
+import { white } from "../../common/Colors/colors";
+import useThemeColor from "../../utils/useThemeColor";
 import urls from "../../config/urls";
 
 const SellerAddShop = ({ navigation, route }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const { showLoader, hideLoader } = useLoader();
 
     const editingShop = route?.params?.shop || null;
@@ -166,7 +167,7 @@ const SellerAddShop = ({ navigation, route }) => {
             borderRadius: 16,
             borderWidth: 1,
             borderStyle: 'dashed',
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
@@ -178,13 +179,13 @@ const SellerAddShop = ({ navigation, route }) => {
             paddingVertical: 8,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
             marginRight: 8,
             marginBottom: 8,
         },
         submitBtn: {
             marginTop: 30,
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             paddingVertical: 15,
             borderRadius: 16,
             alignItems: 'center',
@@ -226,8 +227,8 @@ const SellerAddShop = ({ navigation, route }) => {
                         <Image source={{ uri: fileName?.uri || existingImageUrl }} style={styles.uploadImage} resizeMode="cover" />
                     ) : (
                         <>
-                            <Icon name="upload-cloud" size={26} color={App_Primary_color} />
-                            <CustomText style={{ marginTop: 8, fontSize: 13, color: App_Primary_color }}>Upload shop image</CustomText>
+                            <Icon name="upload-cloud" size={26} color={primaryColor} />
+                            <CustomText style={{ marginTop: 8, fontSize: 13, color: primaryColor }}>Upload shop image</CustomText>
                         </>
                     )}
                 </TouchableOpacity>
@@ -248,7 +249,7 @@ const SellerAddShop = ({ navigation, route }) => {
                     style={[styles.categoryChip, { alignSelf: 'flex-start' }]}
                     onPress={() => setShowCategoryModal(true)}
                 >
-                    <CustomText style={{ color: App_Primary_color, fontSize: 13 }}>
+                    <CustomText style={{ color: primaryColor, fontSize: 13 }}>
                         {selectedCategories.length > 0 ? `${selectedCategories.length} selected` : 'Select categories'}
                     </CustomText>
                 </TouchableOpacity>
@@ -293,7 +294,7 @@ const SellerAddShop = ({ navigation, route }) => {
                                         onPress={() => toggleCategory(item)}
                                     >
                                         <CustomText>{item.Name}</CustomText>
-                                        {isSelected && <Icon name="check" size={18} color={App_Primary_color} />}
+                                        {isSelected && <Icon name="check" size={18} color={primaryColor} />}
                                     </TouchableOpacity>
                                 );
                             }}

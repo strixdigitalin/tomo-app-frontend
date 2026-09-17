@@ -11,6 +11,7 @@ import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
+import SafeImage from '../../components/SafeImage';
 import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
@@ -117,10 +118,9 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                     onPress={onPress}
                     activeOpacity={0.8}
                 >
-                    <Image
-                        source={item?.Images?.[0] ? { uri: item?.Images[0] } : IMG.PostImage}
+                    <SafeImage
+                        uri={item?.Images?.[0]}
                         style={styles.productImage}
-                        resizeMode="cover"
                     />
 
                     {!!item?.Price && (

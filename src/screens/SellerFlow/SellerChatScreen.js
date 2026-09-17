@@ -17,7 +17,8 @@ import CustomText from '../../components/TextComponent';
 import Row from '../../components/wrapper/row';
 import { Back, BackOuterWhite } from '../../assets/SVGs';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color, white } from '../../common/Colors/colors';
+import { white } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 import { apiGet, BASE_URL } from '../../utils/Apis';
 import urls from '../../config/urls';
 import Icon from 'react-native-vector-icons/Feather';
@@ -25,7 +26,7 @@ import IMG from '../../assets/Images';
 
 const SellerChatScreen = ({ navigation, route }) => {
     const { userForChat } = route.params || {};
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
 
     let seller = useSelector(state => state?.user?.userData);
     if (Object.keys(seller || {}).length !== 0) {
@@ -148,7 +149,7 @@ const SellerChatScreen = ({ navigation, route }) => {
             borderRadius: 16,
         },
         myBubble: {
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
             alignSelf: 'flex-end',
             borderBottomRightRadius: 4,
         },
@@ -183,7 +184,7 @@ const SellerChatScreen = ({ navigation, route }) => {
             borderRadius: 22,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: App_Primary_color,
+            backgroundColor: primaryColor,
         },
     });
 

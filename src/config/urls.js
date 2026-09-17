@@ -57,6 +57,14 @@ export default {
     createPostPromotion: '/api/user/CreatePostPromotion',
     getMyPostPromotions: '/api/user/GetMyPostPromotions',
 
+    // ─── Events (web: Pages/Event) ─────────────────────────────────────────
+    createEvent: '/api/user/UserCreateEvent',
+    allEvents: '/api/user/AllUserGetAllEvents',
+    myEvents: '/api/user/UserGetMyEvents',
+    eventDetail: '/api/user/GetEventDetail',
+    updateEvent: '/api/user/UserUpdateEvent',
+    deleteEvent: '/api/user/UserDeleteEvent',
+
     // ─── Seller ────────────────────────────────────────────────────────────
     sellerLogin: '/api/seller/Login',
     sellerSignup: '/api/seller/Register',

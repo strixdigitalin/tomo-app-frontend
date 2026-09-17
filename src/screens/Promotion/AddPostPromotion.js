@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
     View,
-    Image,
     ScrollView,
     StyleSheet,
     TouchableOpacity,
@@ -10,18 +9,18 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import { useSelector } from 'react-redux';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Feather';
 import CustomText from '../../components/TextComponent';
+import SafeImage from '../../components/SafeImage';
 import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { apiGet, apiPost } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import { App_Primary_color, white } from '../../common/Colors/colors';
-import IMG from '../../assets/Images';
+import { white } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 
 const PROMOTION_TYPES = ['Advertisement', 'Boost Post'];
 const GOALS = ['Brand Awareness', 'More Followers', 'More Likes', 'Website Traffic', 'Messages'];
@@ -30,7 +29,7 @@ const CURRENCIES = ['INR', 'USD'];
 // Matches web's Pages/PaidPromotion/AddPostPromotion.jsx — promotes one of the
 // user's own POSTS (not a shop product), same fields, same endpoint.
 const AddPostPromotion = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
 
     const [allPosts, setAllPosts] = useState([]);
@@ -117,10 +116,10 @@ const AddPostPromotion = ({ navigation }) => {
         chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
         chip: {
             paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1,
-            borderColor: App_Primary_color,
+            borderColor: primaryColor,
         },
-        chipActive: { backgroundColor: App_Primary_color },
-        chipText: { fontSize: 13, color: App_Primary_color, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
+        chipActive: { backgroundColor: primaryColor },
+        chipText: { fontSize: 13, color: primaryColor, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
         chipTextActive: { color: white },
         row2: { flexDirection: 'row', gap: 12 },
         inputBox: {
@@ -137,7 +136,7 @@ const AddPostPromotion = ({ navigation }) => {
         dateBoxDisabled: { opacity: 0.6 },
         dateText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? white : '#111' },
         submitBtn: {
-            marginTop: 26, backgroundColor: App_Primary_color, paddingVertical: 15, borderRadius: 16, alignItems: 'center',
+            marginTop: 26, backgroundColor: primaryColor, paddingVertical: 15, borderRadius: 16, alignItems: 'center',
         },
         submitBtnDisabled: { opacity: 0.6 },
     });
@@ -172,11 +171,11 @@ const AddPostPromotion = ({ navigation }) => {
                             key={post._id}
                             style={[
                                 styles.postCard,
-                                { borderColor: active ? App_Primary_color : (isDarkMode ? '#2A2A2A' : '#EEE') },
+                                { borderColor: active ? primaryColor : (isDarkMode ? '#2A2A2A' : '#EEE') },
                             ]}
                             onPress={() => setSelectedPost(post)}
                         >
-                            <Image source={post?.media ? { uri: post.media } : IMG.PostImage} style={styles.postImage} />
+                            <SafeImage uri={post?.media} style={styles.postImage} />
                             <View style={{ flex: 1 }}>
                                 <CustomText numberOfLines={2} style={styles.postCaption}>
                                     {post?.caption || 'No caption'}
@@ -185,7 +184,7 @@ const AddPostPromotion = ({ navigation }) => {
                                     ❤️ {post?.TotalLikes || 0}   💬 {post?.TotalComents || 0}
                                 </CustomText>
                             </View>
-                            {active && <Icon name="check-circle" size={20} color={App_Primary_color} />}
+                            {active && <Icon name="check-circle" size={20} color={primaryColor} />}
                         </TouchableOpacity>
                     );
                 })}
