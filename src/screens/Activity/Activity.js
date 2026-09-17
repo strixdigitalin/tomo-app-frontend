@@ -38,6 +38,60 @@ import Animated, {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+// ─── Card — module scope + memo'd so it doesn't remount on every parent render ─
+const Card = React.memo(({ item, isDarkMode, animatedValue, selector, onAcceptReq, onPress, styles }) => (
+  <RNAnimated.View style={[styles.cardContainer, { opacity: animatedValue }]}>
+    <View style={styles.cardContent}>
+      <View style={styles.profileImageContainer}>
+        <Image source={IMG.MessageProfile} style={styles.profileImage} />
+        {item?.type == 'ProfileVisit' && (
+          <View style={styles.visitBadge}>
+            <Text style={styles.visitBadgeText}>👁️</Text>
+          </View>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.textContainer}
+        onPress={onPress}
+      >
+        <View style={styles.contentWrapper}>
+          <Text style={styles.action} numberOfLines={2}>
+            {item?.content}
+          </Text>
+          <Text style={styles.time}>{item?.user?.time}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {item?.type == 'FollowRequest' && (
+        <TouchableOpacity
+          disabled={selector?.Follower?.includes(item?.sender)}
+          onPress={() => onAcceptReq(item?.sender)}
+          style={styles.buttonWrapper}
+        >
+          <LinearGradient
+            colors={item.isFollowing ? [isDarkMode ? '#252525' : '#e0e0e0', isDarkMode ? '#252525' : '#e0e0e0'] : ['#21B7FF', '#0084F8']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              ...styles.followButton,
+              opacity: selector?.Follower?.includes(item?.sender) ? 0.3 : 1,
+            }}
+          >
+            <Text style={[
+              styles.followText,
+              { color: item.isFollowing ? (isDarkMode ? '#fff' : '#000') : '#fff' }
+            ]}>
+              {'Accept'}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+    </View>
+  </RNAnimated.View>
+));
+Card.displayName = 'Card';
+
 const Activity = ({ navigation, route }) => {
   const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -124,8 +178,7 @@ const Activity = ({ navigation, route }) => {
   const onAcceptReq = async (userId) => {
     try {
       showLoader();
-      const res = await apiPost(`${urls?.acceptFollowReq}/${userId}`);
-      console.log(res);
+      await apiPost(`${urls?.acceptFollowReq}/${userId}`);
 
       const getUserProfile = await apiGet(urls?.userProfile);
       dispatch(setUser(JSON.stringify(getUserProfile?.data)));
@@ -141,74 +194,7 @@ const Activity = ({ navigation, route }) => {
   const fetchData = async () => {
     setLoading(true);
     const res = await apiGet(urls.getAllNotifications);
-    
-    // Dummy profile visit data - API format me
-    const dummyVisits = [
-      {
-        _id: 'dummy1',
-        type: 'ProfileVisit',
-        content: 'Alkesh Patidar visited your profile',
-        sender: 'dummy_user_1',
-        createdAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-        user: { 
-          name: 'Alkesh Patidar',
-          time: '2m',
-          image: IMG.MessageProfile 
-        }
-      },
-      {
-        _id: 'dummy2',
-        type: 'ProfileVisit',
-        content: 'Rahul Sharma visited your profile',
-        sender: 'dummy_user_2',
-        createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        user: { 
-          name: 'Rahul Sharma',
-          time: '15m',
-          image: IMG.MessageProfile 
-        }
-      },
-      {
-        _id: 'dummy3',
-        type: 'ProfileVisit',
-        content: 'Priya Singh visited your profile',
-        sender: 'dummy_user_3',
-        createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-        user: { 
-          name: 'Priya Singh',
-          time: '1h',
-          image: IMG.MessageProfile 
-        }
-      },
-      {
-        _id: 'dummy4',
-        type: 'ProfileVisit',
-        content: 'Rohan Verma visited your profile',
-        sender: 'dummy_user_4',
-        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        user: { 
-          name: 'Rohan Verma',
-          time: '3h',
-          image: IMG.MessageProfile 
-        }
-      },
-      {
-        _id: 'dummy5',
-        type: 'ProfileVisit',
-        content: 'Neha Gupta visited your profile',
-        sender: 'dummy_user_5',
-        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        user: { 
-          name: 'Neha Gupta',
-          time: '5h',
-          image: IMG.MessageProfile 
-        }
-      },
-    ];
-    
-    // API data ke saath dummy visits merge kar do
-    const mergedData = [ ...(res?.data || [])];
-    setAllNotifications(mergedData);
+    setAllNotifications(res?.data || []);
     setLoading(false);
   };
 
@@ -221,58 +207,6 @@ const Activity = ({ navigation, route }) => {
         Activity <Text style={styles.highlightedText}>({allNotifications.length})</Text>
       </Text>
     </Row>
-  );
-
-  const Card = ({ item }) => (
-    <RNAnimated.View style={[styles.cardContainer, { opacity: animatedValue }]}>
-      <View style={styles.cardContent}>
-        <View style={styles.profileImageContainer}>
-          <Image source={IMG.MessageProfile} style={styles.profileImage} />
-          {item?.type == 'ProfileVisit' && (
-            <View style={styles.visitBadge}>
-              <Text style={styles.visitBadgeText}>👁️</Text>
-            </View>
-          )}
-        </View>
-        
-        <TouchableOpacity
-          style={styles.textContainer}
-          onPress={() => navigation.navigate('UserDetail')}
-        >
-          <View style={styles.contentWrapper}>
-            <Text style={styles.action} numberOfLines={2}>
-              {item?.content}
-            </Text>
-            <Text style={styles.time}>{item?.user?.time}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {item?.type == 'FollowRequest' && (
-          <TouchableOpacity
-            disabled={selector?.Follower?.includes(item?.sender)}
-            onPress={() => onAcceptReq(item?.sender)}
-            style={styles.buttonWrapper}
-          >
-            <LinearGradient
-              colors={item.isFollowing ? [isDarkMode ? '#252525' : '#e0e0e0', isDarkMode ? '#252525' : '#e0e0e0'] : ['#21B7FF', '#0084F8']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                ...styles.followButton,
-                opacity: selector?.Follower?.includes(item?.sender) ? 0.3 : 1,
-              }}
-            >
-              <Text style={[
-                styles.followText,
-                { color: item.isFollowing ? (isDarkMode ? '#fff' : '#000') : '#fff' }
-              ]}>
-                {'Accept'}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-      </View>
-    </RNAnimated.View>
   );
 
   const styles = StyleSheet.create({
@@ -414,7 +348,17 @@ const Activity = ({ navigation, route }) => {
           style={{ marginTop: 20, paddingHorizontal: 10 }}
           data={allNotifications}
           keyExtractor={(item, index) => item._id || index.toString()}
-          renderItem={({ item }) => <Card item={item} />}
+          renderItem={({ item }) => (
+            <Card
+              item={item}
+              isDarkMode={isDarkMode}
+              animatedValue={animatedValue}
+              selector={selector}
+              onAcceptReq={onAcceptReq}
+              styles={styles}
+              onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.sender })}
+            />
+          )}
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       </Animated.View>

@@ -103,6 +103,83 @@ const getBgGradient = (bgKey, isDark) => {
     return [isDark ? bg.dark : bg.light, isDark ? bg.dark : bg.light];
 };
 
+// ─── BackgroundWrapper — module scope so it doesn't remount (and replay its
+// LinearGradient/ImageBackground) on every keystroke in the chat input ──────
+const BackgroundWrapper = React.memo(({ bgConfig, isDarkMode, gradColors, children }) => {
+    const isImageBg = bgConfig?.type === 'image';
+    if (isImageBg) {
+        return (
+            <ImageBackground
+                source={{ uri: bgConfig?.image }}
+                style={styles.container}
+                imageStyle={{ opacity: isDarkMode ? 0.5 : 0.7 }}
+            >
+                <LinearGradient
+                    colors={isDarkMode
+                        ? ['rgba(26,26,26,0.8)', 'rgba(26,26,26,0.8)']
+                        : ['rgba(245,245,245,0.2)', 'rgba(245,245,245,0.2)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.container}
+                >
+                    {children}
+                </LinearGradient>
+            </ImageBackground>
+        );
+    }
+    return (
+        <LinearGradient
+            colors={gradColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.container}
+        >
+            {children}
+        </LinearGradient>
+    );
+});
+BackgroundWrapper.displayName = 'BackgroundWrapper';
+
+// ─── PreviewBubble — used inside the theme-customize modal only ────────────
+const PreviewBubble = React.memo(({ mine, text, pendingChatTheme, pendingBubbleStyle, isDarkMode, messageCornerRadius }) => {
+    const themeCfg  = CHAT_THEMES[pendingChatTheme]  || CHAT_THEMES.default;
+    const bubbleCfg = BUBBLE_STYLES[pendingBubbleStyle] || BUBBLE_STYLES.glassy;
+    const isGlass   = pendingBubbleStyle !== 'solid';
+
+    const myBg    = isGlass ? hexToRgba(themeCfg.bubbleColor, bubbleCfg.opacity) : themeCfg.bubbleColor;
+    const otherBg = isGlass
+        ? (isDarkMode ? 'rgba(42,42,42,0.7)' : 'rgba(241,241,241,0.7)')
+        : (isDarkMode ? '#2a2a2a' : '#F1F1F1');
+
+    return (
+        <View style={{ flexDirection: 'row', justifyContent: mine ? 'flex-end' : 'flex-start', marginBottom: 8 }}>
+            <View style={{
+                backgroundColor: mine ? myBg : otherBg,
+                borderRadius: messageCornerRadius,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                maxWidth: '70%',
+                borderWidth: isGlass ? 0.5 : 0,
+                borderColor: isGlass
+                    ? (mine ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)')
+                    : 'transparent',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: isGlass ? 2 : 1 },
+                shadowOpacity: isGlass ? 0.2 : 0.1,
+                shadowRadius: isGlass ? 8 : 2,
+                elevation: isGlass ? 4 : 1,
+            }}>
+                <Text style={{
+                    color: mine ? themeCfg.bubbleTextColor : (isDarkMode ? '#fff' : '#000'),
+                    fontSize: 14,
+                    fontWeight: isGlass ? '500' : '400',
+                }}>{text}</Text>
+            </View>
+        </View>
+    );
+});
+PreviewBubble.displayName = 'PreviewBubble';
+
 // ─── ChatScreen ───────────────────────────────────────────────────────────────
 const ChatScreen = ({ route, navigation }) => {
     const { userId, userForChat } = route.params;
@@ -427,86 +504,14 @@ const ChatScreen = ({ route, navigation }) => {
         );
     };
 
-    // ── Background wrapper ────────────────────────────────────────────────────
+    // ── Background wrapper config (component itself lives at module scope below,
+    // so it doesn't remount on every keystroke/state change in this screen) ──
     const bgConfig   = CHAT_BACKGROUNDS[chatBackground];
-    const isImageBg  = bgConfig?.type === 'image';
     const gradColors = getBgGradient(chatBackground, isDarkMode);
-
-    const BackgroundWrapper = ({ children }) => {
-        if (isImageBg) {
-            return (
-                <ImageBackground
-                    source={{ uri: bgConfig?.image }}
-                    style={styles.container}
-                    imageStyle={{ opacity: isDarkMode ? 0.5 : 0.7 }}
-                >
-                    <LinearGradient
-                        colors={isDarkMode
-                            ? ['rgba(26,26,26,0.8)', 'rgba(26,26,26,0.8)']
-                            : ['rgba(245,245,245,0.2)', 'rgba(245,245,245,0.2)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.container}
-                    >
-                        {children}
-                    </LinearGradient>
-                </ImageBackground>
-            );
-        }
-        return (
-            <LinearGradient
-                colors={gradColors}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.container}
-            >
-                {children}
-            </LinearGradient>
-        );
-    };
-
-    // ── Preview bubble helper (used inside theme modal) ───────────────────────
-    const PreviewBubble = ({ mine, text }) => {
-        const themeCfg  = CHAT_THEMES[pendingChatTheme]  || CHAT_THEMES.default;
-        const bubbleCfg = BUBBLE_STYLES[pendingBubbleStyle] || BUBBLE_STYLES.glassy;
-        const isGlass   = pendingBubbleStyle !== 'solid';
-
-        const myBg    = isGlass ? hexToRgba(themeCfg.bubbleColor, bubbleCfg.opacity) : themeCfg.bubbleColor;
-        const otherBg = isGlass
-            ? (isDarkMode ? 'rgba(42,42,42,0.7)' : 'rgba(241,241,241,0.7)')
-            : (isDarkMode ? '#2a2a2a' : '#F1F1F1');
-
-        return (
-            <View style={{ flexDirection: 'row', justifyContent: mine ? 'flex-end' : 'flex-start', marginBottom: 8 }}>
-                <View style={{
-                    backgroundColor: mine ? myBg : otherBg,
-                    borderRadius: messageCornerRadius,
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    maxWidth: '70%',
-                    borderWidth: isGlass ? 0.5 : 0,
-                    borderColor: isGlass
-                        ? (mine ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)')
-                        : 'transparent',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: isGlass ? 2 : 1 },
-                    shadowOpacity: isGlass ? 0.2 : 0.1,
-                    shadowRadius: isGlass ? 8 : 2,
-                    elevation: isGlass ? 4 : 1,
-                }}>
-                    <Text style={{
-                        color: mine ? themeCfg.bubbleTextColor : (isDarkMode ? '#fff' : '#000'),
-                        fontSize: 14,
-                        fontWeight: isGlass ? '500' : '400',
-                    }}>{text}</Text>
-                </View>
-            </View>
-        );
-    };
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
-        <BackgroundWrapper>
+        <BackgroundWrapper bgConfig={bgConfig} isDarkMode={isDarkMode} gradColors={gradColors}>
             <StatusBar
                 translucent
                 backgroundColor="transparent"
@@ -833,9 +838,9 @@ const ChatScreen = ({ route, navigation }) => {
                                     padding: 16,
                                     minHeight: 140,
                                 }}>
-                                    <PreviewBubble mine text="Hey! How are you? 👋" />
-                                    <PreviewBubble mine={false} text="I'm doing great! 😊" />
-                                    <PreviewBubble mine text="Let's catch up soon!" />
+                                    <PreviewBubble mine text="Hey! How are you? 👋" pendingChatTheme={pendingChatTheme} pendingBubbleStyle={pendingBubbleStyle} isDarkMode={isDarkMode} messageCornerRadius={messageCornerRadius} />
+                                    <PreviewBubble mine={false} text="I'm doing great! 😊" pendingChatTheme={pendingChatTheme} pendingBubbleStyle={pendingBubbleStyle} isDarkMode={isDarkMode} messageCornerRadius={messageCornerRadius} />
+                                    <PreviewBubble mine text="Let's catch up soon!" pendingChatTheme={pendingChatTheme} pendingBubbleStyle={pendingBubbleStyle} isDarkMode={isDarkMode} messageCornerRadius={messageCornerRadius} />
                                 </View>
                             </View>
                         </ScrollView>

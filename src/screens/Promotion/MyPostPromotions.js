@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import {
     View,
     FlatList,
@@ -34,6 +34,7 @@ const STATUS_COLORS = {
 // post promotions (a different thing from boosting a shop product).
 const MyPostPromotions = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
 
     const [promotions, setPromotions] = useState([]);
@@ -157,7 +158,7 @@ const MyPostPromotions = ({ navigation }) => {
                 showShinePatches
                 intensity="low"
                 containerStyle={{ marginBottom: 16 }}
-                glowColors={[primaryColor, primaryColor]}
+                glowColors={glowColors}
             >
             <TouchableOpacity
                 activeOpacity={0.9}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import {
     View,
     FlatList,
@@ -28,6 +28,7 @@ import useThemeColor from '../../utils/useThemeColor';
 // Pages/Event/AllMyEvents.jsx (api/user/UserGetMyEvents, same 3-dot menu).
 const MyEvents = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
 
     const [events, setEvents] = useState([]);
@@ -136,7 +137,7 @@ const MyEvents = ({ navigation }) => {
             showShinePatches
             intensity="low"
             containerStyle={{ marginHorizontal: 20, marginBottom: 16 }}
-            glowColors={[primaryColor, primaryColor]}
+            glowColors={glowColors}
         >
             <TouchableOpacity
                 activeOpacity={0.85}

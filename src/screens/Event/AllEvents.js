@@ -27,6 +27,7 @@ import useThemeColor from '../../utils/useThemeColor';
 // (same api/user/AllUserGetAllEvents endpoint, same card fields).
 const AllEvents = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
 
     const [events, setEvents] = useState([]);
@@ -137,7 +138,7 @@ const AllEvents = ({ navigation }) => {
             showShinePatches
             intensity="low"
             containerStyle={{ marginHorizontal: 20, marginBottom: 16 }}
-            glowColors={[primaryColor, primaryColor]}
+            glowColors={glowColors}
         >
             <TouchableOpacity
                 activeOpacity={0.85}

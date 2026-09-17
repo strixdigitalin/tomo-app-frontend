@@ -29,6 +29,7 @@ import useThemeColor from '../../utils/useThemeColor';
 // GroupApi.js instead of the shared Apis.js/urls.js used everywhere else.
 const AllMyGroups = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
 
     const rawUser = useSelector(state => state?.user?.userData);
@@ -123,7 +124,7 @@ const AllMyGroups = ({ navigation }) => {
                 showShinePatches
                 intensity="low"
                 containerStyle={{ marginHorizontal: 20, marginBottom: 14 }}
-                glowColors={[primaryColor, primaryColor]}
+                glowColors={glowColors}
             >
                 <TouchableOpacity
                     activeOpacity={0.85}

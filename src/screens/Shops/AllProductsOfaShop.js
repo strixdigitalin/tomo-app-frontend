@@ -3,7 +3,7 @@
 
 
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 import { useSelector } from 'react-redux';
 import { BackBlackSimple, BackIcon } from '../../assets/SVGs';
@@ -37,7 +37,8 @@ const AllProductsOfAShops = ({ navigation, route }) => {
     const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
     const primaryColor = currentTheme.primary;
     const secondaryColor = currentTheme.secondary;
-    const glowColors = [primaryColor, secondaryColor];
+    // ✅ Was recreated every render, feeding 7+ GlowWrapper/LinearGradient/icon consumers
+    const glowColors = useMemo(() => [primaryColor, secondaryColor], [primaryColor, secondaryColor]);
 
     let selector = useSelector(state => state?.user?.userData);
     if (Object.keys(selector).length !== 0) {

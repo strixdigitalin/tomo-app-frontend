@@ -227,7 +227,9 @@ function TabNavigation() {
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
   const primaryColor = currentTheme.primary;
   const secondaryColor = currentTheme.secondary;
-  const glowColors = [primaryColor, secondaryColor];
+  // ✅ Was recreated every render — this navigator re-renders on every nav
+  // state change, and glowColors feeds the reanimated focused-tab glow.
+  const glowColors = React.useMemo(() => [primaryColor, secondaryColor], [primaryColor, secondaryColor]);
 
   let selector = useSelector(state => state?.user?.userData);
   if (Object.keys(selector).length != 0) {

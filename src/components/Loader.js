@@ -1,10 +1,9 @@
 import {View, Text, Modal, ActivityIndicator} from 'react-native';
 import React from 'react';
-import { App_Primary_color } from '../common/Colors/colors';
-import { useSelector } from 'react-redux';
+import useThemeColor from '../utils/useThemeColor';
 
 const Loader = ({visible = false}) => {
-  const { isDarkMode } = useSelector(state => state.theme);
+  const { isDarkMode, primaryColor } = useThemeColor();
 
   return (
     <Modal transparent visible={visible}
@@ -18,7 +17,7 @@ const Loader = ({visible = false}) => {
             borderRadius: 12,
             // elevation: 12,
           }}>
-          <ActivityIndicator size={'large'} color={isDarkMode?'white':App_Primary_color} />
+          <ActivityIndicator size={'large'} color={isDarkMode?'white':primaryColor} />
         </View>
       </View>
     </Modal>

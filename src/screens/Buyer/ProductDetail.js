@@ -18,7 +18,7 @@ import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import Row from '../../components/wrapper/row';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
-import { App_Primary_color } from '../../common/Colors/colors';
+import useThemeColor from '../../utils/useThemeColor';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
@@ -67,7 +67,7 @@ const SpecRow = ({ label, value, last }) => {
 const windowWidth = Dimensions.get('window').width;
 
 const ProductDetail = ({ navigation, route }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
     const [message, setMessage] = useState('Is this still available? 😊');
     const isFocused = useIsFocused();
     const [productData, setProductData] = useState(null);
@@ -189,7 +189,7 @@ const ProductDetail = ({ navigation, route }) => {
         title: { fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black' },
         price: { fontSize: 26, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginTop: 5 },
         listedInfo: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', marginTop: 5 },
-        buildStageBadge: { backgroundColor: App_Primary_color, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+        buildStageBadge: { backgroundColor: primaryColor, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
         buildStageBadgeText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 12 },
         specSection: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
         specSectionTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginBottom: 10 },
@@ -199,13 +199,13 @@ const ProductDetail = ({ navigation, route }) => {
         specValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black', flexShrink: 1, textAlign: 'right', maxWidth: '60%' },
         ownerNoteText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontStyle: 'italic', color: isDarkMode ? '#e4e6eb' : '#374151', lineHeight: 22 },
         shopCategoryChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: isDarkMode ? 'rgba(46,125,50,0.2)' : 'rgba(46,125,50,0.1)', marginRight: 6, marginBottom: 6 },
-        shopCategoryChipText: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: App_Primary_color },
+        shopCategoryChipText: { fontSize: 11, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: primaryColor },
         sellerCard: { backgroundColor: isDarkMode ? '#1e1e1e' : '#f8f9fa', borderRadius: 12, padding: 16 },
         verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
         verifiedBadgeText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: '#1877f2' },
         messageContainer: { padding: 16, backgroundColor: isDarkMode ? '#121212' : 'white', marginVertical: 8, borderRadius: 12 },
         messageInput: { padding: 12, backgroundColor: isDarkMode ? '#3a3b3c' : '#f0f2f5', borderRadius: 20, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 16, marginBottom: 10 },
-        sendButton: { backgroundColor: App_Primary_color, borderRadius: 6, padding: 14, alignItems: 'center' },
+        sendButton: { backgroundColor: primaryColor, borderRadius: 6, padding: 14, alignItems: 'center' },
         sendButtonText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 16 },
         actionsContainer: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 16, backgroundColor: isDarkMode ? '#121212' : 'white', borderTopWidth: 1, borderBottomWidth: 1, borderColor: isDarkMode ? '#3a3b3c' : '#e4e6eb' },
         actionButton: { alignItems: 'center' },
@@ -249,11 +249,11 @@ const ProductDetail = ({ navigation, route }) => {
         ratingBarContainer: { flex: 1, height: 8, backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb', borderRadius: 4, marginHorizontal: 8, overflow: 'hidden' },
         ratingBarFill: { height: '100%', backgroundColor: '#FFD700', borderRadius: 4 },
         ratingBarCount: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', width: 25, textAlign: 'right' },
-        writeReviewButton: { backgroundColor: App_Primary_color, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginBottom: 16 },
+        writeReviewButton: { backgroundColor: primaryColor, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginBottom: 16 },
         writeReviewButtonText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 16 },
         filterContainer: { flexDirection: 'row', marginBottom: 16 },
         filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb', marginRight: 8 },
-        filterChipActive: { backgroundColor: App_Primary_color },
+        filterChipActive: { backgroundColor: primaryColor },
         filterChipText: { fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 14, color: isDarkMode ? '#e4e6eb' : '#050505' },
         filterChipTextActive: { color: 'white' },
         reviewsList: { marginTop: 8 },
@@ -282,7 +282,7 @@ const ProductDetail = ({ navigation, route }) => {
         reviewInputLabel: { fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: isDarkMode ? 'white' : 'black', fontSize: 16, marginBottom: 10 },
         reviewTextInput: { backgroundColor: isDarkMode ? '#1e1e1e' : '#f8f9fa', borderRadius: 12, padding: 16, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 15, minHeight: 140, textAlignVertical: 'top', borderWidth: 1, borderColor: isDarkMode ? '#3a3b3c' : '#e4e6eb' },
         characterCount: { textAlign: 'right', fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', fontSize: 12, marginTop: 6, },
-        submitReviewButton: { backgroundColor: App_Primary_color, borderRadius: 12, paddingVertical: 16, alignItems: 'center', fontFamily: FONTS_FAMILY.SourceSans3_Medium },
+        submitReviewButton: { backgroundColor: primaryColor, borderRadius: 12, paddingVertical: 16, alignItems: 'center', fontFamily: FONTS_FAMILY.SourceSans3_Medium },
         submitReviewButtonText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 17 },
     });
 

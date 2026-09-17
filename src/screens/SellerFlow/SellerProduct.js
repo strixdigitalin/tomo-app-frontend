@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import {
     View,
     FlatList,
@@ -24,6 +24,7 @@ import useThemeColor from '../../utils/useThemeColor';
 
 const SellerProduct = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
 
     const [products, setProducts] = useState([]);
@@ -177,7 +178,7 @@ const SellerProduct = ({ navigation }) => {
             showShinePatches
             intensity="low"
             containerStyle={{ flex: 1, margin: 6 }}
-            glowColors={[primaryColor, primaryColor]}
+            glowColors={glowColors}
         >
             <TouchableOpacity
                 activeOpacity={0.85}

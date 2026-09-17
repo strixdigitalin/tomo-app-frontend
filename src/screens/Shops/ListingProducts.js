@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import {
     View,
     FlatList,
@@ -27,6 +27,7 @@ import useThemeColor from '../../utils/useThemeColor';
 // from the Marketplace browsing flow's AllProductofaShop.jsx).
 const ListingProducts = ({ navigation, route }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
+    const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
     const shopId = route?.params?.shopId;
     const shopName = route?.params?.shopName;
@@ -130,7 +131,7 @@ const ListingProducts = ({ navigation, route }) => {
             showShinePatches
             intensity="low"
             containerStyle={{ flex: 1, margin: 6 }}
-            glowColors={[primaryColor, primaryColor]}
+            glowColors={glowColors}
         >
             <TouchableOpacity
                 activeOpacity={0.85}
