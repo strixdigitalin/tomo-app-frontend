@@ -23,7 +23,7 @@ import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import Row from '../../components/wrapper/row';
 import { useSelector } from 'react-redux';
-import StoryViewModel from './StoryViewersModel';
+import StoryViewModel from './StoryViewersModal';
 import { apiGet, apiPost } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { ToastMsg } from '../../utils/helperFunctions';

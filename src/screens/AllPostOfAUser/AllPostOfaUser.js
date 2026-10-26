@@ -20,9 +20,9 @@ import useLoader from "../../utils/LoaderHook";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import moment from "moment";
 import FeedShimmerLoader from "../../components/Skeletons/FeedsShimmer";
-import CommentModal from "../Home/CommentModel";
+import CommentModal from "../Home/CommentModal";
 import GradientIcon from "../../components/GradientIcon";
-import PostDetailModal from "../Home/PostDetailModel";
+import PostDetailModal from "../Home/PostDetailModal";
 
 
 const AllPostOfAUser = ({ navigation, route }) => {

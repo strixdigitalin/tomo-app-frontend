@@ -47,7 +47,7 @@ import MyListings from '../../screens/Shops/MyListings';
 import { THEMES } from '../../redux/reducer/theme';
 import IMG from '../../assets/Images';
 
-import StoreScreen from '../../screens/E-commerce/EcoomerceProducts';
+import StoreScreen from '../../screens/Ecommerce/EcommerceProducts';
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');

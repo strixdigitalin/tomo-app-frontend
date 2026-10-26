@@ -6,14 +6,14 @@ import OnBoarding from '../../screens/Splash/OnBoarding';
 import Login from '../../screens/Auth/Login';
 import SignUp from '../../screens/Auth/Signup';
 import Home from '../../screens/Home/Home';
-import TabNavigation from '../TabNavigation.js/TabNavigation';
+import TabNavigation from '../TabNavigation/TabNavigation';
 import ChatScreen from '../../screens/Message/ChatScreen';
 import Activity from '../../screens/Activity/Activity';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import Followers from '../../screens/Followers/Followers';
 import OtherUserDetail from '../../screens/UserDetail/OtherUserDetail';
 import StoryScreen from '../../screens/Home/StoryScreen';
-import RequestBecomSeller from '../../screens/Seller/RequestBecomSeller';
+import RequestBecomSeller from '../../screens/SellerFlow/RequestBecomeSeller';
 import Shops from '../../screens/Shops/Shops';
 import AddShops from '../../screens/Shops/AddShops';
 import SavedPosts from '../../screens/Saved/SavedPosts';
@@ -23,7 +23,7 @@ import Follwing from '../../screens/Followers/Following';
 import MarketplaceBuyer from '../../screens/Buyer/BuyerItemList';
 import ProductDetail from '../../screens/Buyer/ProductDetail';
 import PrivacyPolicy from '../../screens/PrivacyPolicy/PrivacyPolicy';
-import TermsAndConditions from '../../screens/PrivacyPolicy/Terms&Conditions';
+import TermsAndConditions from '../../screens/PrivacyPolicy/TermsAndConditions';
 import AllProductsOfAShops from '../../screens/Shops/AllProductsOfaShop';
 import ListingProducts from '../../screens/Shops/ListingProducts';
 import ListingProductDetail from '../../screens/Shops/ListingProductDetail';
@@ -53,11 +53,11 @@ import AddVehicleSpecs from '../../screens/UserDetail/AddSpecs';
 import Settings from '../../screens/PrivacyPolicy/Settings';
 import ThemeSettings from '../../screens/PrivacyPolicy/ThemeSettingScreen';
 import ChooseMusicScreen from '../../screens/UserDetail/SelectSongs';
-import EcomProductDetailScreen from '../../screens/E-commerce/ProductDetail';
-import CartScreen from '../../screens/E-commerce/CartScreen';
-import OrdersScreen from '../../screens/E-commerce/Orders/Orders';
-import OrderDetailScreen from '../../screens/E-commerce/Orders/OrderDetails';
-import SellerTabNavigation from '../TabNavigation.js/SellerTabNavigation';
+import EcomProductDetailScreen from '../../screens/Ecommerce/ProductDetail';
+import CartScreen from '../../screens/Ecommerce/CartScreen';
+import OrdersScreen from '../../screens/Ecommerce/Orders/Orders';
+import OrderDetailScreen from '../../screens/Ecommerce/Orders/OrderDetails';
+import SellerTabNavigation from '../TabNavigation/SellerTabNavigation';
 import SellerAddShop from '../../screens/SellerFlow/SellerAddShop';
 import SellerAddProduct from '../../screens/SellerFlow/SellerAddProduct';
 import SellerShopProducts from '../../screens/SellerFlow/SellerShopProducts';
@@ -206,7 +206,7 @@ const StackNavigation = () => {
 
         {/* Seller & Shop Screens */}
         <Stack.Screen
-          name={'RequestBecomSeller'}
+          name={'RequestBecomeSeller'}
           component={RequestBecomSeller}
           options={{
             animation: 'slide_from_bottom',

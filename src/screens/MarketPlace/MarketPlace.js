@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 
 import { useSelector } from 'react-redux';
-import { BackIcon, CameraButton, Mic, NotiFication, Search } from '../assets/SVGs';
-import SpaceBetweenRow from '../components/wrapper/spacebetween';
-import CustomText from '../components/TextComponent';
-import { FONTS_FAMILY } from '../assets/Fonts';
-import { THEMES } from '../redux/reducer/theme';
+import { BackIcon, CameraButton, Mic, NotiFication, Search } from '../../assets/SVGs';
+import SpaceBetweenRow from '../../components/wrapper/spacebetween';
+import CustomText from '../../components/TextComponent';
+import { FONTS_FAMILY } from '../../assets/Fonts';
+import { THEMES } from '../../redux/reducer/theme';
 
 // Sample marketplace data with categories and items
 const marketplaceItems = [
