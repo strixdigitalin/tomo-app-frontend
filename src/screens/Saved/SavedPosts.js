@@ -194,7 +194,7 @@ const SavedPosts = ({ navigation }) => {
       style={{
         paddingTop: 50,
         paddingHorizontal: 20,
-        backgroundColor: isDarkMode ? '#252525' : 'white',
+        backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
         paddingBottom: 15,
       }}>
       <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -349,7 +349,7 @@ const SavedPosts = ({ navigation }) => {
   )
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? 'black' : 'white' }}>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }}>
       <StatusBar
         translucent={true}
         backgroundColor='transparent'

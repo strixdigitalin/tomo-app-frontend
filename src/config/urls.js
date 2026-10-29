@@ -2,6 +2,8 @@ export default {
     userLogin: '/api/user/Login',
     userProfile: '/api/user/GetUserProfile',
     userSignup: '/api/user/Register',
+    userSendOtp: '/api/user/UserSendOtponEmail',
+    sellerSendOtp: '/api/seller/SellerSendOtponEmail',
     getAllPost: '/api/user/GetAllPosts',
 
     getAllUsers: '/api/admin/GetAllUser',
@@ -59,6 +61,13 @@ export default {
     postPromotionDetail: '/api/user/GetPostPromotionDetail',
     updatePostPromotion: '/api/user/UpdatePostPromotion',
     deletePostPromotion: '/api/user/DeletePostPromotion',
+
+    // ─── Shop Promotion (seller; web: Pages/Seller/ShopPromotion) ──────────────
+    createShopPromotion: '/api/seller/SellerShopPromotion',
+    getMyShopPromotions: '/api/seller/GetMyShopPromotions',
+    shopPromotionDetail: '/api/seller/GetShopPromotionDetail',
+    updateShopPromotion: '/api/seller/UpdateShopPromotion',
+    deleteShopPromotion: '/api/seller/DeleteShopPromotion',
 
     // ─── Buyer↔Seller chat (web: Pages/MarketPlace/SellerChat) — separate from
     // social DMs and from the seller-side chat screen ───────────────────────

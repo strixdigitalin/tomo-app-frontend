@@ -78,7 +78,7 @@ const MyEvents = ({ navigation }) => {
         : [];
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 22, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         addBtn: {
@@ -88,8 +88,8 @@ const MyEvents = ({ navigation }) => {
         addBtnText: { color: white, fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 13 },
         card: {
             marginHorizontal: 20, marginBottom: 16, borderRadius: 18, overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         cardImageWrap: { position: 'relative' },
         cardImage: { width: '100%', height: 160 },
@@ -111,7 +111,7 @@ const MyEvents = ({ navigation }) => {
         eventName: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         eventGenre: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: primaryColor, marginTop: 2 },
         metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-        metaText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280', flexShrink: 1 },
+        metaText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#94A3B8' : '#64748B', flexShrink: 1 },
         venueName: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? white : '#111' },
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
         emptyIconWrap: {
@@ -121,7 +121,7 @@ const MyEvents = ({ navigation }) => {
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
             fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
         emptyBtn: {
             marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6,

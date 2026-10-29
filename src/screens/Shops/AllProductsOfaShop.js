@@ -21,6 +21,7 @@ import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import GradientIcon from '../../components/GradientIcon';
 import { App_Primary_color } from '../../common/Colors/colors';
 import { THEMES } from '../../redux/reducer/theme'; // ✅ IMPORT THEMES
+import { productTitle } from '../../utils/productFields';
 
 const AllProductsOfAShops = ({ navigation, route }) => {
     const [allProducts, setAllProducts] = useState([]);
@@ -56,7 +57,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             setFilteredProducts(allProducts);
         } else {
             const filtered = allProducts.filter(product => {
-                const productName = product?.ProductName?.toLowerCase() || '';
+                const productName = productTitle(product).toLowerCase() || '';
                 const productDetails = product?.ProductDetails?.toLowerCase() || '';
                 const query = searchQuery.toLowerCase();
                 return productName.includes(query) || productDetails.includes(query);
@@ -112,8 +113,8 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                     style={[
                         styles.cardContainer,
                         {
-                            backgroundColor: isDarkMode ? '#252525' : '#fff',
-                            borderColor: isDarkMode ? 'gray' : '#E4E4E4'
+                            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
+                            borderColor: primaryColor + '40', shadowColor: primaryColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 10, elevation: 3
                         }
                     ]}
                     onPress={onPress}
@@ -157,7 +158,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                             style={styles.productName}
                             numberOfLines={1}
                         >
-                            {item?.ProductName}
+                            {productTitle(item)}
                         </CustomText>
 
                         {!!item?.VehicleInfo && (
@@ -232,7 +233,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             <SpaceBetweenRow
                 style={[
                     styles.header,
-                    { backgroundColor: isDarkMode ? '#252525' : 'white' }
+                    { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }
                 ]}
             >
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -265,7 +266,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? 'black' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         header: {
             paddingTop: 50,
@@ -279,7 +280,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
         searchContainer: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: isDarkMode ? '#252525' : '#F0F0F0',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderRadius: 30,
             margin: 10,
             padding: 4,

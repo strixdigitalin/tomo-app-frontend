@@ -63,6 +63,12 @@ import GradientIcon from '../../components/GradientIcon'
 import LinearGradient from 'react-native-linear-gradient'
 import { formatInstagramDate } from '../../utils/DateFormat'
 import FeedCard from './FeedsCards'
+import InfoCard from '../../components/InfoCard'
+import { ActionMenu } from '../../components/ActionMenu'
+import PromotedSection from '../../components/PromotedSection'
+import PromotedPostModal from '../../components/PromotedPostModal'
+import ShopPromoModal from '../../components/ShopPromoModal'
+import { isShopPromotion } from '../../utils/promotions'
 import Tts from 'react-native-tts'
 import { THEMES } from '../../redux/reducer/theme'
 import { App_Primary_color } from '../../common/Colors/colors'
@@ -139,6 +145,7 @@ const Home = ({ navigation }) => {
   const [pausedVideos, setPausedVideos] = useState({})
   const [searchText, setSearchText] = useState("")
   const [suggestions, setSuggestions] = useState([])
+  const [searchFocused, setSearchFocused] = useState(false)
   const [tagLoading, setTagLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
@@ -149,6 +156,14 @@ const Home = ({ navigation }) => {
   const [currentAdImageIndex, setCurrentAdImageIndex] = useState({})
   const [newsData, setNewsData] = useState([])
   const [newsLoading, setNewsLoading] = useState(true)
+  // What's New sub-tabs (News / Tips / Blog), same as web
+  const [newsSub, setNewsSub] = useState('News')
+  const [tipsData, setTipsData] = useState([])
+  const [blogsData, setBlogsData] = useState([])
+  // Approved promoted posts (users' and garages'), shown inside the home feed like web's Promoted panel
+  const [promotedPosts, setPromotedPosts] = useState([])
+  const [selectedPromo, setSelectedPromo] = useState(null)
+  const [menuPost, setMenuPost] = useState(null) // post whose ⋮ menu is open
   const [heartOpacity, setHeartOpacity] = useState(0)
   const [heartScale, setHeartScale] = useState(0)
 
@@ -385,10 +400,12 @@ const Home = ({ navigation }) => {
     let dataToMerge = []
 
     if (selectedTab === 'News') {
-      dataToMerge = newsData
+      dataToMerge = newsSub === 'Tips' ? tipsData.map(t => ({ ...t, _info: true }))
+        : newsSub === 'Blog' ? blogsData.map(b => ({ ...b, _info: true }))
+        : newsData
     } else {
       const filteredPosts = allPosts.filter(item => {
-        const hasImage = item?.media && !item?.media.toLowerCase().includes('.mp4')
+        const hasImage = !!item?.media
         const isTop25 = selectedTab === 'Top25' ? item?.TotalLikes > 25 : true
         return hasImage && isTop25
       })
@@ -396,7 +413,7 @@ const Home = ({ navigation }) => {
     }
 
     return mergeFeedWithAds(dataToMerge, advertisements)
-  }, [allPosts, advertisements, selectedTab, newsData, mergeFeedWithAds])
+  }, [allPosts, advertisements, selectedTab, newsData, newsSub, tipsData, blogsData, mergeFeedWithAds])
 
   // Cleanup function
   useEffect(() => {
@@ -637,13 +654,29 @@ const Home = ({ navigation }) => {
     }
   }, [])
 
+  const fetchPromoted = useCallback(async () => {
+    try {
+      const res = await apiGet('/api/user/GetAllApprovedPostPromotions')
+      // post promotions and shop promotions both come back from this endpoint
+      setPromotedPosts((res?.data || []).filter(p => (p?.Post || isShopPromotion(p)) && p?.IsRunning !== false))
+    } catch (error) {
+      console.error('Error fetching promotions:', error)
+    }
+  }, [])
+
   const fetchNewsData = useCallback(async () => {
     setNewsLoading(true)
     try {
-      const res = await apiGet('/api/admin/GetAllPublishedNews')
+      const [res, tips, blogs] = await Promise.all([
+        apiGet('/api/admin/GetAllPublishedNews'),
+        apiGet('/api/admin/GetAllTips').catch(() => null),
+        apiGet('/api/admin/GetAllBlogs').catch(() => null),
+      ])
       if (res?.data) {
         setNewsData(res.data)
       }
+      setTipsData(tips?.data || [])
+      setBlogsData(blogs?.data || [])
     } catch (error) {
       console.error('Error fetching news:', error)
     } finally {
@@ -699,6 +732,7 @@ const Home = ({ navigation }) => {
     getFollwedStories()
     fetchAdvertisements()
     fetchNewsData()
+    fetchPromoted()
   }, [])
 
   // Search effect
@@ -778,10 +812,11 @@ const Home = ({ navigation }) => {
       getCurrentStories(),
       getFollwedStories(),
       fetchAdvertisements(),
-      fetchNewsData()
+      fetchNewsData(),
+      fetchPromoted()
     ])
     setLoading(false)
-  }, [fetchData, getCurrentStories, getFollwedStories, fetchAdvertisements, fetchNewsData])
+  }, [fetchData, getCurrentStories, getFollwedStories, fetchAdvertisements, fetchNewsData, fetchPromoted])
 
   // Post actions
   const SavePost = useCallback(async (item) => {
@@ -981,7 +1016,7 @@ const Home = ({ navigation }) => {
   // const renderHeader = useCallback(() => {
   //   return (
   //     <Animated.View 
-  //       style={[headerAnimatedStyle, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}
+  //       style={[headerAnimatedStyle, { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }]}
   //     >
   //       <SpaceBetweenRow
   //         style={{
@@ -1014,7 +1049,7 @@ const Home = ({ navigation }) => {
   //                 <CustomText
   //                   style={[
   //                     styles.tabText,
-  //                     selectedTab === tab && styles.tabTextActive
+  //                     selectedTab === tab && [styles.tabTextActive, { color: primaryColor }]
   //                   ]}>
   //                   {tab === 'home' ? 'Home' : tab}
   //                 </CustomText>
@@ -1053,7 +1088,7 @@ const Home = ({ navigation }) => {
   const renderHeader = useCallback(() => {
     return (
       <Animated.View
-        style={[headerAnimatedStyle, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}
+        style={[headerAnimatedStyle, { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }]}
       >
         <SpaceBetweenRow
           style={{
@@ -1088,7 +1123,7 @@ const Home = ({ navigation }) => {
                   <CustomText
                     style={[
                       styles.tabText,
-                      selectedTab === tab && styles.tabTextActive
+                      selectedTab === tab && [styles.tabTextActive, { color: primaryColor }]
                     ]}>
                     {tab === 'home' ? 'Home' : tab}
                   </CustomText>
@@ -1135,29 +1170,34 @@ const Home = ({ navigation }) => {
   const renderSearchBar = useCallback(() => {
     return (
       <View style={styles.searchContainer}>
-        <View style={styles.searchInputWrapper}>
+        <View style={[
+          styles.searchInputWrapper,
+          {
+            borderColor: searchFocused ? primaryColor : primaryColor + (isDarkMode ? '66' : '55'),
+            shadowColor: primaryColor,
+            shadowOpacity: searchFocused ? 0.25 : 0.1,
+          },
+        ]}>
           <Feather
             name="search"
             size={18}
-            color={isDarkMode ? '#666' : '#999'}
+            color={searchFocused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')}
             style={styles.searchIcon}
           />
           <TextInput
             style={[
               styles.searchInput,
-              {
-                color: isDarkMode ? '#fff' : '#000',
-                backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5'
-              }
+              { color: isDarkMode ? '#F3F4F6' : '#0F172A' }
             ]}
             placeholder="Search posts, hashtags..."
-            placeholderTextColor={isDarkMode ? '#666' : '#999'}
+            placeholderTextColor={isDarkMode ? '#94A3B8' : '#64748B'}
+            onBlur={() => setSearchFocused(false)}
             value={searchText}
             onChangeText={(text) => {
               setSearchText(text)
               SearchTags(text)
             }}
-            onFocus={() => searchText && setShowSuggestions(true)}
+            onFocus={() => { setSearchFocused(true); if (searchText) setShowSuggestions(true) }}
           />
           {searchText !== '' && (
             <Animated.View entering={ZoomIn.duration(200)}>
@@ -1168,7 +1208,7 @@ const Home = ({ navigation }) => {
                   setShowSuggestions(false)
                 }}
                 style={styles.clearButton}>
-                <AntDesign name="closecircle" size={16} color={isDarkMode ? '#666' : '#999'} />
+                <AntDesign name="closecircle" size={16} color={isDarkMode ? '#94A3B8' : '#64748B'} />
               </TouchableOpacity>
             </Animated.View>
           )}
@@ -1180,7 +1220,7 @@ const Home = ({ navigation }) => {
             exiting={FadeOut.duration(200)}
             style={[
               styles.suggestionsContainer,
-              { backgroundColor: isDarkMode ? '#1a1a1a' : '#fff' }
+              { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: primaryColor + '40', shadowColor: primaryColor }
             ]}>
             {tagLoading ? (
               <View style={styles.suggestionItem}>
@@ -1201,7 +1241,7 @@ const Home = ({ navigation }) => {
                       setSuggestions([])
                     }}
                     activeOpacity={0.7}>
-                    <Feather name="hash" size={14} color="#4B6BFF" />
+                    <Feather name="hash" size={14} color={primaryColor} />
                     <Text style={[
                       styles.suggestionText,
                       { color: isDarkMode ? '#fff' : '#000' }
@@ -1216,19 +1256,19 @@ const Home = ({ navigation }) => {
         )}
       </View>
     )
-  }, [isDarkMode, searchText, showSuggestions, suggestions, tagLoading, SearchTags])
+  }, [isDarkMode, primaryColor, searchFocused, searchText, showSuggestions, suggestions, tagLoading, SearchTags])
 
   // const renderStories = useCallback(() => {
   //   return (
   //     <View
   //       style={{
   //         borderBottomWidth: 0.5,
-  //         borderBottomColor: isDarkMode ? '#333' : '#E5E5E5',
+  //         borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
   //       }}>
   //       <View
   //         style={{
   //           paddingVertical: 5,
-  //           backgroundColor: isDarkMode ? '#000' : '#fff',
+  //           backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
   //         }}>
   //         <ScrollView
   //           horizontal
@@ -1336,12 +1376,12 @@ const Home = ({ navigation }) => {
       <View
         style={{
           borderBottomWidth: 0.5,
-          borderBottomColor: isDarkMode ? '#333' : '#E5E5E5',
+          borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         }}>
         <View
           style={{
             paddingVertical: 5,
-            backgroundColor: isDarkMode ? '#000' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
           }}>
           <ScrollView
             horizontal
@@ -1365,7 +1405,7 @@ const Home = ({ navigation }) => {
                 activeOpacity={0.8}>
                 <LinearGradient
                   colors={allStories[0]?.media ?
-                    ['#21B7FF', '#0084F8'] : ['#E5E5E5', '#E5E5E5']}
+                    glowColors : ['#E5E5E5', '#E5E5E5']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.storyGradientBorder}>
@@ -1385,7 +1425,7 @@ const Home = ({ navigation }) => {
                   onPress={() => navigation.navigate('GalleryPickerScreen')}
                   activeOpacity={0.9}>
                   <LinearGradient
-                    colors={['#21B7FF', '#0084F8']}
+                    colors={glowColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.addStoryGradient}>
@@ -1418,7 +1458,7 @@ const Home = ({ navigation }) => {
                       }
                       activeOpacity={0.8}>
                       <LinearGradient
-                        colors={['#21B7FF', '#0084F8']}
+                        colors={glowColors}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.storyGradientBorder}>
@@ -1465,7 +1505,7 @@ const Home = ({ navigation }) => {
             <View style={styles.feedUserInfo}>
               <View style={styles.adBadgeContainer}>
                 <LinearGradient
-                  colors={['#21B7FF', '#0084F8']}
+                  colors={glowColors}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.adBadgeGradient}>
@@ -1538,7 +1578,7 @@ const Home = ({ navigation }) => {
 
           <TouchableOpacity style={styles.adCtaContainer} activeOpacity={0.8}>
             <LinearGradient
-              colors={['#21B7FF', '#0084F8']}
+              colors={glowColors}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.adCtaGradient}>
@@ -1556,11 +1596,14 @@ const Home = ({ navigation }) => {
     }
 
     const post = item.data
+    if (post?._info) {
+      return <InfoCard item={post} isDarkMode={isDarkMode} />
+    }
     const isNewsItem = selectedTab === 'News'
     const mediaUrl = post.media
     const isVideo = isNewsItem
       ? post.mediatype === 'video'
-      : typeof mediaUrl === 'string' &&
+      : post.type === 'video' || typeof mediaUrl === 'string' &&
       (mediaUrl.includes('.mp4') ||
         mediaUrl.includes('.mov') ||
         mediaUrl.includes('video') ||
@@ -1614,6 +1657,7 @@ const Home = ({ navigation }) => {
             })
           }}
           onBookmarkPress={() => SavePost(post)}
+          onMorePress={() => setMenuPost(post)}
           onMuteToggle={() => setIsMuted(!isMuted)}
         />
       </Animated.View>
@@ -1691,7 +1735,7 @@ const Home = ({ navigation }) => {
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#000' : '#fff',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     headerIconContainer: {
       width: 40,
@@ -1699,7 +1743,7 @@ const Home = ({ navigation }) => {
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 20,
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
     },
     tabsContainer: {
       flexDirection: 'row',
@@ -1729,17 +1773,21 @@ const Home = ({ navigation }) => {
     searchContainer: {
       paddingHorizontal: 16,
       paddingVertical: 12,
-      backgroundColor: isDarkMode ? '#000' : '#fff',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
       position: 'relative',
       zIndex: 1000,
     },
     searchInputWrapper: {
       flexDirection: 'row',
       alignItems: 'center',
-      borderRadius: 12,
-      paddingHorizontal: 12,
+      borderRadius: 16,
+      paddingHorizontal: 14,
       position: 'relative',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5'
+      borderWidth: 1.5,
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
+      shadowOffset: { width: 0, height: 3 },
+      shadowRadius: 8,
+      elevation: 2,
     },
     searchIcon: {
       marginRight: 8,
@@ -1750,23 +1798,46 @@ const Home = ({ navigation }) => {
       fontSize: 15,
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       paddingVertical: 10,
-      borderRadius: 12,
-      paddingLeft: 36,
     },
     clearButton: {
-      right: 0,
-      padding: 0,
-      bottom: 2
+      padding: 2,
     },
     suggestionsContainer: {
       marginTop: 8,
-      borderRadius: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
+      borderRadius: 16,
+      borderWidth: 1,
+      overflow: 'hidden',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 10,
       elevation: 5,
       maxHeight: 240,
+    },
+    subTabs: {
+      flexDirection: 'row',
+      marginHorizontal: 16,
+      marginTop: 6,
+      marginBottom: 8,
+      padding: 4,
+      borderRadius: 18,
+      borderWidth: 1,
+      elevation: 2,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+    },
+    subTab: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 10,
+      borderRadius: 14,
+    },
+    subTabText: {
+      fontSize: 14,
+      fontFamily: FONTS_FAMILY.SourceSans3_SemiBold,
     },
     suggestionItem: {
       flexDirection: 'row',
@@ -1775,7 +1846,7 @@ const Home = ({ navigation }) => {
       paddingHorizontal: 16,
       gap: 10,
       borderBottomWidth: 0.5,
-      borderBottomColor: isDarkMode ? '#333' : '#f0f0f0',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     suggestionText: {
       fontSize: 14,
@@ -1802,7 +1873,7 @@ const Home = ({ navigation }) => {
       height: 56,
       borderRadius: 33,
       overflow: 'hidden',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
     },
     storyImage: {
       width: '100%',
@@ -1830,12 +1901,12 @@ const Home = ({ navigation }) => {
     },
     feedContainer: {
       paddingBottom: 12,
-      backgroundColor: isDarkMode ? '#161C1C' : '#e4edeeff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       margin: 10,
       borderRadius: 30,
       borderWidth: 1,
       marginBottom: 10,
-      borderColor: isDarkMode ? '#333' : '#E0E0E0',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       paddingHorizontal: 10
     },
     feedHeader: {
@@ -1858,7 +1929,7 @@ const Home = ({ navigation }) => {
       height: 42,
       borderRadius: 21,
       borderWidth: 2,
-      borderColor: isDarkMode ? '#1a1a1a' : '#f0f0f0',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     userNameRow: {
       flexDirection: 'row',
@@ -2025,12 +2096,12 @@ const Home = ({ navigation }) => {
       fontSize: 11,
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       marginBottom: 8,
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: '#21B7FF',
+      borderColor: primaryColor,
       maxWidth: 150,
       textAlign: 'center',
     },
@@ -2040,10 +2111,10 @@ const Home = ({ navigation }) => {
       borderRadius: 28,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       borderWidth: 2,
-      borderColor: '#21B7FF',
-      shadowColor: '#21B7FF',
+      borderColor: primaryColor,
+      shadowColor: primaryColor,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.8,
       shadowRadius: 8,
@@ -2072,8 +2143,8 @@ const Home = ({ navigation }) => {
       position: 'absolute',
       borderRadius: 16,
       borderWidth: 3,
-      borderColor: '#21B7FF',
-      shadowColor: '#21B7FF',
+      borderColor: primaryColor,
+      shadowColor: primaryColor,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 1,
       shadowRadius: 20,
@@ -2081,7 +2152,7 @@ const Home = ({ navigation }) => {
     },
     tourTooltip: {
       position: 'absolute',
-      backgroundColor: '#21B7FF',
+      backgroundColor: primaryColor,
       paddingHorizontal: 20,
       paddingVertical: 16,
       borderRadius: 16,
@@ -2128,7 +2199,7 @@ const Home = ({ navigation }) => {
       position: 'absolute',
       top: 60,
       left: 20,
-      backgroundColor: '#21B7FF',
+      backgroundColor: primaryColor,
       paddingHorizontal: 12,
       paddingVertical: 8,
       borderRadius: 8,
@@ -2139,14 +2210,14 @@ const Home = ({ navigation }) => {
       fontFamily: FONTS_FAMILY.SourceSans3_SemiBold,
       fontSize: 12,
     },
-  }), [isDarkMode])
+  }), [isDarkMode, primaryColor])
 
   return (
     <View style={styles.container}>
 
       <StatusBar
         // translucent={true}
-        backgroundColor={isDarkMode ? '#000' : '#fff'}
+        backgroundColor={isDarkMode ? '#0B1220' : '#EEF1F6'}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
 
@@ -2159,7 +2230,7 @@ const Home = ({ navigation }) => {
             left: 0,
             right: 0,
             zIndex: 1001,
-            backgroundColor: isDarkMode ? '#000' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             // width:'100%'
           },
           { opacity: headerOpacity }
@@ -2178,7 +2249,7 @@ const Home = ({ navigation }) => {
               left: 0,
               right: 0,
               zIndex: 1000,
-              backgroundColor: isDarkMode ? '#000' : '#fff',
+              backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
               // height:100
               // paddingTop:300
             }
@@ -2190,7 +2261,7 @@ const Home = ({ navigation }) => {
 
 
       {(selectedTab === 'News' ? newsLoading : loading) ? (
-        <View style={{ flex: 1, paddingTop: selectedTab === 'home' ? 100 : 100 }}>
+        <View style={{ flex: 1, paddingTop: selectedTab === 'home' ? 100 : 8 }}>
           <FeedShimmerLoader isDarkMode={isDarkMode} count={5} />
         </View>
       ) : (
@@ -2203,7 +2274,29 @@ const Home = ({ navigation }) => {
           viewabilityConfig={viewabilityConfig}
           onScroll={scrollHandler}
           scrollEventThrottle={32}
-          contentContainerStyle={{ paddingTop: selectedTab === 'home' ? 180 : 100 }}
+          contentContainerStyle={{ paddingTop: selectedTab === 'home' ? 180 : 8, paddingBottom: 110 }}
+          ListHeaderComponent={selectedTab === 'home' ? (
+            <PromotedSection promos={promotedPosts} isDarkMode={isDarkMode} accent={primaryColor} onPress={setSelectedPromo} />
+          ) : selectedTab === 'News' ? (
+            <View style={[
+              styles.subTabs,
+              { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: primaryColor + '40', shadowColor: primaryColor },
+            ]}>
+              {[['News', 'file-text'], ['Tips', 'zap'], ['Blog', 'book-open']].map(([sub, icon]) => {
+                const active = newsSub === sub
+                return (
+                  <TouchableOpacity
+                    key={sub}
+                    onPress={() => setNewsSub(sub)}
+                    activeOpacity={0.85}
+                    style={[styles.subTab, active && { backgroundColor: primaryColor }]}>
+                    <Feather name={icon} size={15} color={active ? '#fff' : (isDarkMode ? '#94A3B8' : '#64748B')} />
+                    <CustomText style={[styles.subTabText, { color: active ? '#fff' : (isDarkMode ? '#F3F4F6' : '#0F172A') }]}>{sub}</CustomText>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+          ) : null}
           maxToRenderPerBatch={5}
           windowSize={5}
           removeClippedSubviews={true}
@@ -2220,6 +2313,43 @@ const Home = ({ navigation }) => {
           }
         />
       )}
+
+      <ActionMenu
+        visible={!!menuPost}
+        onClose={() => setMenuPost(null)}
+        title="Post"
+        options={
+          menuPost?.User?._id === selector?._id
+            ? [{ label: 'Edit / Delete', icon: 'edit-2', onPress: () => handlePostClick(menuPost) }]
+            : [{
+                label: 'Report post',
+                icon: 'flag',
+                destructive: true,
+                onPress: () => navigation.navigate('ReportScreen', {
+                  postId: menuPost?._id,
+                  postUserId: menuPost?.User?._id,
+                  postType: 'post',
+                }),
+              }]
+        }
+      />
+
+      <PromotedPostModal
+        visible={!!selectedPromo && !isShopPromotion(selectedPromo)}
+        promotion={selectedPromo}
+        onClose={() => setSelectedPromo(null)}
+        isDarkMode={isDarkMode}
+        accent={primaryColor}
+        width={Dimensions.get('window').width}
+      />
+
+      <ShopPromoModal
+        visible={!!selectedPromo && isShopPromotion(selectedPromo)}
+        promotion={selectedPromo}
+        onClose={() => setSelectedPromo(null)}
+        isDarkMode={isDarkMode}
+        accent={primaryColor}
+      />
 
       {/* Floating Action Button */}
       <Animated.View style={[additionalStyles.fabContainer, fabAnimatedStyle]}>

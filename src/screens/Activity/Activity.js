@@ -212,7 +212,7 @@ const Activity = ({ navigation, route }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? 'black' : '#fff',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     header: {
       paddingTop: 50,
@@ -231,7 +231,7 @@ const Activity = ({ navigation, route }) => {
       marginHorizontal: 12,
       marginVertical: 6,
       borderRadius: 16,
-      backgroundColor: isDarkMode ? '#1A1A1A' : '#FAFAFA',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       shadowColor: isDarkMode ? '#000' : '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDarkMode ? 0.3 : 0.08,
@@ -252,7 +252,7 @@ const Activity = ({ navigation, route }) => {
       height: 48,
       borderRadius: 24,
       borderWidth: 2,
-      borderColor: isDarkMode ? '#2A2A2A' : '#E5E5E5',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     visitBadge: {
       position: 'absolute',
@@ -265,7 +265,7 @@ const Activity = ({ navigation, route }) => {
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 2,
-      borderColor: isDarkMode ? '#1A1A1A' : '#FAFAFA',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     visitBadgeText: {
       fontSize: 10,
@@ -336,7 +336,7 @@ const Activity = ({ navigation, route }) => {
         style={[
           contentStyle,
           {
-            backgroundColor: isDarkMode ? '#000' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
           },

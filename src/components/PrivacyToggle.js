@@ -8,7 +8,9 @@ import { apiGet, apiPut } from '../utils/Apis';
 import { setUser } from '../redux/reducer/user';
 import urls from '../config/urls';
 
-const LastActiveToggle = () => {
+// field: ShowLastActive | ShowJoinedDate | ShowAddress | PrivateProfile.
+// All are saved via ToggleLastActive; every flag is sent together, like web.
+const PrivacyToggle = ({ field = 'ShowLastActive', label = 'Show Last Active', defaultValue = true }) => {
   const { isDarkMode } = useSelector(state => state.theme);
   const dispatch = useDispatch();
   
@@ -20,13 +22,13 @@ const LastActiveToggle = () => {
 
   // ✅ Local state for toggle (synced with Redux)
   const [isLastActiveEnabled, setIsLastActiveEnabled] = useState(
-    selector?.ShowLastActive ?? true
+    selector?.[field] ?? defaultValue
   );
 
   // ✅ Sync with Redux when selector changes
   useEffect(() => {
-    setIsLastActiveEnabled(selector?.ShowLastActive ?? true);
-  }, [selector?.ShowLastActive]);
+    setIsLastActiveEnabled(selector?.[field] ?? defaultValue);
+  }, [selector?.[field]]);
 
   // ✅ Handle Toggle
   const handleToggle = async () => {
@@ -38,10 +40,14 @@ const LastActiveToggle = () => {
       setIsLastActiveEnabled(newValue);
 
       // ✅ Call API with CORRECT new value
-      const res = await apiPut('/api/user/ToggleLastActive', {
-        ShowLastActive: newValue,  // ✅ FIXED: ab sahi value jayegi
-        ShowJoinedDate: selector?.ShowJoinedDate ?? true  // ✅ Current value maintain karo
-      });
+      const body = {
+        ShowLastActive: selector?.ShowLastActive ?? true,
+        ShowJoinedDate: selector?.ShowJoinedDate ?? true,
+        ShowAddress: selector?.ShowAddress ?? true,
+        PrivateProfile: selector?.PrivateProfile ?? false,
+      };
+      body[field] = newValue;
+      const res = await apiPut('/api/user/ToggleLastActive', body);
 
       if (res?.statusCode === 200) {
         // ✅ Fetch updated user data
@@ -66,7 +72,7 @@ const LastActiveToggle = () => {
     <TouchableOpacity onPress={handleToggle} style={styles.container}>
       <View style={styles.content}>
         <CustomText style={[styles.text, { color: isDarkMode ? 'white' : 'black' }]}>
-          Show Last Active
+          {label}
         </CustomText>
         <View
           style={[
@@ -125,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LastActiveToggle;
+export default PrivacyToggle;

@@ -49,7 +49,7 @@ const EventDetail = ({ navigation, route }) => {
     );
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginLeft: 14 },
         body: { paddingBottom: 60 },
@@ -71,20 +71,20 @@ const EventDetail = ({ navigation, route }) => {
         infoRow: { flexDirection: 'row', gap: 12, marginTop: 20 },
         infoCard: {
             flex: 1, flexDirection: 'row', gap: 10, padding: 14, borderRadius: 14,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
         },
         infoIconWrap: {
             width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
             backgroundColor: isDarkMode ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
         },
-        infoLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        infoLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         infoValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, marginTop: 2 },
-        infoSub: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
+        infoSub: { fontSize: 12, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
         promoterRow: {
             flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-            padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7', marginTop: 16,
+            padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9', marginTop: 16,
         },
-        promoterLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        promoterLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         promoterName: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, marginTop: 2 },
         promoBtn: {
             flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9,
@@ -95,18 +95,18 @@ const EventDetail = ({ navigation, route }) => {
         detailText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#D1D5DB' : '#374151', lineHeight: 21 },
         organizerRow: {
             flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 20, paddingTop: 20,
-            borderTopWidth: 1, borderTopColor: isDarkMode ? '#2A2A2A' : '#EEE',
+            borderTopWidth: 1, borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         organizerIconWrap: {
             width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center',
-            backgroundColor: isDarkMode ? '#2A2A2A' : '#F3F4F6',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
         },
-        organizerLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        organizerLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         organizerName: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
-        organizerUsername: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        organizerUsername: { fontSize: 12, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         createdAt: { fontSize: 11, color: isDarkMode ? '#6B7280' : '#9CA3AF', fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 16 },
         notFoundWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-        notFoundText: { fontSize: 15, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        notFoundText: { fontSize: 15, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
     });
 
     const renderHeader = () => (

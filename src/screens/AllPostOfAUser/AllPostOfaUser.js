@@ -400,7 +400,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
 
     const renderHeader = () => {
         return (
-            <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
+            <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', paddingBottom: 15 }}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                 >
@@ -536,7 +536,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
                                                     repeat={true}
                                                     muted={isMuted}
                                                     paused={
-                                                        visibleVideoIndex !== index || pausedVideos[index]
+                                                        visibleVideoIndex !== index
                                                     }
                                                     onLoad={() => console.log(`Video ${index} loaded`)}
                                                     onError={error =>
@@ -593,7 +593,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
                                     <Row
                                         style={{
                                             // borderWidth: 0.5,
-                                            borderColor: isDarkMode ? 'gray' : 'gray',
+                                            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
                                             borderRadius: 18,
                                             paddingHorizontal: 5,
                                             gap: 5,
@@ -644,7 +644,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
                                                 gap: 5,
                                                 flexDirection: 'row',
                                                 // borderWidth: 0.5,
-                                                borderColor: isDarkMode ? 'gray' : 'gray',
+                                                borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
                                                 borderRadius: 18,
                                                 paddingHorizontal: 10,
                                             }}
@@ -671,7 +671,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
                                     <Row
                                         style={{
                                             // borderWidth: 0.5,
-                                            borderColor: isDarkMode ? 'gray' : 'gray',
+                                            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
                                             borderRadius: 18,
                                             paddingHorizontal: 5,
                                             gap: 5
@@ -832,7 +832,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
             borderBottomWidth: 0.3,
             borderBottomColor: '#ccc',
             paddingBottom: 10,
-            backgroundColor: isDarkMode ? 'black' : 'white',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         header: {
             flexDirection: 'row',

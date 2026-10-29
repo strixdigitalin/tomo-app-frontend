@@ -8,6 +8,7 @@ import {
     Image,
 } from 'react-native';
 import { useSelector } from 'react-redux';
+import useThemeColor from '../../utils/useThemeColor';
 import { BackBlackSimple, BackIcon } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import CustomText from '../../components/TextComponent';
@@ -24,7 +25,7 @@ const MyPromotions = ({ navigation, route }) => {
     const [pastPromotions, setPastPromotions] = useState([]);
     const [showPast, setShowPast] = useState(false);
     const { showLoader, hideLoader } = useLoader();
-    const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode, primaryColor } = useThemeColor();
 
     // TODO: Replace with actual API call
     useEffect(() => {
@@ -93,7 +94,7 @@ const MyPromotions = ({ navigation, route }) => {
             <View
                 style={[
                     styles.promotionCard,
-                    { backgroundColor: isDarkMode ? '#252525' : '#fff' },
+                    { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' },
                 ]}
             >
                 <View style={styles.cardContent}>
@@ -178,7 +179,7 @@ const MyPromotions = ({ navigation, route }) => {
                                 style={[
                                     styles.actionButton,
                                     {
-                                        borderColor: isDarkMode ? '#3a3a3a' : '#E4E4E4',
+                                        borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
                                     },
                                 ]}
                                 onPress={() => handleViewDetails(item)}
@@ -216,7 +217,7 @@ const MyPromotions = ({ navigation, route }) => {
         <SpaceBetweenRow
             style={[
                 styles.header,
-                { backgroundColor: isDarkMode ? '#252525' : 'white' },
+                { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' },
             ]}
         >
             <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -230,7 +231,7 @@ const MyPromotions = ({ navigation, route }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? 'black' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         header: {
             paddingTop: 50,
@@ -256,7 +257,7 @@ const MyPromotions = ({ navigation, route }) => {
             borderRadius: 12,
             padding: 15,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#3a3a3a' : '#E4E4E4',
+            borderColor: primaryColor + '40', shadowColor: primaryColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 10, elevation: 3,
         },
         cardContent: {
             flexDirection: 'row',
@@ -304,7 +305,7 @@ const MyPromotions = ({ navigation, route }) => {
         },
         progressBar: {
             height: 6,
-            backgroundColor: isDarkMode ? '#3a3a3a' : '#E4E4E4',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             borderRadius: 3,
             marginBottom: 8,
             overflow: 'hidden',
@@ -336,7 +337,7 @@ const MyPromotions = ({ navigation, route }) => {
             paddingVertical: 12,
             borderRadius: 8,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#3a3a3a' : '#E4E4E4',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
             alignItems: 'center',
         },
         showPastButtonText: {

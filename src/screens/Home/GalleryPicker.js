@@ -17,6 +17,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { BASE_URL, getItem } from '../../utils/Apis';
 import useLoader from '../../utils/LoaderHook';
 import { ToastMsg } from '../../utils/helperFunctions';
+import { MEDIA_RULES } from '../../utils/uploadHelpers';
+import { ensureGalleryPermission, getGalleryAssets } from '../../utils/mediaPermission';
+import PermissionNotice from '../../components/PermissionNotice';
 import { useSelector } from 'react-redux';
 import Row from '../../components/wrapper/row';
 import { BackIcon, PrimaryBackArrow } from '../../assets/SVGs';
@@ -35,6 +38,8 @@ const { width, height } = Dimensions.get('window');
 const GalleryScreen = ({ navigation }) => {
   const [photos, setPhotos] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
+  const [blocked, setBlocked] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
   const { isDarkMode } = useSelector(state => state.theme);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -43,41 +48,32 @@ const GalleryScreen = ({ navigation }) => {
   useEffect(() => {
     const requestPermissionAndLoad = async () => {
       try {
-        if (Platform.OS === 'android') {
-          const permission = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-            {
-              title: 'Permission Required',
-              message: 'App needs access to your gallery',
-              buttonPositive: 'OK',
+        setErrorMsg('');
+        // Ask for access, but don't trust the answer alone — some Android versions report
+        // "denied" for partial access ("Select photos") even though reading works. Always try.
+        const perm = await ensureGalleryPermission();
+        try {
+          const result = await getGalleryAssets(CameraRoll, { first: 50, include: ['fileSize'] });
+          setPhotos(result.edges);
+          if (result.edges.length === 0) {
+            if (!perm.granted) {
+              setBlocked(perm.blocked);
+              setErrorMsg('Allow gallery access to choose a photo for your story.');
+            } else {
+              setErrorMsg('No photos found in gallery.');
             }
-          );
-          const legacy = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-          );
-
-          if (
-            permission !== PermissionsAndroid.RESULTS.GRANTED &&
-            legacy !== PermissionsAndroid.RESULTS.GRANTED
-          ) {
-            setErrorMsg('Permission denied');
-            return;
           }
-        }
-
-        const result = await CameraRoll.getPhotos({ first: 50 });
-        setPhotos(result.edges);
-        if (result.edges.length === 0) {
-          setErrorMsg('No photos found in gallery.');
+        } catch (readError) {
+          setBlocked(perm.blocked);
+          setErrorMsg('Allow gallery access to choose a photo for your story.');
         }
       } catch (error) {
         setErrorMsg(error.message || 'Something went wrong');
-        Alert.alert('Error', error.message || 'Something went wrong');
       }
     };
 
     requestPermissionAndLoad();
-  }, []);
+  }, [retryKey]);
 
   const onSubmit = async (selectedImage) => {
     try {
@@ -127,7 +123,10 @@ const GalleryScreen = ({ navigation }) => {
     }
   };
 
-  const handleSelect = (uri) => {
+  const handleSelect = (uri, meta) => {
+    if (meta?.fileSize && meta.fileSize > MEDIA_RULES.storyImageMaxBytes) {
+      return ToastMsg(`File too large. Max ${MEDIA_RULES.storyImageMaxBytes / 1024 / 1024} MB`);
+    }
     setSelectedImage(prev => (prev === uri ? null : uri));
     setIsPreviewVisible(true);
   };
@@ -196,7 +195,7 @@ const GalleryScreen = ({ navigation }) => {
     const isSelected = selectedImage === uri;
 
     return (
-      <TouchableOpacity onPress={() => handleSelect(uri)} activeOpacity={0.8}>
+      <TouchableOpacity onPress={() => handleSelect(uri, item.node.image)} activeOpacity={0.8}>
         <View style={[styles.imageTile, isSelected && styles.selectedTile]}>
           <Image source={{ uri }} style={styles.image} resizeMode="cover" />
           {isSelected && (
@@ -219,7 +218,7 @@ const GalleryScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#252525' : '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }}>
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -228,7 +227,7 @@ const GalleryScreen = ({ navigation }) => {
       {renderHeader()}
 
       {errorMsg ? (
-        <Text style={styles.errorText}>{errorMsg}</Text>
+        <PermissionNotice message={errorMsg} blocked={blocked} onRetry={() => setRetryKey(k => k + 1)} />
       ) : (
         <>
           <FlatList

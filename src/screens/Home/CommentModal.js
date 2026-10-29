@@ -120,7 +120,7 @@ const CommentModal = ({
         >
             <View style={{
                 height: '90%',
-                backgroundColor: isDarkMode ? '#252525' : '#fff',
+                backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
                 borderTopLeftRadius: 30,
                 borderTopRightRadius: 30,
                 padding: 16,
@@ -280,8 +280,8 @@ const CommentModal = ({
                     alignItems: 'center',
                     padding: 10,
                     borderTopWidth: 1,
-                    borderColor: isDarkMode ? '#444' : '#ddd',
-                    backgroundColor: isDarkMode ? '#252525' : '#fff',
+                    borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
+                    backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
                 }}>
                     <TextInput
                         placeholder={isEditing ? "Edit comment..." : "Add a comment..."}

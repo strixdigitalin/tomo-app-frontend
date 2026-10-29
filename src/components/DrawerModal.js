@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react'
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 import {
   View, Text, Image, TouchableOpacity, StyleSheet,
   Alert, ScrollView, Share, StatusBar,
@@ -7,11 +7,12 @@ import {
 import Animated, {
   FadeIn, FadeInLeft,
   useSharedValue, useAnimatedStyle, withSpring, withTiming,
-  interpolate, Extrapolation,
+  interpolate, interpolateColor, Extrapolation,
 } from 'react-native-reanimated'
 import LinearGradient from 'react-native-linear-gradient'
 import { FONTS_FAMILY } from '../assets/Fonts'
 import { clearAsyncStorage, apiDelete } from '../utils/Apis'
+import ConfirmModal from './ConfirmModal'
 import { showError } from '../utils/helperFunctions'
 import IMG from '../assets/Images'
 import { useSelector } from 'react-redux'
@@ -33,11 +34,9 @@ const MENU_ITEMS = [
   { label: 'AI Chat Bot',        icon: 'robot',           iconType: 'MaterialCommunityIcons', nav: 'ReactNativeChatbot', sellerOnly: false, nonSellerOnly: false },
   { label: 'Events',             icon: 'calendar',        iconType: 'Feather',                nav: 'AllEvents',          badge: 'NEW',      sellerOnly: false, nonSellerOnly: false },
   { label: 'Settings',           icon: 'settings',        iconType: 'Feather',                nav: 'Settings',           sellerOnly: false, nonSellerOnly: false },
-  { label: 'Help Center',        icon: 'help-circle',     iconType: 'Feather',                nav: 'ContactUs',          sellerOnly: false, nonSellerOnly: false },
   { label: 'Feedback',           icon: 'message-square',  iconType: 'Feather',                nav: 'FeedBack',           sellerOnly: false, nonSellerOnly: false },
   { label: 'Privacy Policy',     icon: 'shield',          iconType: 'Feather',                nav: 'PrivacyPolicy',      sellerOnly: false, nonSellerOnly: false },
   { label: 'Terms & Conditions', icon: 'file-text',       iconType: 'Feather',                nav: 'TermsAndConditions', sellerOnly: false, nonSellerOnly: false },
-  { label: 'FAQ',                icon: 'question-circle', iconType: 'AntDesign',              nav: 'FAQs',               sellerOnly: false, nonSellerOnly: false },
   { label: 'Invite a Friend',    icon: 'user-plus',       iconType: 'Feather',                nav: 'invite',             sellerOnly: false, nonSellerOnly: false },
   { label: 'Delete Account',     icon: 'trash-2',         iconType: 'Feather',                nav: '__deleteAccount__',  sellerOnly: false, nonSellerOnly: false, danger: true },
 ]
@@ -45,7 +44,7 @@ const MENU_ITEMS = [
 // ─── ALL colour decisions in one place ───────────────────────────────────────
 const getTokens = (isDark, primary, secondary) => ({
   // Page background
-  pageBg:          isDark ? ['#080810', '#0d0d1a', '#0a0a14']              : ['#eef2ff', '#f5f0ff', '#edf8ff'],
+  pageBg:          isDark ? ['#0B1220', '#0F172A', '#0B1220']              : ['#EEF1F6', '#F4F6FA', '#EEF1F6'],
   blob1:           isDark ? primary + '28'                                 : primary + '20',
   blob2:           isDark ? secondary + '18'                               : secondary + '15',
 
@@ -58,18 +57,18 @@ const getTokens = (isDark, primary, secondary) => ({
   closeIcon:       isDark ? '#ffffff'                                      : '#111122',
 
   // Hero text
-  heroAvatarBorder:isDark ? '#0a0a14'                                      : '#eef2ff',
+  heroAvatarBorder:isDark ? '#0B1220'                                      : '#EEF1F6',
   heroName:        isDark ? '#ffffff'                                      : '#0e0e2a',
   heroHandle:      isDark ? 'rgba(255,255,255,0.36)'                       : 'rgba(0,0,0,0.40)',
 
   // Stat pill
-  statPillBg:      isDark ? 'rgba(255,255,255,0.05)'                       : 'rgba(255,255,255,0.75)',
+  statPillBg:      isDark ? '#131B2B'                                      : '#FFFFFF',
   statPillBorder:  isDark ? 'rgba(255,255,255,0.08)'                       : 'rgba(0,0,0,0.08)',
   statLabel:       isDark ? 'rgba(255,255,255,0.36)'                       : 'rgba(0,0,0,0.40)',
   statDivider:     isDark ? 'rgba(255,255,255,0.10)'                       : 'rgba(0,0,0,0.10)',
 
   // Menu card
-  menuCardBg:      isDark ? 'rgba(255,255,255,0.04)'                       : 'rgba(255,255,255,0.82)',
+  menuCardBg:      isDark ? '#131B2B'                                      : '#FFFFFF',
   menuCardBorder:  isDark ? 'rgba(255,255,255,0.07)'                       : 'rgba(0,0,0,0.07)',
   rowLabel:        isDark ? 'rgba(255,255,255,0.86)'                       : '#16162e',
   rowPressBg:      isDark ? '255,255,255'                                  : '0,0,0',
@@ -92,7 +91,13 @@ const MenuItem = React.memo(({ item, index, T, primaryColor, secondaryColor, onP
 
   const rowStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    backgroundColor: `rgba(${T.rowPressBg},${interpolate(bgAnim.value, [0, 1], [0, 0.06], Extrapolation.CLAMP)})`,
+    // interpolateColor keeps alpha in a format Reanimated can always parse. Building the string by
+    // hand produced values like "rgba(0,0,0,5.7e-7)" (exponent notation) → "Invalid color value" crash.
+    backgroundColor: interpolateColor(
+      bgAnim.value,
+      [0, 1],
+      [`rgba(${T.rowPressBg},0)`, `rgba(${T.rowPressBg},0.06)`],
+    ),
   }))
 
   const pressIn  = useCallback(() => {
@@ -163,50 +168,47 @@ const SettingsDrawerScreen = ({ navigation }) => {
   const isSeller   = selector?.SellerStatus === 'Approved'
 
   const close    = useCallback(() => navigation.goBack(), [navigation])
+  // Open the screen ON TOP of the drawer (don't close it first), so Back returns to the
+  // drawer instead of dropping the user on the profile underneath it.
   const navigate = useCallback((screen) => {
-    close()
-    setTimeout(() => {
-      if (screen === 'AllShops') navigation.navigate('Tab', { screen: 'MarketPlace' })
-      else navigation.navigate(screen)
-    }, 260)
-  }, [close, navigation])
-
-  const handleLogout = useCallback(() => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log Out', style: 'destructive',
-        onPress: async () => {
-          try { await clearAsyncStorage(); navigation?.replace('Login') }
-          catch { showError('Error while logging out') }
-        },
-      },
-    ])
+    // 'AllShops' lives in a tab: going to the existing 'Tab' route pops the drawer, which is what we want
+    if (screen === 'AllShops') navigation.navigate('Tab', { screen: 'MarketPlace' })
+    else navigation.navigate(screen)
   }, [navigation])
 
-  // ── Delete Account ────────────────────────────────────────────────────────
-  const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete', style: 'destructive',
-          onPress: async () => {
-            try {
-              await apiDelete(`/api/admin/DeleteUser/${selector?._id}`)
-              await clearAsyncStorage()
-              navigation?.replace('Login')
-            } catch (err) {
-              showError('Failed to delete account. Please try again.')
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    )
-  }, [selector?._id, navigation])
+  // ── Log out / Delete account (confirmation modals, see <ConfirmModal> below) ──
+  const [showLogout, setShowLogout] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  // Land on Login with a clean stack so Back can't return to the app
+  const goToLogin = useCallback(() => {
+    navigation?.reset({ index: 0, routes: [{ name: 'Login' }] })
+  }, [navigation])
+
+  const handleLogout = useCallback(() => setShowLogout(true), [])
+
+  const confirmLogout = useCallback(async () => {
+    setShowLogout(false)
+    try { await clearAsyncStorage(); goToLogin() }
+    catch { showError('Error while logging out') }
+  }, [goToLogin])
+
+  const handleDeleteAccount = useCallback(() => setShowDelete(true), [])
+
+  const confirmDelete = useCallback(async () => {
+    try {
+      setDeleting(true)
+      await apiDelete(`/api/admin/DeleteUser/${selector?._id}`)
+      await clearAsyncStorage()
+      setShowDelete(false)
+      goToLogin()
+    } catch (err) {
+      showError(err?.message || 'Failed to delete account. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }, [selector?._id, goToLogin])
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleInvite = useCallback(async () => {
@@ -345,6 +347,27 @@ const SettingsDrawerScreen = ({ navigation }) => {
           <Text style={[S.version, { color: T.version }]}>Tomo · v1.0.0</Text>
         </ScrollView>
       </Animated.View>
+
+      <ConfirmModal
+        visible={showLogout}
+        onClose={() => setShowLogout(false)}
+        onConfirm={confirmLogout}
+        icon="log-out"
+        title="Log out?"
+        message="You will need to sign in again to use your account."
+        confirmLabel="Log Out"
+      />
+      <ConfirmModal
+        visible={showDelete}
+        onClose={() => !deleting && setShowDelete(false)}
+        onConfirm={confirmDelete}
+        icon="trash-2"
+        title="Delete account"
+        message="This permanently deletes your account and all your data. This action cannot be undone."
+        confirmLabel="Delete Account"
+        requireText="DELETE"
+        loading={deleting}
+      />
     </View>
   )
 }

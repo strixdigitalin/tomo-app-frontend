@@ -1,499 +1,329 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+    Alert,
     Animated,
     Easing,
     ImageBackground,
-    ScrollView,
+    KeyboardAvoidingView,
     StatusBar,
     StyleSheet,
     TouchableOpacity,
     View,
 } from "react-native";
-import CustomText from "../../components/TextComponent";
-import IMG from "../../assets/Images";
-import Row from "../../components/wrapper/row";
-import {
-    Back,
-    BackOuterWhite,
-    EmailIcon,
-    EmailWhite,
-    EyeIcon,
-    EyeIconWhite,
-    LockIcon,
-    LockWhite,
-    LoginBtn,
-} from "../../assets/SVGs";
-import { FONTS_FAMILY } from "../../assets/Fonts";
-import CustomInputField from "../../components/CustomInputField";
 import { useDispatch, useSelector } from "react-redux";
-import { inValidEmail, inValidPassword } from "../../utils/CheckValidation";
+import ReactNativeBiometrics from 'react-native-biometrics';
+import Entypo from 'react-native-vector-icons/Entypo';
+import CustomText from "../../components/TextComponent";
+import FormField from "../../components/FormField";
+import FormButton from "../../components/FormButton";
+import IMG from "../../assets/Images";
+import { FONTS_FAMILY } from "../../assets/Fonts";
 import { ToastMsg } from "../../utils/helperFunctions";
-import { apiGet, apiPost, getItem, setItem } from "../../utils/Apis";
+import { apiGet, apiPost, getItem, setItem, removeItem } from "../../utils/Apis";
+import { compose, required, email as emailRule } from "../../utils/validators";
+import useForm from "../../utils/useForm";
 import urls from "../../config/urls";
 import useLoader from "../../utils/LoaderHook";
 import { setUser, setSeller } from "../../redux/reducer/user";
 import useKeyboardStatus from "../../utils/KeyBoardHook";
-import ReactNativeBiometrics from 'react-native-biometrics';
-import Entypo from 'react-native-vector-icons/Entypo';
+import { THEMES } from "../../redux/reducer/theme";
+import { profilePalette } from "../UserDetail/profileTheme";
+
+// Login only checks that a password was entered. The 6-character rule applies to NEW
+// passwords (signup) — older accounts may have shorter ones and must still be able to log in.
+const SCHEMA = {
+    Email: compose(required('Email'), emailRule),
+    Password: required('Password'),
+};
+
+// AsyncStorage keys used by "Login with fingerprint"
+const BIO_ENABLED = 'user_biometric_enabled';
+const BIO_EMAIL = 'user_saved_email';
+const BIO_PASSWORD = 'user_saved_password';
+const BIO_TYPE = 'user_biometric_type'; // 'User' | 'Seller' — which account the saved login belongs to
 
 const Login = ({ navigation }) => {
-    const { isDarkMode } = useSelector(state => state.theme);
-    const { showLoader, hideLoader } = useLoader()
-    const dispatch = useDispatch()
+    const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
+    const accent = (THEMES[selectedColorTheme] || THEMES.default).primary;
+    const c = profilePalette(isDarkMode, accent);
+    const { showLoader, hideLoader } = useLoader();
+    const dispatch = useDispatch();
     const { isKeyboardOpen } = useKeyboardStatus();
 
-    // Animation Refs
     const slideAnim = useRef(new Animated.Value(100)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const buttonScale = useRef(new Animated.Value(1)).current;
+    const rnBiometrics = useRef(new ReactNativeBiometrics()).current;
+    const autoPrompted = useRef(false);
+    const passwordRef = useRef(null);
 
-    const [userInfo, setUserInfor] = useState({})
-    const [biometricAvailable, setBiometricAvailable] = useState(false)
-    const [biometricEnabled, setBiometricEnabled] = useState(false)
-    const [loginAs, setLoginAs] = useState('User') // 'User' | 'Seller'
+    const form = useForm({ Email: '', Password: '' }, SCHEMA);
+    const [loginAs, setLoginAs] = useState('User'); // 'User' | 'Seller'
+    const [biometricAvailable, setBiometricAvailable] = useState(false);
+    const [biometricEnabled, setBiometricEnabled] = useState(false);
 
-    const rnBiometrics = new ReactNativeBiometrics()
-
-    useEffect(() => {
-        Animated.parallel([
-            Animated.timing(slideAnim, {
-                toValue: 0,
-                duration: 600,
-                easing: Easing.out(Easing.ease),
-                useNativeDriver: true,
-            }),
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 600,
-                useNativeDriver: true,
-            }),
-        ]).start();
-
-        checkBiometricStatus();
+    // ── Biometric helpers ──────────────────────────────────────────────────────
+    const clearBiometric = useCallback(async () => {
+        await Promise.all([BIO_EMAIL, BIO_PASSWORD, BIO_TYPE].map(k => removeItem(k).catch(() => {})));
+        await setItem(BIO_ENABLED, 'false');
+        setBiometricEnabled(false);
     }, []);
 
-    useEffect(() => {
-        if (biometricAvailable && biometricEnabled) {
-            handleBiometricLogin();
-        }
-    }, [biometricAvailable, biometricEnabled]);
-
-    console.log('Biometric Available:', biometricAvailable);
-    console.log('Biometric Enabled:', biometricEnabled);
-
-
-    const checkBiometricStatus = async () => {
+    const checkBiometricStatus = useCallback(async () => {
         try {
-            const { available, biometryType } = await rnBiometrics.isSensorAvailable();
-            const enabled = await getItem('user_biometric_enabled');
-            console.log(enabled, 'Biometric Enabled Status::::::::::::');
-
-
-            console.log('User Biometric Status:', { available, biometryType, enabled });
-
-            setBiometricAvailable(available);
-            setBiometricEnabled(enabled === 'true');
+            const { available } = await rnBiometrics.isSensorAvailable();
+            const enabled = (await getItem(BIO_ENABLED)) === 'true';
+            const hasCreds = !!(await getItem(BIO_EMAIL)) && !!(await getItem(BIO_PASSWORD));
+            setBiometricAvailable(!!available);
+            // "enabled" with no saved login is a broken state — treat it as off
+            setBiometricEnabled(!!available && enabled && hasCreds);
         } catch (error) {
             console.log('Biometric check error:', error);
         }
-    };
+    }, [rnBiometrics]);
 
-    const setupBiometricLogin = async (email, password) => {
+    const askToEnableBiometric = useCallback((emailValue, passwordValue, type) => {
+        Alert.alert(
+            'Enable fingerprint login?',
+            'Next time you can sign in with your fingerprint instead of typing your password.',
+            [
+                { text: 'Not now', style: 'cancel' },
+                {
+                    text: 'Enable',
+                    onPress: async () => {
+                        try {
+                            const { success } = await rnBiometrics.simplePrompt({ promptMessage: 'Confirm your fingerprint' });
+                            if (!success) return ToastMsg('Fingerprint setup cancelled');
+                            await setItem(BIO_EMAIL, emailValue);
+                            await setItem(BIO_PASSWORD, passwordValue);
+                            await setItem(BIO_TYPE, type);
+                            await setItem(BIO_ENABLED, 'true');
+                            setBiometricEnabled(true);
+                            ToastMsg('Fingerprint login enabled');
+                        } catch (error) {
+                            console.log('Biometric setup error:', error);
+                            ToastMsg('Fingerprint setup failed');
+                        }
+                    },
+                },
+            ],
+        );
+    }, [rnBiometrics]);
+
+    // ── Login ──────────────────────────────────────────────────────────────────
+    // `fromBiometric` = logging in with saved credentials (no setup prompt, and a rejected
+    // password means the saved login is stale, so it is cleared).
+    const performLogin = useCallback(async (emailValue, passwordValue, type, fromBiometric = false) => {
+        const isSeller = type === 'Seller';
         try {
-            const { success } = await rnBiometrics.simplePrompt({
-                promptMessage: 'Do you want to enable fingerprint login for faster access?',
-            });
+            showLoader();
+            const response = await apiPost(
+                isSeller ? urls.sellerLogin : urls.userLogin,
+                { Email: emailValue.trim(), Password: passwordValue },
+                { headers: { 'Content-Type': 'application/json' } },
+            );
 
-            if (success) {
-                await setItem('user_biometric_enabled', 'true');
-                await setItem('user_saved_email', email);
-                await setItem('user_saved_password', password);
-
-                ToastMsg('Fingerprint login enabled successfully!');
-                setBiometricEnabled(true);
-            } else {
-                ToastMsg('Fingerprint setup skipped');
+            if (response?.statusCode !== 200) {
+                ToastMsg(response?.message || 'Login failed');
+                return;
             }
+
+            ToastMsg(response?.message);
+            await setItem('token', response?.data?.token);
+            await setItem('accountType', type);
+
+            if (isSeller) {
+                dispatch(setSeller(JSON.stringify(response?.data?.Seller || response?.data)));
+            } else {
+                const profile = await apiGet(urls.userProfile);
+                if (profile?.statusCode !== 200) {
+                    ToastMsg('Could not load your profile. Please try again.');
+                    return;
+                }
+                dispatch(setUser(JSON.stringify(profile?.data)));
+            }
+
+            form.reset({ Email: '', Password: '' });
+            if (!fromBiometric && biometricAvailable && !biometricEnabled) {
+                askToEnableBiometric(emailValue.trim(), passwordValue, type);
+            }
+            navigation.reset({ index: 0, routes: [{ name: isSeller ? 'SellerTab' : 'Tab' }] });
         } catch (error) {
-            console.log('Error setting up biometric login:', error);
-            ToastMsg('Fingerprint setup failed');
+            const message = error?.message;
+            if (fromBiometric && message) {
+                // saved password no longer works (e.g. changed on another device)
+                await clearBiometric();
+                ToastMsg('Your saved fingerprint login is out of date. Please sign in with your password.');
+            } else {
+                ToastMsg(message || 'Network Error');
+            }
+        } finally {
+            hideLoader();
         }
-    };
+    }, [showLoader, hideLoader, dispatch, navigation, form, biometricAvailable, biometricEnabled, askToEnableBiometric, clearBiometric]);
 
-    const handleBiometricLogin = async () => {
+    const handleBiometricLogin = useCallback(async () => {
         try {
-            console.log('Starting user biometric authentication...');
-
             const { success, error } = await rnBiometrics.simplePrompt({
                 promptMessage: 'Place your finger on the sensor to login',
-                cancelButtonText: 'Cancel',
+                cancelButtonText: 'Use password',
             });
-
-            console.log('User Biometric result:', { success, error });
-
-            if (success) {
-                const savedEmail = await getItem('user_saved_email');
-                const savedPassword = await getItem('user_saved_password');
-                if (savedEmail && savedPassword) {
-                    await performLogin(savedEmail, savedPassword, false);
-                } else {
-                    ToastMsg('No registered fingerprint found');
-                }
-            } else {
-                ToastMsg('Fingerprint authentication cancelled');
+            if (!success) {
+                // user cancelling is normal — only mention real failures
+                if (error && !/cancel/i.test(error)) ToastMsg('Fingerprint not recognised');
+                return;
             }
+            const savedEmail = await getItem(BIO_EMAIL);
+            const savedPassword = await getItem(BIO_PASSWORD);
+            const savedType = (await getItem(BIO_TYPE)) || 'User';
+            if (!savedEmail || !savedPassword) {
+                await clearBiometric();
+                return ToastMsg('Fingerprint login is not set up. Please sign in with your password.');
+            }
+            setLoginAs(savedType);
+            await performLogin(savedEmail, savedPassword, savedType, true);
         } catch (error) {
             console.log('Biometric authentication error:', error);
             ToastMsg('Biometric authentication failed');
         }
-    };
+    }, [rnBiometrics, performLogin, clearBiometric]);
 
-    const handleButtonPressIn = () => {
-        Animated.spring(buttonScale, {
-            toValue: 0.95,
-            useNativeDriver: true,
-            speed: 15,
-            bounciness: 10,
-        }).start();
-    };
+    const onLogin = useCallback(() => {
+        const { ok, firstError } = form.validateAll();
+        if (!ok) return ToastMsg(firstError);
+        performLogin(form.values.Email, form.values.Password, loginAs);
+    }, [form, performLogin, loginAs]);
 
-    const handleButtonPressOut = () => {
-        Animated.spring(buttonScale, {
-            toValue: 1,
-            useNativeDriver: true,
-            speed: 15,
-            bounciness: 10,
-        }).start();
-    };
+    // ── Effects ────────────────────────────────────────────────────────────────
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(slideAnim, { toValue: 0, duration: 600, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        ]).start();
+        checkBiometricStatus();
+    }, []);
 
-    const handleInputChange = (name, value) => {
-        setUserInfor({ ...userInfo, [name]: value });
-    };
-
-    const performLogin = async (email, password, showBiometricSetup = true) => {
-        try {
-            showLoader();
-            const data = {
-                Email: email,
-                Password: password
-            };
-            console.log(data, 'DATA');
-            const response = await apiPost(urls.userLogin, data, {
-                headers: { 'Content-Type': 'application/json' }
-            });
-            console.log("response", response);
-
-            if (response?.statusCode === 200) {
-                ToastMsg(response?.message);
-
-                // Store token
-                setItem('token', response?.data?.token);
-                setItem('accountType', 'User');
-                const token = await getItem('token');
-
-                if (token) {
-                    const getUserDetails = await apiGet(urls.userProfile);
-                    if (getUserDetails?.statusCode === 200) {
-                        dispatch(setUser(JSON.stringify(getUserDetails?.data)));
-
-                        // Setup biometric if available and not already enabled
-                        if (showBiometricSetup && biometricAvailable && !biometricEnabled) {
-                            setupBiometricLogin(email, password);
-                        }
-
-                        navigation.navigate('Tab');
-                    }
-                    hideLoader();
-                    setUserInfor({});
-                }
-            }
-        } catch (error) {
-            hideLoader();
-            if (error?.message) {
-                if (error?.message == 'Invalid credentials.' && biometricAvailable && biometricEnabled) {
-                    ToastMsg('Biometric login is no longer valid due to recent changes. Please use your email and new password to log in.');
-                } else {
-                    ToastMsg(error?.message);
-                }
-            } else {
-                ToastMsg('Network Error');
-            }
+    // Offer the fingerprint prompt once when the screen opens (not on every re-render)
+    useEffect(() => {
+        if (biometricAvailable && biometricEnabled && !autoPrompted.current) {
+            autoPrompted.current = true;
+            handleBiometricLogin();
         }
-    };
+    }, [biometricAvailable, biometricEnabled, handleBiometricLogin]);
 
-    const performSellerLogin = async () => {
-        try {
-            showLoader();
-            const data = {
-                Email: userInfo?.Email,
-                Password: userInfo?.Password,
-            };
-            const response = await apiPost(urls.sellerLogin, data, {
-                headers: { 'Content-Type': 'application/json' }
-            });
+    const isSeller = loginAs === 'Seller';
 
-            if (response?.statusCode === 200) {
-                ToastMsg(response?.message);
-                setItem('token', response?.data?.token);
-                setItem('accountType', 'Seller');
-                dispatch(setSeller(JSON.stringify(response?.data?.Seller || response?.data)));
-                setUserInfor({});
-                navigation.navigate('SellerTab');
-            }
-            hideLoader();
-        } catch (error) {
-            hideLoader();
-            ToastMsg(error?.message || 'Network Error');
-        }
-    };
+    return (
+        <ImageBackground source={IMG.bgShadow} style={[styles.container, { backgroundColor: c.screen }]}>
+            <StatusBar translucent backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-    const onLogin = async () => {
-        const emailError = inValidEmail(userInfo?.Email);
-        if (emailError) {
-            return ToastMsg(emailError);
-        }
-        const passwordError = inValidPassword(userInfo?.Password);
-        if (passwordError) {
-            return ToastMsg(passwordError);
-        }
-
-        if (loginAs === 'Seller') {
-            await performSellerLogin();
-        } else {
-            await performLogin(userInfo?.Email, userInfo?.Password);
-        }
-    };
-
-    const renderHeader = () => {
-        return (
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
             <Animated.View style={[styles.headerContainer, { opacity: fadeAnim }]}>
-                {/* <Row>
-                    <TouchableOpacity>
-                        {isDarkMode ? <BackOuterWhite /> : <Back />}
-                    </TouchableOpacity>
-                    <CustomText style={styles.backText}>Back</CustomText>
-                </Row> */}
-                <CustomText style={styles.signInText}>{loginAs === 'Seller' ? 'Seller Sign In' : 'Sign In'}</CustomText>
+                <CustomText style={styles.signInText}>{isSeller ? 'Seller Sign In' : 'Sign In'}</CustomText>
             </Animated.View>
-        );
-    };
 
-    const renderItems = () => {
-        return (
             <Animated.ScrollView
-                contentContainerStyle={styles.scrollContainer}
+                contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
-                style={{
-                    transform: [{ translateY: slideAnim }],
-                    opacity: fadeAnim,
-                }}>
+                showsVerticalScrollIndicator={false}
+                style={[styles.card, { backgroundColor: c.card, transform: [{ translateY: slideAnim }], opacity: fadeAnim }]}>
                 <CustomText style={styles.welcomeText}>Welcome</CustomText>
-
-                <CustomText style={styles.descriptionText}>
-                    {loginAs === 'Seller'
+                <CustomText style={[styles.descriptionText, { color: c.muted }]}>
+                    {isSeller
                         ? 'Login to your Seller account to manage your shop'
-                        : 'Create Account to keep exploring amazing destinations around the world!'}
+                        : 'Sign in to keep exploring cars, communities and more!'}
                 </CustomText>
 
                 <CustomText style={styles.switchModeText}>
-                    {loginAs === 'Seller' ? 'Are you a User? ' : 'Are you a Seller? '}
-                    <CustomText
-                        style={styles.switchModeLink}
-                        onPress={() => setLoginAs(loginAs === 'Seller' ? 'User' : 'Seller')}
-                    >
-                        {loginAs === 'Seller' ? 'Login as User' : 'Login as Seller'}
+                    {isSeller ? 'Are you a User? ' : 'Are you a Seller? '}
+                    <CustomText style={[styles.switchModeLink, { color: accent }]} onPress={() => setLoginAs(isSeller ? 'User' : 'Seller')}>
+                        {isSeller ? 'Login as User' : 'Login as Seller'}
                     </CustomText>
                 </CustomText>
 
-                <View style={styles.inputContainer}>
-                    <CustomInputField
-                        placeholder="Enter your Email address"
-                        Lefticon={isDarkMode ? <EmailWhite /> : <EmailIcon />}
-                        value={userInfo?.Email}
-                        onChangeText={(value) => handleInputChange('Email', value)}
+                <View style={styles.form}>
+                    <FormField
+                        label="Email"
+                        required
+                        leftIcon="mail"
+                        placeholder="Enter your email address"
+                        keyboardType="email-address"
+                        value={form.values.Email}
+                        error={form.errors.Email}
+                        onChangeText={v => form.set('Email', v)}
+                        onBlur={() => form.blur('Email')}
+                        returnKeyType="next"
+                        onSubmitEditing={() => passwordRef.current?.focus()}
                     />
-                    {/* <CustomInputField
-                        placeholder="Enter Password"
-                        Lefticon={isDarkMode ? <LockWhite /> : <LockIcon />}
-                        icon={isDarkMode ? <EyeIconWhite /> : <EyeIcon />}
-                        value={userInfo?.Password}
-                        onChangeText={(value) => handleInputChange('Password', value)}
-                        secureTextEntry={true}
-                    /> */}
-                    <CustomInputField
-                        // label="Password"
-                        placeholder="Enter Password"
-                        value={userInfo?.Password}
-                        onChangeText={(value) => handleInputChange('Password', value)}
-                        isPasswordField={true}  // ⭐ Yeh add karo password field ke liye
-                        Lefticon={<LockIcon />}
-                        icon={<EyeIcon />}  // Yeh toggle karega
+                    <FormField
+                        ref={passwordRef}
+                        label="Password"
+                        required
+                        leftIcon="lock"
+                        placeholder="Enter your password"
+                        secure
+                        value={form.values.Password}
+                        error={form.errors.Password}
+                        onChangeText={v => form.set('Password', v)}
+                        onBlur={() => form.blur('Password')}
+                        returnKeyType="done"
+                        onSubmitEditing={onLogin}
                     />
-                    <Animated.View
-                        style={[
-                            styles.loginButton,
-                            { transform: [{ scale: buttonScale }] },
-                        ]}>
-                        <TouchableOpacity
-                            activeOpacity={0.7}
-                            onPressIn={handleButtonPressIn}
-                            onPressOut={handleButtonPressOut}
-                            onPress={() => onLogin()}
-                        >
-                            <LoginBtn width={320} />
-                        </TouchableOpacity>
-                    </Animated.View>
 
-                    {/* Fingerprint Login Button - Only show if biometric is enabled */}
+                    <FormButton label="Sign In" onPress={onLogin} style={{ marginTop: 6 }} />
+
                     {biometricAvailable && biometricEnabled && (
                         <TouchableOpacity
                             onPress={handleBiometricLogin}
-                            style={styles.biometricButton}>
-                            <Entypo name='fingerprint' size={24} color={isDarkMode ? '#fff' : '#438FCB'} />
-                            <CustomText style={[styles.biometricText, { color: isDarkMode ? '#fff' : '#438FCB' }]}>
-                                Login with Fingerprint
-                            </CustomText>
+                            activeOpacity={0.8}
+                            style={[styles.biometricButton, { borderColor: accent, backgroundColor: accent + '14' }]}>
+                            <Entypo name="fingerprint" size={24} color={accent} />
+                            <CustomText style={[styles.biometricText, { color: accent }]}>Login with Fingerprint</CustomText>
                         </TouchableOpacity>
                     )}
 
-                    {!isKeyboardOpen && <CustomText style={styles.signupText}>
-                        Don't you have an account?{' '}
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('Singnup', { signupAs: loginAs })}
-                        >
-                            <CustomText style={styles.signupLink}>Sign up</CustomText>
+                    <View style={styles.signupRow}>
+                        <CustomText style={[styles.signupText, { color: c.muted }]}>Don't have an account? </CustomText>
+                        <TouchableOpacity onPress={() => navigation.navigate('Singnup', { signupAs: loginAs })}>
+                            <CustomText style={[styles.signupLink, { color: accent }]}>Sign up</CustomText>
                         </TouchableOpacity>
-                    </CustomText>}
+                    </View>
                 </View>
 
-                {!isKeyboardOpen && <View style={styles.termsContainer}>
-                    <CustomText style={styles.termsText}>
-                        By creating an account, you agree to our{' '}
-                        <CustomText style={styles.linkText} onPress={() => navigation.navigate('TermsAndConditions')}>Terms & Conditions  </CustomText>
-                        and agree to{'  '}
-                        <CustomText style={styles.linkText} onPress={() => navigation.navigate('PrivacyPolicy')}>Privacy Policy</CustomText>
+                {!isKeyboardOpen && (
+                    <CustomText style={[styles.termsText, { color: c.muted }]}>
+                        By continuing, you agree to our{' '}
+                        <CustomText style={[styles.linkText, { color: accent }]} onPress={() => navigation.navigate('TermsAndConditions')}>Terms & Conditions</CustomText>
+                        {' '}and{' '}
+                        <CustomText style={[styles.linkText, { color: accent }]} onPress={() => navigation.navigate('PrivacyPolicy')}>Privacy Policy</CustomText>
                     </CustomText>
-                </View>}
+                )}
             </Animated.ScrollView>
-        );
-    };
-
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: isDarkMode ? 'black' : 'white'
-        },
-        headerContainer: {
-            paddingTop: 50,
-            paddingHorizontal: 20,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-        },
-        backText: {
-            fontSize: 16,
-            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-        },
-        signInText: {
-            fontSize: 18,
-            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-        },
-        scrollContainer: {
-            marginTop: 30,
-            backgroundColor: '#fff',
-            flex: 1,
-            padding: 26,
-            borderTopLeftRadius: 30,
-            borderTopRightRadius: 30,
-            backgroundColor: isDarkMode ? '#252525' : 'rgba(255, 255, 255, 1)',
-        },
-        welcomeText: {
-            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-            fontSize: 32,
-        },
-        descriptionText: {
-            fontSize: 16,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: 'rgba(137, 138, 131, 1)',
-        },
-        switchModeText: {
-            fontSize: 14,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            marginTop: 10,
-        },
-        switchModeLink: {
-            fontSize: 14,
-            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-            color: 'green',
-        },
-        inputContainer: {
-            marginTop: 35,
-            alignItems: 'center',
-        },
-        loginButton: {
-            marginTop: 30,
-        },
-        biometricButton: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            paddingVertical: 12,
-            paddingHorizontal: 20,
-            borderWidth: 1,
-            borderColor: isDarkMode ? '#fff' : '#438FCB',
-            borderRadius: 12,
-            marginTop: 15,
-            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(67,143,203,0.1)',
-        },
-        biometricText: {
-            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-            fontSize: 14,
-            marginLeft: 8,
-        },
-        signupText: {
-            fontSize: 16,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            // bottom: 10
-            top: 30
-        },
-        signupLink: {
-            fontSize: 16,
-            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-            color: 'green',
-            top: 5
-        },
-        termsContainer: {
-            alignItems: 'center',
-            position: 'absolute',
-            bottom: 50,
-            alignSelf: 'center',
-        },
-        termsText: {
-            fontSize: 13,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            textAlign: 'center',
-        },
-        linkText: {
-            fontSize: 13,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            textAlign: 'center',
-            color: 'green',
-        },
-        bottomIndicator: {
-            position: 'absolute',
-            bottom: 10,
-            alignSelf: 'center',
-        },
-    });
-
-    return (
-        <ImageBackground source={IMG.bgShadow} style={styles.container}>
-            <StatusBar translucent backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />
-            {renderHeader()}
-            {renderItems()}
+            </KeyboardAvoidingView>
         </ImageBackground>
     );
 };
+
+const styles = StyleSheet.create({
+    container: { flex: 1 },
+    headerContainer: { paddingTop: 50, paddingHorizontal: 20, alignItems: 'center' },
+    signInText: { fontSize: 18, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+    card: { marginTop: 30, flex: 1, borderTopLeftRadius: 30, borderTopRightRadius: 30 },
+    scrollContent: { padding: 26, paddingBottom: 120 },
+    welcomeText: { fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 32 },
+    descriptionText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
+    switchModeText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 10 },
+    switchModeLink: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+    form: { marginTop: 28 },
+    biometricButton: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+        paddingVertical: 13, borderWidth: 1.5, borderRadius: 16, marginTop: 14,
+    },
+    biometricText: { fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 14, marginLeft: 8 },
+    signupRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 22 },
+    signupText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+    signupLink: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+    termsText: { fontSize: 12, textAlign: 'center', marginTop: 28, lineHeight: 18, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+    linkText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+});
 
 export default Login;

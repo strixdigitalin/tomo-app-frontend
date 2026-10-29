@@ -22,7 +22,7 @@ const BoostSuccess = ({ navigation, route }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? 'black' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             justifyContent: 'center',
             alignItems: 'center',
             paddingHorizontal: 20,
@@ -44,7 +44,7 @@ const BoostSuccess = ({ navigation, route }) => {
         },
         infoBox: {
             width: '100%',
-            backgroundColor: isDarkMode ? '#252525' : '#F8F8F8',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             padding: 20,
             borderRadius: 12,
             marginBottom: 20,
@@ -84,7 +84,7 @@ const BoostSuccess = ({ navigation, route }) => {
             borderRadius: 10,
             alignItems: 'center',
             borderWidth: 1,
-            borderColor: isDarkMode ? '#3a3a3a' : '#E4E4E4',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         secondaryButtonText: {
             fontSize: 16,

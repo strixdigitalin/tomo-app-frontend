@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Feather';
 import StarRating from 'react-native-star-rating-widget';
+import RatingBar from '../../components/RatingBar';
 import CustomText from '../../components/TextComponent';
 import SafeImage from '../../components/SafeImage';
 import { ConfirmDialog } from '../../components/ActionMenu';
@@ -24,6 +25,8 @@ import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
 import { white } from '../../common/Colors/colors';
 import useThemeColor from '../../utils/useThemeColor';
+import { productTitle } from '../../utils/productFields';
+import ProductSpecRows from '../../components/ProductSpecRows';
 
 const { width } = Dimensions.get('window');
 
@@ -105,7 +108,7 @@ const ListingProductDetail = ({ navigation, route }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff' },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
         image: { width, height: width * 0.8 },
         backBtn: {
             position: 'absolute', top: insets.top + 10, left: 16, zIndex: 10,
@@ -121,19 +124,19 @@ const ListingProductDetail = ({ navigation, route }) => {
             color: isDarkMode ? '#D1D5DB' : '#374151', lineHeight: 20,
         },
         shopChip: { flexDirection: 'row', alignItems: 'center', marginTop: 6 },
-        shopChipText: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        shopChipText: { fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B' },
         reviewsCard: {
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7', borderRadius: 16, padding: 18, marginTop: 10, alignItems: 'center',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderRadius: 16, padding: 18, marginTop: 10, alignItems: 'center',
         },
         avgRating: { fontSize: 40, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        outOf: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: -4 },
-        totalReviews: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 6 },
+        outOf: { fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: -4 },
+        totalReviews: { fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: 6 },
         writeReviewBtn: {
             marginTop: 14, backgroundColor: primaryColor, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12,
         },
         writeReviewBtnText: { color: white, fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 14 },
         reviewCard: {
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7', borderRadius: 14, padding: 14, marginTop: 10,
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderRadius: 14, padding: 14, marginTop: 10,
         },
         reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
         reviewAvatar: { width: 36, height: 36, borderRadius: 18 },
@@ -143,15 +146,15 @@ const ListingProductDetail = ({ navigation, route }) => {
             color: isDarkMode ? '#D1D5DB' : '#374151', marginTop: 8, lineHeight: 19,
         },
         emptyReviews: {
-            fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 14,
+            fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 14,
         },
         modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
         modalContent: {
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20,
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20,
         },
         modalTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginBottom: 14 },
         reviewInput: {
-            backgroundColor: isDarkMode ? '#2a2a2a' : '#F0F0F0', borderRadius: 12, padding: 14, minHeight: 100,
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9', borderRadius: 12, padding: 14, minHeight: 100,
             textAlignVertical: 'top', color: isDarkMode ? white : '#111', fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             fontSize: 14, marginTop: 14,
         },
@@ -177,15 +180,17 @@ const ListingProductDetail = ({ navigation, route }) => {
                 <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                     <SafeImage uri={images ? images[0] : null} style={styles.image} />
                     <View style={styles.body}>
-                        <CustomText style={styles.name}>{product?.ProductName}</CustomText>
+                        <CustomText style={styles.name}>{productTitle(product)}</CustomText>
                         {!!product?.Price && <CustomText style={styles.price}>₹{Number(product.Price).toLocaleString()}</CustomText>}
 
                         {!!product?.Shop?.Name && (
                             <View style={styles.shopChip}>
-                                <Icon name="shopping-bag" size={13} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                                <Icon name="shopping-bag" size={13} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                                 <CustomText style={[styles.shopChipText, { marginLeft: 6 }]}>{product.Shop.Name}</CustomText>
                             </View>
                         )}
+
+                        <ProductSpecRows product={product} />
 
                         {!!product?.ProductDetails && (
                             <>
@@ -266,10 +271,11 @@ const ListingProductDetail = ({ navigation, route }) => {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <CustomText style={styles.modalTitle}>Write a Review</CustomText>
-                        <StarRating rating={rating} onChange={setRating} starSize={36} color="#FFD700" />
+                        <RatingBar value={rating} onChange={setRating} />
                         <TextInput
                             style={styles.reviewInput}
                             placeholder="Share your experience..."
+                            maxLength={500}
                             placeholderTextColor={isDarkMode ? '#9CA3AF' : '#9CA3AF'}
                             value={reviewText}
                             onChangeText={setReviewText}
@@ -281,7 +287,7 @@ const ListingProductDetail = ({ navigation, route }) => {
                             </CustomText>
                         </TouchableOpacity>
                         <TouchableOpacity style={{ marginTop: 12, alignItems: 'center' }} onPress={() => setShowReviewModal(false)}>
-                            <CustomText style={{ color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>Cancel</CustomText>
+                            <CustomText style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>Cancel</CustomText>
                         </TouchableOpacity>
                     </View>
                 </View>

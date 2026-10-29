@@ -65,7 +65,7 @@ const CHAT_THEMES = {
 
 // ─── Chat Backgrounds ─────────────────────────────────────────────────────────
 const CHAT_BACKGROUNDS = {
-    default:   { name: 'Light White',     light: '#F5F5F5',  dark: '#1a1a1a' },
+    default:   { name: 'Light White',     light: '#EEF1F6',  dark: '#0B1220' },
     gradient1: { name: 'Soft Gradient',   gradientLight: ['#F0F7FF','#E6F3FF'],   gradientDark: ['#0a1a2a','#1a2a3a'] },
     gradient2: { name: 'Warm Gradient',   gradientLight: ['#FFF5E6','#FFE6CC'],   gradientDark: ['#2a1a0a','#3a2a0a'] },
     gradient3: { name: 'Cool Mint',       gradientLight: ['#E6F9F5','#CCF3EB'],   gradientDark: ['#0a2a2a','#0a3a3a'] },
@@ -233,10 +233,10 @@ const ChatScreen = ({ route, navigation }) => {
 
     // ── Dynamic colors ────────────────────────────────────────────────────────
     const textColor  = isDarkMode ? '#fff'     : '#000';
-    const headerBg   = isDarkMode ? '#252525'  : '#fff';
-    const inputBg    = isDarkMode ? '#2a2a2a'  : '#F1F1F1';
-    const borderColor = isDarkMode ? '#333'    : '#EEE';
-    const stickerTabBg = isDarkMode ? '#2a2a2a' : '#F8F8F8';
+    const headerBg   = isDarkMode ? '#131B2B'  : '#FFFFFF';
+    const inputBg    = isDarkMode ? '#1B2538'  : '#F1F5F9';
+    const borderColor = isDarkMode ? '#1E293B' : '#E2E8F0';
+    const stickerTabBg = isDarkMode ? '#1B2538' : '#F1F5F9';
 
     // ── Init ──────────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -557,7 +557,7 @@ const ChatScreen = ({ route, navigation }) => {
 
                 {/* Editing bar */}
                 {editingMessage && (
-                    <View style={[styles.editingBar, { backgroundColor: isDarkMode ? '#2a2a2a' : '#F0F0F0', borderTopColor: borderColor }]}>
+                    <View style={[styles.editingBar, { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9', borderTopColor: borderColor }]}>
                         <View style={styles.editingContent}>
                             <Icon name="edit-2" size={16} color="#4F52FE" />
                             <View style={styles.editingTextContainer}>
@@ -670,7 +670,7 @@ const ChatScreen = ({ route, navigation }) => {
                 <TouchableWithoutFeedback onPress={() => setShowMessageOptions(false)}>
                     <View style={styles.modalOverlay}>
                         <TouchableWithoutFeedback>
-                            <View style={[styles.optionsContainer, { backgroundColor: isDarkMode ? '#2a2a2a' : 'white' }]}>
+                            <View style={[styles.optionsContainer, { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }]}>
                                 <TouchableOpacity style={styles.optionButton} onPress={handleEditMessage}>
                                     <Icon name="edit-2" size={20} color={textColor} />
                                     <Text style={[styles.optionText, { color: textColor }]}>Edit Message</Text>
@@ -699,7 +699,7 @@ const ChatScreen = ({ route, navigation }) => {
                 onRequestClose={discardTheme}
             >
                 <View style={styles.themeModalOverlay}>
-                    <View style={[styles.themeModalContent, { backgroundColor: isDarkMode ? '#1a1a1a' : '#fff' }]}>
+                    <View style={[styles.themeModalContent, { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }]}>
 
                         {/* Header */}
                         <View style={[styles.themeModalHeader, { borderBottomColor: borderColor }]}>
@@ -722,7 +722,7 @@ const ChatScreen = ({ route, navigation }) => {
                                                 key={key}
                                                 style={[
                                                     styles.themeCard,
-                                                    { backgroundColor: isDarkMode ? '#2a2a2a' : '#F5F5F5' },
+                                                    { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
                                                     isSelected && styles.themeCardSelected,
                                                 ]}
                                                 onPress={() => setPendingChatTheme(key)}
@@ -757,7 +757,7 @@ const ChatScreen = ({ route, navigation }) => {
                                                 key={key}
                                                 style={[
                                                     styles.themeCard,
-                                                    { backgroundColor: isDarkMode ? '#2a2a2a' : '#F5F5F5' },
+                                                    { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
                                                     isSelected && styles.themeCardSelected,
                                                 ]}
                                                 onPress={() => setPendingChatBackground(key)}
@@ -798,7 +798,7 @@ const ChatScreen = ({ route, navigation }) => {
                                                 key={key}
                                                 style={[
                                                     styles.themeCard,
-                                                    { backgroundColor: isDarkMode ? '#2a2a2a' : '#F5F5F5' },
+                                                    { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
                                                     isSelected && styles.themeCardSelected,
                                                 ]}
                                                 onPress={() => setPendingBubbleStyle(key)}
@@ -830,7 +830,7 @@ const ChatScreen = ({ route, navigation }) => {
                                 <View style={{
                                     backgroundColor: (() => {
                                         const bg = CHAT_BACKGROUNDS[pendingChatBackground];
-                                        if (!bg || bg.type === 'image') return isDarkMode ? '#1a1a1a' : '#F5F5F5';
+                                        if (!bg || bg.type === 'image') return isDarkMode ? '#0B1220' : '#EEF1F6';
                                         if (bg.gradientLight) return isDarkMode ? bg.gradientDark[0] : bg.gradientLight[0];
                                         return isDarkMode ? bg.dark : bg.light;
                                     })(),
@@ -847,7 +847,7 @@ const ChatScreen = ({ route, navigation }) => {
 
                         {/* ── Sticky Apply / Cancel footer ── */}
                         <View style={[styles.themeFooter, {
-                            backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
+                            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
                             borderTopColor: borderColor,
                         }]}>
                             <TouchableOpacity

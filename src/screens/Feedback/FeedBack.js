@@ -169,10 +169,10 @@ const FeedBack = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? 'black' : '#f0f2f5',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         headerContainer: {
-            backgroundColor: isDarkMode ? '#252525' : 'white',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             paddingTop: 50,
             paddingBottom: 15,
         },
@@ -196,12 +196,12 @@ const FeedBack = ({ navigation }) => {
             marginBottom: 16,
         },
         categoryCard: {
-            backgroundColor: isDarkMode ? '#1e1e1e' : 'white',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderRadius: 8,
             padding: 16,
             marginBottom: 16,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#333' : '#e5e7eb',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
@@ -244,16 +244,22 @@ const FeedBack = ({ navigation }) => {
             color: isDarkMode ? '#d1d5db' : '#374151',
             flex: 1,
         },
+        otherCounter: {
+            fontSize: 12,
+            textAlign: 'right',
+            marginTop: 4,
+            color: isDarkMode ? '#9ca3af' : '#6b7280',
+        },
         otherInput: {
             marginTop: 8,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#444' : '#d1d5db',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
             borderRadius: 6,
             padding: 10,
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             color: isDarkMode ? 'white' : 'black',
-            backgroundColor: isDarkMode ? '#2a2a2a' : 'white',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
         },
         submitButton: {
             marginTop: 8,
@@ -363,11 +369,17 @@ const FeedBack = ({ navigation }) => {
                                 onChangeText={(text) =>
                                     setOtherTexts({
                                         ...otherTexts,
-                                        [category]: text
+                                        [category]: text.slice(0, 120)
                                     })
                                 }
+                                maxLength={120}
                                 multiline
                             />
+                        )}
+                        {answers[category] === "Other" && (
+                            <CustomText style={styles.otherCounter}>
+                                {(otherTexts[category] || "").length}/120
+                            </CustomText>
                         )}
                     </View>
                 ))}

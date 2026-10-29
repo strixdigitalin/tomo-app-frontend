@@ -69,7 +69,7 @@ const AllEvents = ({ navigation }) => {
     }, [events, search]);
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 22, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         myEventsBtn: {
@@ -79,15 +79,15 @@ const AllEvents = ({ navigation }) => {
         myEventsBtnText: { color: white, fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 13 },
         searchWrap: { paddingHorizontal: 20, marginBottom: 10 },
         searchInput: {
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 14,
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0', borderRadius: 14,
             paddingHorizontal: 16, paddingVertical: 11, fontSize: 14,
             color: isDarkMode ? white : '#111', fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
         },
         card: {
             marginHorizontal: 20, marginBottom: 16, borderRadius: 18, overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         cardImageWrap: { position: 'relative' },
         cardImage: { width: '100%', height: 160 },
@@ -105,13 +105,13 @@ const AllEvents = ({ navigation }) => {
         eventName: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         eventGenre: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: primaryColor, marginTop: 2 },
         metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-        metaText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280', flexShrink: 1 },
+        metaText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#94A3B8' : '#64748B', flexShrink: 1 },
         venueName: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? white : '#111' },
         footer: {
             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-            marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDarkMode ? '#2A2A2A' : '#EEE',
+            marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
-        organizerLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        organizerLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         organizerName: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
         promoChip: {
             paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
@@ -126,7 +126,7 @@ const AllEvents = ({ navigation }) => {
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
             fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
     });
 

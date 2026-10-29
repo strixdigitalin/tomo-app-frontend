@@ -4,6 +4,7 @@
 
 import * as React from 'react';
 import { StyleSheet, Dimensions, Image } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { verticalScale } from 'react-native-size-matters';
 import { white } from '../../common/Colors/colors';
@@ -133,7 +134,7 @@ const AnimatedTabIcon = ({ focused, children, index, glowColors }) => {
 };
 
 // Sexy Bottom Line with Wave Effect
-const AnimatedBottomLine = () => {
+const AnimatedBottomLine = ({ color }) => {
   const scaleX = useSharedValue(0);
   const translateY = useSharedValue(10);
   const opacity = useSharedValue(0);
@@ -178,13 +179,13 @@ const AnimatedBottomLine = () => {
 
   return (
     <Animated.View style={animatedStyle}>
-      <BottomTabLinenew />
+      <View style={{ width: 22, height: 4, borderRadius: 2, backgroundColor: color, alignSelf: 'center' }} />
     </Animated.View>
   );
 };
 
 // Animated Background with Gradient Shift
-const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
+const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle, accent }) => {
   const gradientShift = useSharedValue(0);
 
   React.useEffect(() => {
@@ -201,12 +202,12 @@ const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
   });
 
   return (
-    <Animated.View style={[{ flex: 1 }, tabBarAnimatedStyle, backgroundStyle]}>
+    <Animated.View style={[{ flex: 1, borderTopWidth: 1, borderTopColor: accent + '40' }, tabBarAnimatedStyle, backgroundStyle]}>
       <LinearGradient
         colors={
           isDarkMode
-            ? ['#2a2a2a', '#252525', '#1a1a1a']
-            : ['#ffffff', '#fafafa', '#f5f5f5']
+            ? ['#131B2B', '#131B2B', '#131B2B']
+            : ['#FFFFFF', '#FFFFFF', '#FFFFFF']
         }
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
@@ -304,6 +305,7 @@ function TabNavigation() {
           <AnimatedTabBarBackground
             isDarkMode={isDarkMode}
             tabBarAnimatedStyle={tabBarAnimatedStyle}
+            accent={primaryColor}
           />
         ),
       }}
@@ -315,14 +317,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={0} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <ActiveHomeNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <DeActiveHomeWhite /> : <DeActiveHome />}</>
-              )}
+              <Feather name="home" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -335,14 +331,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={1} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <MarketplaceActiveTabNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}</>
-              )}
+              <Feather name="shopping-bag" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -357,14 +347,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: isDarkMode ? white : 'black' }} />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: white }} /> : <Image source={IMG.ecomerce} style={{ width: 24, height: 24, tintColor: 'black' }} />}</>
-              )}
+              <Feather name="package" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -379,14 +363,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <SearchActiveTabNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <DeActiveWhiteSearch /> : <DeActiveSearch />}</>
-              )}
+              <Feather name="search" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -399,14 +377,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={3} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <MessageActiveTabNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <DeactiveWhiteMsg /> : <DeActiveMsg />}</>
-              )}
+              <Feather name="message-circle" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -419,8 +391,8 @@ function TabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={4} glowColors={glowColors}>
-              <DeActiveLast />
-              {focused && <AnimatedBottomLine />}
+              <Feather name="user" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}

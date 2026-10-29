@@ -163,7 +163,7 @@ const ReportScreen = ({ route, navigation }) => {
 
             hideLoader()
 
-            ToastMsg('Report Submitte,Thank you for reporting. We will review this post and take appropriate action.',)
+            ToastMsg('Report submitted. Thank you — we will review this post and take appropriate action.')
             navigation.goBack()
             //   Alert.alert(
             //     'Report Submitted',
@@ -178,8 +178,8 @@ const ReportScreen = ({ route, navigation }) => {
         } catch (error) {
             hideLoader()
             console.error('Error submitting report:', error)
-            ToastMsg(error?.message)
-            navigation.goBack()
+            // stay on the screen so the user can retry
+            ToastMsg(error?.message || 'Failed to submit report. Please try again.')
 
             // Alert.alert('Error', 'Failed to submit report. Please try again.')
         }
@@ -206,7 +206,7 @@ const ReportScreen = ({ route, navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#000000' : '#ffffff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         header: {
             flexDirection: 'row',
@@ -215,7 +215,7 @@ const ReportScreen = ({ route, navigation }) => {
             paddingVertical: 12,
             paddingTop: 50,
             borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? '#333' : '#eee',
+            borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         backButton: {
             padding: 4,
@@ -259,16 +259,16 @@ const ReportScreen = ({ route, navigation }) => {
             alignItems: 'center',
             paddingVertical: 16,
             paddingHorizontal: 16,
-            backgroundColor: isDarkMode ? '#1a1a1a' : '#fafafa',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2a2a2a' : '#f0f0f0',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         reasonIconContainer: {
             width: 40,
             height: 40,
             borderRadius: 20,
-            backgroundColor: isDarkMode ? '#2a2a2a' : '#f5f5f5',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             justifyContent: 'center',
             alignItems: 'center',
             marginRight: 12,
@@ -288,10 +288,10 @@ const ReportScreen = ({ route, navigation }) => {
         subReasonOption: {
             paddingVertical: 18,
             paddingHorizontal: 16,
-            backgroundColor: isDarkMode ? '#1a1a1a' : '#fafafa',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2a2a2a' : '#f0f0f0',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         subReasonText: {
             fontSize: 16,
@@ -309,10 +309,10 @@ const ReportScreen = ({ route, navigation }) => {
             fontFamily: FONTS_FAMILY.SourceSans3_SemiBold,
         },
         textInput: {
-            backgroundColor: isDarkMode ? '#1a1a1a' : '#fafafa',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2a2a2a' : '#f0f0f0',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
             padding: 16,
             fontSize: 15,
             color: isDarkMode ? '#fff' : '#000',
@@ -346,12 +346,12 @@ const ReportScreen = ({ route, navigation }) => {
             color: isDarkMode ? '#666' : '#999',
         },
         selectedReasonCard: {
-            backgroundColor: isDarkMode ? '#1a1a1a' : '#fafafa',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             padding: 16,
             borderRadius: 12,
             marginBottom: 24,
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2a2a2a' : '#f0f0f0',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         selectedReasonTitle: {
             fontSize: 14,
@@ -499,7 +499,7 @@ const ReportScreen = ({ route, navigation }) => {
     return (
         <View style={styles.container}>
             <StatusBar
-                backgroundColor={isDarkMode ? '#000000' : '#ffffff'}
+                backgroundColor={isDarkMode ? '#0B1220' : '#EEF1F6'}
                 barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             />
 

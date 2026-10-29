@@ -140,7 +140,7 @@ const CommentsScreen = ({ route, navigation }) => {
     },
     modalContent: {
       height: '90%',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       borderTopLeftRadius: 30,
       borderTopRightRadius: 30,
       paddingTop: 8,
@@ -202,7 +202,7 @@ const CommentsScreen = ({ route, navigation }) => {
     },
     actionMenu: {
       position: 'absolute',
-      backgroundColor: isDarkMode ? '#2a2a2a' : '#fff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       borderRadius: 16,
       padding: 8,
       minWidth: 140,
@@ -236,8 +236,8 @@ const CommentsScreen = ({ route, navigation }) => {
       padding: 12,
       paddingBottom: 20,
       borderTopWidth: 1,
-      borderColor: isDarkMode ? '#333' : '#e0e0e0',
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#fff',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
     },
     input: {
       flex: 1,
@@ -246,7 +246,7 @@ const CommentsScreen = ({ route, navigation }) => {
       borderRadius: 20,
       fontSize: 14,
       maxHeight: 80,
-      backgroundColor: isDarkMode ? '#2a2a2a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       color: isDarkMode ? 'white' : 'black',
     },
     inputEditing: {

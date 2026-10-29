@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Modal, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import RatingBar from '../../components/RatingBar';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { apiPost } from '../../utils/Apis';
@@ -36,19 +36,19 @@ const CarRatingModal = ({ visible, onClose, carId, onSubmitted }) => {
 
     const styles = StyleSheet.create({
         overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 30 },
-        card: { width: '100%', backgroundColor: isDarkMode ? '#1E1E1E' : '#fff', borderRadius: 20, padding: 22 },
+        card: { width: '100%', backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderRadius: 20, padding: 22 },
         title: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold, textAlign: 'center' },
         starsRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 18 },
-        ratingLabel: { fontSize: 13, textAlign: 'center', marginTop: 8, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        ratingLabel: { fontSize: 13, textAlign: 'center', marginTop: 8, color: isDarkMode ? '#94A3B8' : '#64748B' },
         input: {
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0', borderRadius: 12,
             paddingHorizontal: 14, paddingVertical: 12, color: isDarkMode ? white : '#111',
             fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 14, minHeight: 80, textAlignVertical: 'top',
-            backgroundColor: isDarkMode ? '#242424' : '#FAFAFA', marginTop: 18,
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', marginTop: 18,
         },
         row: { flexDirection: 'row', gap: 12, marginTop: 20 },
         btn: { flex: 1, paddingVertical: 13, borderRadius: 14, alignItems: 'center' },
-        cancelBtn: { backgroundColor: isDarkMode ? '#2A2A2A' : '#F3F4F6' },
+        cancelBtn: { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
         cancelText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: isDarkMode ? '#fff' : '#111' },
         submitBtn: { backgroundColor: primaryColor },
         submitText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: white },
@@ -59,13 +59,7 @@ const CarRatingModal = ({ visible, onClose, carId, onSubmitted }) => {
             <View style={styles.overlay}>
                 <View style={styles.card}>
                     <CustomText style={styles.title}>Rate this Car</CustomText>
-                    <View style={styles.starsRow}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                            <TouchableOpacity key={s} onPress={() => setRating(s)} hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}>
-                                <Icon name="star" size={30} color={s <= rating ? primaryColor : (isDarkMode ? '#3A3A3A' : '#E5E7EB')} />
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    <RatingBar value={rating} onChange={setRating} />
                     <CustomText style={styles.ratingLabel}>{rating > 0 ? `${rating} out of 5` : 'Select rating'}</CustomText>
                     <TextInput
                         style={styles.input}
@@ -74,6 +68,7 @@ const CarRatingModal = ({ visible, onClose, carId, onSubmitted }) => {
                         placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
                         value={review}
                         onChangeText={setReview}
+                        maxLength={500}
                     />
                     <View style={styles.row}>
                         <TouchableOpacity style={[styles.btn, styles.cancelBtn]} onPress={onClose}>

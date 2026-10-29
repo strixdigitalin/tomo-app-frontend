@@ -131,12 +131,12 @@ const OtherUserDetail = ({ navigation, route }) => {
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#1b1b1b' : '#f3f2ef',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     header: {
       paddingTop: 50,
       paddingHorizontal: 20,
-      backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       elevation: 2,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
@@ -286,7 +286,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     tabContainer: {
       flexDirection: 'row',
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#333' : '#e0e0e0',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       //   marginHorizontal: 20,
       marginBottom: 20,
     },
@@ -340,7 +340,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     },
     // About Section (keeping for bio display)
     aboutSection: {
-      backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       marginHorizontal: 16,
       marginTop: 16,
       borderRadius: 12,

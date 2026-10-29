@@ -19,7 +19,7 @@ import { FONTS_FAMILY } from '../../assets/Fonts';
 import CustomText from '../../components/TextComponent';
 import ThemeToggle from '../../components/ThemeToggle';
 import FingerPrintToggle from '../../components/FingerPrintToggle';
-import LastActiveToggle from '../../components/LastActiveToggle';
+import PrivacyToggle from '../../components/PrivacyToggle';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import { THEMES } from '../../redux/reducer/theme';
 import { updateScreenshotProtection } from '../../redux/actions/themeActions';
@@ -50,20 +50,20 @@ const Settings = ({ navigation }) => {
   };
 
   const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: isDarkMode ? 'black' : '#f0f2f5' },
-    headerContainer: { backgroundColor: isDarkMode ? '#252525' : 'white', paddingTop: 50, paddingBottom: 15 },
+    container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
+    headerContainer: { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', paddingTop: 50, paddingBottom: 15 },
     backButton: { flexDirection: 'row', alignItems: 'center' },
     headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginLeft: 10 },
     section: { marginTop: 9, marginBottom: 8 },
     sectionTitle: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: primaryColor, marginBottom: 12, paddingHorizontal: 16, textTransform: 'uppercase', letterSpacing: 0.5 },
-    settingCard: { backgroundColor: isDarkMode ? '#252525' : 'white', paddingVertical: 10, paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
+    settingCard: { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', paddingVertical: 10, paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
     settingIcon: { width: 30, height: 30, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
     settingTextContainer: { flex: 1 },
     settingText: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: isDarkMode ? 'white' : 'black' },
     settingSubText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', marginTop: 2 },
     arrowIcon: { fontSize: 20, color: isDarkMode ? '#b0b3b8' : '#65676b' },
-    toggleCard: { backgroundColor: isDarkMode ? '#252525' : 'white', paddingVertical: 0, paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: 12 },
-    divider: { height: 1, backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb', marginVertical: 20, marginHorizontal: 16 },
+    toggleCard: { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', paddingVertical: 0, paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 8, borderRadius: 12 },
+    divider: { height: 1, backgroundColor: isDarkMode ? '#1E293B' : '#E2E8F0', marginVertical: 20, marginHorizontal: 16 },
   });
 
   const renderHeader = () => (
@@ -105,7 +105,10 @@ const Settings = ({ navigation }) => {
 
           {biometricAvailable && <View style={styles.toggleCard}><FingerPrintToggle /></View>}
 
-          <View style={styles.toggleCard}><LastActiveToggle /></View>
+          <View style={styles.toggleCard}><PrivacyToggle field="PrivateProfile" label="Private Profile" defaultValue={false} /></View>
+          <View style={styles.toggleCard}><PrivacyToggle field="ShowLastActive" label="Show Last Active" /></View>
+          <View style={styles.toggleCard}><PrivacyToggle field="ShowJoinedDate" label="Show Joined Date" /></View>
+          <View style={styles.toggleCard}><PrivacyToggle field="ShowAddress" label="Show Address" /></View>
 
           {/* Screenshot Protection */}
           <View style={styles.settingCard}>

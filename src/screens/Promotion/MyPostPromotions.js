@@ -32,7 +32,8 @@ const STATUS_COLORS = {
 
 // Matches web's Pages/PaidPromotion/AllMyPostPromotions.jsx — the user's own
 // post promotions (a different thing from boosting a shop product).
-const MyPostPromotions = ({ navigation }) => {
+const MyPostPromotions = ({ navigation, route }) => {
+    const isShop = route?.params?.mode === 'shop';
     const { isDarkMode, primaryColor } = useThemeColor();
     const glowColors = useMemo(() => [primaryColor, primaryColor], [primaryColor]);
     const insets = useSafeAreaInsets();
@@ -46,7 +47,7 @@ const MyPostPromotions = ({ navigation }) => {
 
     const fetchPromotions = async () => {
         try {
-            const res = await apiGet(urls.getMyPostPromotions);
+            const res = await apiGet(isShop ? urls.getMyShopPromotions : urls.getMyPostPromotions);
             setPromotions(res?.data || []);
         } catch (error) {
             console.log('MyPostPromotions fetch error', error);
@@ -69,7 +70,7 @@ const MyPostPromotions = ({ navigation }) => {
 
     const deletePromotion = async (item) => {
         try {
-            const res = await apiDelete(`${urls.deletePostPromotion}/${item?._id}`);
+            const res = await apiDelete(`${isShop ? urls.deleteShopPromotion : urls.deletePostPromotion}/${item?._id}`);
             ToastMsg(res?.message || 'Promotion deleted successfully');
             fetchPromotions();
         } catch (error) {
@@ -79,14 +80,14 @@ const MyPostPromotions = ({ navigation }) => {
 
     const menuOptions = menuItem
         ? [
-              { label: 'View Details', icon: 'eye', onPress: () => navigation.navigate('PostPromotionDetail', { id: menuItem._id }) },
+              { label: 'View Details', icon: 'eye', onPress: () => navigation.navigate('PostPromotionDetail', { id: menuItem._id, mode: route?.params?.mode }) },
               { label: 'Update Promotion', icon: 'edit-2', onPress: () => setEditItem(menuItem) },
               { label: 'Delete Promotion', icon: 'trash-2', destructive: true, onPress: () => setConfirmItem(menuItem) },
           ]
         : [];
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         addBtn: {
@@ -96,8 +97,8 @@ const MyPostPromotions = ({ navigation }) => {
         list: { paddingHorizontal: 16, paddingBottom: 120 },
         card: {
             borderRadius: 18, overflow: 'hidden', marginBottom: 16,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         imageBox: { width: '100%', height: 170, position: 'relative' },
         image: { width: '100%', height: '100%' },
@@ -124,16 +125,16 @@ const MyPostPromotions = ({ navigation }) => {
         goalChip: { backgroundColor: isDarkMode ? 'rgba(37,99,235,0.2)' : 'rgba(37,99,235,0.1)' },
         goalChipText: { color: '#2563EB' },
         dateRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
-        dateText: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        dateText: { fontSize: 12, color: isDarkMode ? '#94A3B8' : '#64748B' },
         menuBtn: {
             position: 'absolute', top: 10, right: 10, width: 32, height: 32, borderRadius: 16,
             alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 5,
         },
         statsRow: {
             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-            marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: isDarkMode ? '#2A2A2A' : '#EEE',
+            marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
-        statText: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        statText: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B' },
         paymentRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
         emptyIconWrap: {
@@ -142,12 +143,12 @@ const MyPostPromotions = ({ navigation }) => {
         },
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
-            fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
     });
 
     const renderItem = ({ item }) => {
-        const post = item?.Post;
+        const post = isShop ? item?.SellerShop : item?.Post;
         const statusStyle = STATUS_COLORS[item?.Status] || STATUS_COLORS.Pending;
 
         return (
@@ -163,10 +164,10 @@ const MyPostPromotions = ({ navigation }) => {
             <TouchableOpacity
                 activeOpacity={0.9}
                 style={[styles.card, { marginBottom: 0 }]}
-                onPress={() => navigation.navigate('PostPromotionDetail', { id: item?._id })}
+                onPress={() => navigation.navigate('PostPromotionDetail', { id: item?._id, mode: route?.params?.mode })}
             >
                 <View style={styles.imageBox}>
-                    <SafeImage uri={post?.media} style={styles.image} />
+                    <SafeImage uri={isShop ? post?.Image : post?.media} style={styles.image} />
                     <TouchableOpacity
                         style={styles.menuBtn}
                         onPress={() => setMenuItem(item)}
@@ -191,7 +192,7 @@ const MyPostPromotions = ({ navigation }) => {
                     )}
                 </View>
                 <View style={styles.body}>
-                    <CustomText numberOfLines={2} style={styles.caption}>{post?.caption || 'No caption'}</CustomText>
+                    <CustomText numberOfLines={2} style={styles.caption}>{isShop ? (post?.Name || 'Shop') : (post?.caption || 'No caption')}</CustomText>
                     <View style={styles.chipRow}>
                         {!!item?.PromotionType && (
                             <View style={styles.chip}>
@@ -206,7 +207,7 @@ const MyPostPromotions = ({ navigation }) => {
                     </View>
                     {!!item?.StartDate && (
                         <Row style={styles.dateRow}>
-                            <Icon name="calendar" size={13} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="calendar" size={13} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.dateText}>
                                 {item?.DurationDays} Days • {new Date(item.StartDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                 {' - '}
@@ -218,9 +219,11 @@ const MyPostPromotions = ({ navigation }) => {
                         <CustomText style={styles.statText}>
                             👁️ {item?.TotalViews || 0}   🖱️ {item?.TotalClicks || 0}   📈 {item?.TotalReach || 0}
                         </CustomText>
-                        <CustomText style={styles.statText}>
-                            ❤️ {post?.TotalLikes || 0}   💬 {post?.TotalComents || 0}
-                        </CustomText>
+                        {!isShop && (
+                            <CustomText style={styles.statText}>
+                                ❤️ {post?.TotalLikes || 0}   💬 {post?.TotalComents || 0}
+                            </CustomText>
+                        )}
                     </SpaceBetweenRow>
                     <SpaceBetweenRow style={styles.paymentRow}>
                         <CustomText
@@ -249,7 +252,7 @@ const MyPostPromotions = ({ navigation }) => {
                     </TouchableOpacity>
                     <CustomText style={styles.headerTitle}>My Promotions</CustomText>
                 </Row>
-                <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddPostPromotion')}>
+                <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddPostPromotion', { mode: route?.params?.mode })}>
                     <Icon name="plus" size={20} color={white} />
                 </TouchableOpacity>
             </SpaceBetweenRow>
@@ -279,7 +282,7 @@ const MyPostPromotions = ({ navigation }) => {
             <ActionMenu
                 visible={!!menuItem}
                 onClose={() => setMenuItem(null)}
-                title={menuItem?.Post?.caption || 'Promotion'}
+                title={(isShop ? menuItem?.SellerShop?.Name : menuItem?.Post?.caption) || 'Promotion'}
                 options={menuOptions}
             />
             <ConfirmDialog
@@ -293,6 +296,7 @@ const MyPostPromotions = ({ navigation }) => {
                 visible={!!editItem}
                 onClose={() => setEditItem(null)}
                 promotion={editItem}
+                isShop={isShop}
                 onUpdated={fetchPromotions}
             />
         </View>

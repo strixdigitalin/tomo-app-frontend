@@ -73,18 +73,18 @@ const InviteLinkModal = ({ visible, onClose, groupId }) => {
 
     const styles = StyleSheet.create({
         overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 30 },
-        card: { width: '100%', backgroundColor: isDarkMode ? '#1E1E1E' : '#fff', borderRadius: 20, padding: 22 },
+        card: { width: '100%', backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderRadius: 20, padding: 22 },
         headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
         title: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        sub: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 6, lineHeight: 19 },
+        sub: { fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: 6, lineHeight: 19 },
         qrWrap: {
             alignItems: 'center', justifyContent: 'center', marginTop: 18,
             padding: 16, borderRadius: 16, backgroundColor: white, alignSelf: 'center',
         },
         tokenBox: {
             marginTop: 18, flexDirection: 'row', alignItems: 'center', gap: 10,
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
-            padding: 14, backgroundColor: isDarkMode ? '#242424' : '#FAFAFA',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0', borderRadius: 12,
+            padding: 14, backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
         },
         tokenText: { flex: 1, fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? white : '#111' },
         copyBtn: { padding: 8, borderRadius: 10, backgroundColor: primaryColor },

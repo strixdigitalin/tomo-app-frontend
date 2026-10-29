@@ -17,6 +17,7 @@ import { FONTS_FAMILY } from '../../assets/Fonts';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import GradientIcon from '../../components/GradientIcon';
 import IMG from '../../assets/Images';
+import { productTitle } from '../../utils/productFields';
 
 const BoostProduct = ({ navigation, route }) => {
     const { product, shopId } = route.params;
@@ -114,7 +115,7 @@ const BoostProduct = ({ navigation, route }) => {
         <SpaceBetweenRow
             style={[
                 styles.header,
-                { backgroundColor: isDarkMode ? '#252525' : 'white' },
+                { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' },
             ]}
         >
             <TouchableOpacity onPress={() => step === 1 ? navigation.goBack() : setStep(step - 1)}>
@@ -133,7 +134,7 @@ const BoostProduct = ({ navigation, route }) => {
         <View
             style={[
                 styles.productPreview,
-                { backgroundColor: isDarkMode ? '#252525' : '#F8F8F8' },
+                { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' },
             ]}
         >
             <Image
@@ -143,7 +144,7 @@ const BoostProduct = ({ navigation, route }) => {
             />
             <View style={styles.previewInfo}>
                 <CustomText style={styles.previewName} numberOfLines={1}>
-                    {product?.ProductName}
+                    {productTitle(product)}
                 </CustomText>
                 <CustomText style={styles.previewDetails} numberOfLines={2}>
                     {product?.ProductDetails}
@@ -164,7 +165,7 @@ const BoostProduct = ({ navigation, route }) => {
                         style={[
                             styles.goalCard,
                             {
-                                backgroundColor: isDarkMode ? '#252525' : '#fff',
+                                backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
                                 borderColor:
                                     selectedGoal === goal.id
                                         ? '#21B7FF'
@@ -204,7 +205,7 @@ const BoostProduct = ({ navigation, route }) => {
                         style={[
                             styles.planCard,
                             {
-                                backgroundColor: isDarkMode ? '#252525' : '#fff',
+                                backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
                                 borderColor:
                                     selectedPlan === plan.id
                                         ? '#21B7FF'
@@ -307,7 +308,7 @@ const BoostProduct = ({ navigation, route }) => {
                 <View
                     style={[
                         styles.reviewCard,
-                        { backgroundColor: isDarkMode ? '#252525' : '#fff' },
+                        { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' },
                     ]}
                 >
                     <View style={styles.reviewItem}>
@@ -384,7 +385,7 @@ const BoostProduct = ({ navigation, route }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? 'black' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
         },
         header: {
             paddingTop: 50,

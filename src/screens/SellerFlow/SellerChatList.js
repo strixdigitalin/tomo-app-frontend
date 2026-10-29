@@ -61,7 +61,7 @@ const SellerChatList = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#121212' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             paddingTop: insets.top,
         },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
@@ -71,7 +71,7 @@ const SellerChatList = ({ navigation }) => {
             marginBottom: 10,
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F3F4F6',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             borderRadius: 14,
             paddingHorizontal: 14,
             height: 44,
@@ -94,14 +94,14 @@ const SellerChatList = ({ navigation }) => {
         fullName: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 2,
         },
         emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100 },
         emptyText: {
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
         },
     });
 
@@ -113,7 +113,7 @@ const SellerChatList = ({ navigation }) => {
             </View>
 
             <View style={styles.searchWrap}>
-                <Icon name="search" size={16} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                <Icon name="search" size={16} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search"
@@ -146,7 +146,7 @@ const SellerChatList = ({ navigation }) => {
                 ListEmptyComponent={
                     !loading && (
                         <View style={styles.emptyWrap}>
-                            <Icon name="message-circle" size={30} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="message-circle" size={30} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={[styles.emptyText, { marginTop: 10 }]}>No chats found</CustomText>
                         </View>
                     )

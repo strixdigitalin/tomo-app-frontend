@@ -4,7 +4,9 @@ import { showError } from './helperFunctions';
 import RNRestart from 'react-native-restart';
 import { Alert } from 'react-native';
 
-export const BASE_URL = 'https://tomo-backend-app.vercel.app';
+// export const BASE_URL = 'https://tomo-backend-app.vercel.app';
+export const BASE_URL = 'https://backend.drivetomo.com';
+
 
 export async function getHeaders() {
   let token = await getItem('token');
@@ -95,10 +97,11 @@ export async function apiReq(
     // console.log(requestOptions,'-------------he');
 
     if (method === 'get' || method === 'delete') {
+      // `headers` must NOT go into `params` — it ended up in the query string
+      // (?headers[Authorization]=Bearer ...), leaking the token into every GET/DELETE URL.
       data = {
         ...requestOptions,
         ...data,
-        headers,
       };
     }
 
@@ -190,9 +193,10 @@ const CLEAR_KEYS = [
 
 export async function clearAsyncStorage() {
   try {
+    // Callers (logout, delete account, 401 → app restart) handle navigation themselves.
     await AsyncStorage.multiRemove(CLEAR_KEYS);
-        navigation.replace('MainScreen')
   } catch (error) {
+    console.log('clearAsyncStorage failed:', error);
   }
 }
 

@@ -26,7 +26,10 @@ import { apiGet, apiPost } from '../../utils/Apis';
 import useLoader from '../../utils/LoaderHook';
 import urls from '../../config/urls';
 import StarRating from 'react-native-star-rating-widget';
+import RatingBar from '../../components/RatingBar';
 import { ToastMsg } from '../../utils/helperFunctions';
+import { productTitle, detailRows } from '../../utils/productFields';
+import ProductSpecRows from '../../components/ProductSpecRows';
 
 // Small label/value row used across the spec sections below (Power, Modifications,
 // Style, Status & Performance, Seller) — mirrors the web's <DetailRow />.
@@ -40,10 +43,10 @@ const SpecRow = ({ label, value, last }) => {
                 justifyContent: 'space-between',
                 paddingVertical: 8,
                 borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
-                borderBottomColor: isDarkMode ? '#2a2a2a' : '#eee',
+                borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
             }}
         >
-            <Text style={{ fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>
+            <Text style={{ fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#94A3B8' : '#64748B' }}>
                 {label}
             </Text>
             <Text
@@ -98,7 +101,7 @@ const ProductDetail = ({ navigation, route }) => {
      const fetchReviewData = async () => {
         try {
             showLoader();
-            const res = await apiGet(`/api/user/GetAllReviewofaProduct/${route?.params?.productId}`);
+            const res = await apiGet(`/api/user/GetAllReviewofaSellerProduct/${route?.params?.productId}`);
 
             setReviewData(res?.data);
             hideLoader();
@@ -149,7 +152,7 @@ const ProductDetail = ({ navigation, route }) => {
     const shopLocation = shopData?.Address?.[0]?.LocationName || 'Unknown Location';
 
     // ✅ Product details
-    const productName = productData?.ProductName || 'Product Name';
+    const productName = productTitle(productData) || 'Product Name';
     const productPrice = productData?.Price ? `₹${productData.Price}` : '₹0';
     const productDescription = productData?.Description || 'No description available';
     const productDetails = productData?.ProductDetails || '';
@@ -176,8 +179,8 @@ const ProductDetail = ({ navigation, route }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? 'black' : '#f0f2f5' },
-        headerContainer: { backgroundColor: isDarkMode ? '#252525' : 'white', paddingTop: 50, paddingBottom: 10 },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
+        headerContainer: { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', paddingTop: 50, paddingBottom: 10 },
         imageGrid: { width: '100%', height: windowWidth * 0.8 },
         imageContainer: { flexDirection: 'row', flexWrap: 'wrap', height: '100%' },
         mainImage: { width: '50%', height: '66.7%', padding: 1 },
@@ -185,17 +188,17 @@ const ProductDetail = ({ navigation, route }) => {
         smallImage: { width: '33.3%', height: '33.3%', padding: 1 },
         plusOverlay: { position: 'absolute', right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
         plusText: { color: 'white', fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        productDetailsContainer: { padding: 16, backgroundColor: isDarkMode ? '#121212' : 'white' },
+        productDetailsContainer: { padding: 16, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
         title: { fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black' },
         price: { fontSize: 26, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginTop: 5 },
         listedInfo: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#b0b3b8' : '#65676b', marginTop: 5 },
         buildStageBadge: { backgroundColor: primaryColor, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
         buildStageBadgeText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 12 },
-        specSection: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
+        specSection: { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', padding: 16, marginTop: 8 },
         specSectionTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginBottom: 10 },
-        specRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDarkMode ? '#2a2a2a' : '#eee' },
+        specRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' },
         specRowLast: { borderBottomWidth: 0 },
-        specLabel: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280' },
+        specLabel: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#94A3B8' : '#64748B' },
         specValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium, color: isDarkMode ? 'white' : 'black', flexShrink: 1, textAlign: 'right', maxWidth: '60%' },
         ownerNoteText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontStyle: 'italic', color: isDarkMode ? '#e4e6eb' : '#374151', lineHeight: 22 },
         shopCategoryChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: isDarkMode ? 'rgba(46,125,50,0.2)' : 'rgba(46,125,50,0.1)', marginRight: 6, marginBottom: 6 },
@@ -203,17 +206,17 @@ const ProductDetail = ({ navigation, route }) => {
         sellerCard: { backgroundColor: isDarkMode ? '#1e1e1e' : '#f8f9fa', borderRadius: 12, padding: 16 },
         verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
         verifiedBadgeText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: '#1877f2' },
-        messageContainer: { padding: 16, backgroundColor: isDarkMode ? '#121212' : 'white', marginVertical: 8, borderRadius: 12 },
+        messageContainer: { padding: 16, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', marginVertical: 8, borderRadius: 12 },
         messageInput: { padding: 12, backgroundColor: isDarkMode ? '#3a3b3c' : '#f0f2f5', borderRadius: 20, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 16, marginBottom: 10 },
         sendButton: { backgroundColor: primaryColor, borderRadius: 6, padding: 14, alignItems: 'center' },
         sendButtonText: { color: 'white', fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, fontSize: 16 },
-        actionsContainer: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 16, backgroundColor: isDarkMode ? '#121212' : 'white', borderTopWidth: 1, borderBottomWidth: 1, borderColor: isDarkMode ? '#3a3b3c' : '#e4e6eb' },
+        actionsContainer: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 16, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', borderTopWidth: 1, borderBottomWidth: 1, borderColor: isDarkMode ? '#3a3b3c' : '#e4e6eb' },
         actionButton: { alignItems: 'center' },
         actionCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb', justifyContent: 'center', alignItems: 'center', marginBottom: 5 },
         actionText: { fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#e4e6eb' : '#050505', fontSize: 14 },
         sectionTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black', marginBottom: 12 },
         descriptionText: { fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#e4e6eb' : '#050505', fontSize: 16, lineHeight: 24, marginBottom: 4 },
-        sellerContainer: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
+        sellerContainer: { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', padding: 16, marginTop: 8 },
         sellerInfoContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
         sellerProfileContainer: { flexDirection: 'row', alignItems: 'center' },
         sellerImage: { width: 44, height: 44, borderRadius: 22 },
@@ -222,7 +225,7 @@ const ProductDetail = ({ navigation, route }) => {
         followText: { fontSize: 14, fontWeight: '600' },
         mapContainer: { backgroundColor: isDarkMode ? '#121212' : '#e4e6eb', borderRadius: 8, marginVertical: 8, justifyContent: 'center', alignItems: 'center' },
         mapText: { fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: 'black', fontSize: 16, position: 'absolute' },
-        groupsContainer: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
+        groupsContainer: { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', padding: 16, marginTop: 8 },
         groupItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
         groupInfoContainer: { flexDirection: 'row', alignItems: 'center', flex: 1 },
         groupImage: { width: 50, height: 50, borderRadius: 4 },
@@ -236,7 +239,7 @@ const ProductDetail = ({ navigation, route }) => {
 
         // PART 2 - Continue from Part 1
 
-        reviewsContainer: { backgroundColor: isDarkMode ? '#121212' : 'white', padding: 16, marginTop: 8 },
+        reviewsContainer: { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', padding: 16, marginTop: 8 },
         reviewsHeaderCard: { backgroundColor: isDarkMode ? '#1e1e1e' : '#f8f9fa', borderRadius: 12, padding: 16, marginBottom: 16 },
         ratingOverviewContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
         leftRatingSection: { alignItems: 'center' },
@@ -271,7 +274,7 @@ const ProductDetail = ({ navigation, route }) => {
         emptyReviewsContainer: { alignItems: 'center', paddingVertical: 40 },
         emptyReviewsText: { fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 16, color: isDarkMode ? '#b0b3b8' : '#65676b', textAlign: 'center' },
         modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-        modalContent: { backgroundColor: isDarkMode ? '#252525' : 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
+        modalContent: { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
         modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
         modalTitle: { fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Bold, color: isDarkMode ? 'white' : 'black' },
         closeButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb', justifyContent: 'center', alignItems: 'center' },
@@ -392,6 +395,11 @@ const ProductDetail = ({ navigation, route }) => {
                 </View>
 
                 {/* ✅ DESCRIPTION - From API */}
+                {detailRows(productData).length > 0 && (
+                    <View style={[styles.productDetailsContainer, { marginTop: 8 }]}>
+                        <ProductSpecRows product={productData} />
+                    </View>
+                )}
                 <View style={[styles.productDetailsContainer, { marginTop: 8 }]}>
                     <CustomText style={styles.sectionTitle}>Description</CustomText>
                     <CustomText style={styles.descriptionText}>{productDescription}</CustomText>
@@ -569,13 +577,7 @@ const ProductDetail = ({ navigation, route }) => {
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={styles.ratingSection}>
                                 <CustomText style={styles.ratingLabel}>Rate this product</CustomText>
-                                <StarRating
-                                    rating={rating}
-                                    onChange={setRating}
-                                    starSize={44}
-                                    color="#FFD700"
-                                    enableHalfStar={false}
-                                />
+                                <RatingBar value={rating} onChange={setRating} />
                                 {rating > 0 && (
                                     <CustomText style={styles.selectedRatingText}>
                                         {rating === 5 ? 'Excellent!' : rating === 4 ? 'Very Good!' : rating === 3 ? 'Good!' : rating === 2 ? 'Fair' : 'Poor'}
@@ -586,6 +588,7 @@ const ProductDetail = ({ navigation, route }) => {
                                 <CustomText style={styles.reviewInputLabel}>Share your experience</CustomText>
                                 <TextInput
                                     style={styles.reviewTextInput}
+                                    maxLength={500}
                                     placeholder="Tell us what you think about this product..."
                                     placeholderTextColor={isDarkMode ? '#b0b3b8' : '#65676b'}
                                     value={reviewText}

@@ -82,7 +82,7 @@ const SellerHome = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#121212' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             paddingTop: insets.top,
         },
         header: {
@@ -96,7 +96,7 @@ const SellerHome = ({ navigation }) => {
         headerSub: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 2,
         },
         addBtn: {
@@ -118,9 +118,9 @@ const SellerHome = ({ navigation }) => {
             marginBottom: 16,
             borderRadius: 18,
             overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         cardImage: {
             width: '100%',
@@ -147,7 +147,7 @@ const SellerHome = ({ navigation }) => {
         shopMeta: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 4,
         },
         chipRow: {
@@ -189,7 +189,7 @@ const SellerHome = ({ navigation }) => {
         emptySub: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             textAlign: 'center',
             marginTop: 6,
         },

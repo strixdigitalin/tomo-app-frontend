@@ -51,7 +51,7 @@ const AllMyGroups = ({ navigation }) => {
             setMyGroups(res?.data || []);
         } catch (error) {
             console.log('AllMyGroups fetch error', error);
-            ToastMsg(error?.message || 'Could not reach local group backend — is it running?');
+            ToastMsg(error?.message || 'Could not load groups. Check your connection.');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -70,7 +70,7 @@ const AllMyGroups = ({ navigation }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 22, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         headerBtns: { flexDirection: 'row', gap: 10 },
@@ -84,8 +84,8 @@ const AllMyGroups = ({ navigation }) => {
         },
         card: {
             flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         avatar: { width: 56, height: 56, borderRadius: 28 },
         groupName: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
@@ -94,7 +94,7 @@ const AllMyGroups = ({ navigation }) => {
         },
         adminBadgeText: { fontSize: 10, color: white, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
         metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-        metaText: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        metaText: { fontSize: 12, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         chip: {
             paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10,
             backgroundColor: isDarkMode ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
@@ -110,7 +110,7 @@ const AllMyGroups = ({ navigation }) => {
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
             fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
     });
 
@@ -142,7 +142,7 @@ const AllMyGroups = ({ navigation }) => {
                             )}
                         </Row>
                         <View style={styles.metaRow}>
-                            <Icon name="users" size={12} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="users" size={12} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.metaText}>{g?.MembersCount ?? 0} members</CustomText>
                             <View style={styles.chip}>
                                 <CustomText style={styles.chipText}>{g?.Type}</CustomText>

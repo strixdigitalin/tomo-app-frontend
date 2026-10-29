@@ -31,6 +31,7 @@ import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
 import GradientIcon from '../../components/GradientIcon';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import LinearGradient from 'react-native-linear-gradient';
+import { profilePalette } from '../UserDetail/profileTheme';
 import { THEMES } from '../../redux/reducer/theme';
 
 // ─── ShopCard ────────────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
         glowColors={glowColorsArr}
       >
         <TouchableOpacity
-          style={[cardStyles.container, { backgroundColor: isDarkMode ? '#1a1a1a' : '#fff' }]}
+          style={[cardStyles.container, { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }]}
           activeOpacity={0.9}
           onPress={onPress}
           onPressIn={handlePressIn}
@@ -156,7 +157,7 @@ const ShopCard = React.memo(({ item, isDarkMode, onPress, index, primaryColor })
             )}
 
             {!!seller && (
-              <View style={[cardStyles.ownerBox, { borderTopColor: isDarkMode ? '#2a2a2a' : '#eee' }]}>
+              <View style={[cardStyles.ownerBox, { borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                 <Text style={[cardStyles.ownerName, { color: isDarkMode ? '#eee' : '#222' }]} numberOfLines={1}>
                   👤 {seller?.FullName || seller?.StoreName}
                 </Text>
@@ -249,7 +250,7 @@ const AnimatedHeader = React.memo(({ navigation, isDarkMode, primaryColor }) => 
   }));
 
   return (
-    <SpaceBetweenRow style={[styles.header, { backgroundColor: isDarkMode ? '#252525' : 'white' }]}>
+    <SpaceBetweenRow style={[styles.header, { backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }]}>
       <Animated.View style={leftStyle}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
@@ -291,7 +292,7 @@ const AnimatedSearchBar = React.memo(({ searchQuery, handleSearch, isDarkMode, p
     <Animated.View
       style={[
         styles.searchContainer,
-        { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' },
+        { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
         animStyle,
       ]}
     >
@@ -362,7 +363,11 @@ const Shops = ({ navigation }) => {
   // sellers (same data as BuyerSellerChatList.js), embedded here instead of
   // as a separate screen, matching the Chats/Groups pattern in MessageList.js.
   const [activeTab, setActiveTab] = useState('shop');
+  // 'all' | 'nearby' (web: UserGetNearbySellerShops, based on the user's saved location)
+  const [shopScope, setShopScope] = useState('all');
+  const [nearbyShops, setNearbyShops] = useState([]);
   const [sellerChats, setSellerChats] = useState([]);
+  const [chatQuery, setChatQuery] = useState('');
   const [chatsLoading, setChatsLoading] = useState(false);
   const chatsLoadedRef = useRef(false);
 
@@ -419,16 +424,34 @@ const Shops = ({ navigation }) => {
     }
   };
 
-  // ✅ Search filtering with useMemo — no separate filteredShops state, no extra renders
+  const fetchNearby = async () => {
+    try {
+      const res = await apiGet('/api/user/UserGetNearbySellerShops');
+      setNearbyShops(res?.data || []);
+    } catch (e) {
+      console.error('Nearby shops fetch error:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (shopScope === 'nearby') fetchNearby();
+  }, [shopScope]);
+
+  // ✅ Search across name, services, categories and every address (same as web)
   const filteredShops = useMemo(() => {
-    if (!searchQuery.trim()) return allShops;
-    const q = searchQuery.toLowerCase();
-    return allShops.filter(shop => {
-      const name = shop?.Name?.toLowerCase() || '';
-      const addr = shop?.Address?.[0]?.LocationName?.toLowerCase() || '';
-      return name.includes(q) || addr.includes(q);
+    const base = shopScope === 'nearby' ? nearbyShops : allShops;
+    if (!searchQuery.trim()) return base;
+    const q = searchQuery.trim().toLowerCase();
+    return base.filter(shop => {
+      const has = v => String(v || '').toLowerCase().includes(q);
+      return (
+        has(shop?.Name) ||
+        has(shop?.Services) ||
+        (shop?.ShopCategory || []).some(has) ||
+        (shop?.Address || []).some(a => has(a?.LocationName))
+      );
     });
-  }, [searchQuery, allShops]);
+  }, [searchQuery, allShops, nearbyShops, shopScope]);
 
   const handleSearch = useCallback((text) => setSearchQuery(text), []);
 
@@ -451,27 +474,38 @@ const Shops = ({ navigation }) => {
     item?._id?.toString() || `item-${index}`, []);
 
   const chatKeyExtractor = useCallback((item, index) => item?._id || String(index), []);
+  // Same card style as the Followers / Following lists
+  const pal = profilePalette(isDarkMode, primaryColor);
+  const filteredChats = useMemo(() => {
+    const q = chatQuery.trim().toLowerCase();
+    if (!q) return sellerChats;
+    return sellerChats.filter(u => `${u?.StoreName || ''} ${u?.UserName || ''} ${u?.FullName || ''}`.toLowerCase().includes(q));
+  }, [sellerChats, chatQuery]);
+
   const renderSellerChat = useCallback(({ item }) => (
     <TouchableOpacity
-      style={[chatStyles.row, { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' }]}
+      style={[chatStyles.card, { backgroundColor: pal.card, borderColor: pal.border, shadowColor: primaryColor }]}
       onPress={() => navigation.navigate('BuyerSellerChatScreen', { userForChat: item })}
-      activeOpacity={0.7}
+      activeOpacity={0.85}
     >
-      <Image source={item?.Image ? { uri: item.Image } : IMG.MessageProfile} style={chatStyles.avatar} />
+      <Image
+        source={item?.Image ? { uri: item.Image } : IMG.MessageProfile}
+        style={[chatStyles.avatar, { borderColor: primaryColor }]}
+      />
       <View style={{ flex: 1 }}>
-        <Text style={[chatStyles.name, { color: isDarkMode ? '#fff' : '#000' }]} numberOfLines={1}>
-          {item?.StoreName || item?.UserName}
+        <Text style={[chatStyles.name, { color: pal.text }]} numberOfLines={1}>
+          {item?.StoreName || item?.FullName || item?.UserName}
         </Text>
-        <Text style={[chatStyles.meta, { color: isDarkMode ? '#999' : '#666' }]} numberOfLines={1}>
-          {item?.FullName}
+        <Text style={[chatStyles.meta, { color: pal.muted }]} numberOfLines={1}>
+          @{item?.UserName}
         </Text>
       </View>
-      <Icon name="chevron-right" size={18} color={isDarkMode ? '#666' : '#bbb'} />
+      <Icon name="chevron-right" size={20} color={pal.muted} />
     </TouchableOpacity>
-  ), [isDarkMode, navigation]);
+  ), [pal, primaryColor, navigation]);
 
   return (
-    <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
+    <View style={[styles.container, { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }]}>
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -481,7 +515,7 @@ const Shops = ({ navigation }) => {
       <AnimatedHeader navigation={navigation} isDarkMode={isDarkMode} primaryColor={primaryColor} />
 
       {/* Shop / Chat tab switch */}
-      <View style={[chatStyles.tabBar, { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' }]}>
+      <View style={[chatStyles.tabBar, { backgroundColor: pal.card, borderWidth: 1, borderColor: pal.border }]}>
         <TouchableOpacity
           style={[chatStyles.tabBtn, activeTab === 'shop' && { backgroundColor: primaryColor }]}
           onPress={() => setActiveTab('shop')}
@@ -511,6 +545,16 @@ const Shops = ({ navigation }) => {
               isDarkMode={isDarkMode}
               primaryColor={primaryColor}
             />
+            <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 8 }}>
+              {[['all', 'All Shops'], ['nearby', 'Nearby']].map(([key, label]) => (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => setShopScope(key)}
+                  style={{ paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: shopScope === key ? primaryColor : (isDarkMode ? '#252525' : '#eee') }}>
+                  <Text style={{ color: shopScope === key ? '#fff' : (isDarkMode ? '#ddd' : '#333') }}>{label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <FlatList
               data={filteredShops}
@@ -541,21 +585,44 @@ const Shops = ({ navigation }) => {
               <ActivityIndicator color={primaryColor} size="large" />
             </View>
           ) : (
-            <FlatList
-              data={sellerChats}
-              keyExtractor={chatKeyExtractor}
-              renderItem={renderSellerChat}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 120 }}
-              ListEmptyComponent={
-                <View style={chatStyles.centerWrap}>
-                  <Icon name="message-circle" size={30} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
-                  <Text style={{ marginTop: 10, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular }}>
-                    No seller chats yet
-                  </Text>
-                </View>
-              }
-            />
+            <>
+              <View style={[chatStyles.search, { backgroundColor: pal.card, borderColor: pal.border }]}>
+                <Icon name="search" size={16} color={pal.muted} />
+                <TextInput
+                  value={chatQuery}
+                  onChangeText={setChatQuery}
+                  placeholder="Search chats"
+                  placeholderTextColor={pal.muted}
+                  autoCapitalize="none"
+                  style={[chatStyles.searchInput, { color: pal.text }]}
+                />
+                {!!chatQuery && (
+                  <TouchableOpacity onPress={() => setChatQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Icon name="x" size={16} color={pal.muted} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <FlatList
+                data={filteredChats}
+                keyExtractor={chatKeyExtractor}
+                renderItem={renderSellerChat}
+                showsVerticalScrollIndicator={false}
+                refreshing={false}
+                onRefresh={fetchSellerChats}
+                contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 4, paddingBottom: 120 }}
+                ListEmptyComponent={
+                  <View style={chatStyles.centerWrap}>
+                    <Icon name={chatQuery ? 'search' : 'message-circle'} size={34} color={pal.muted} />
+                    <Text style={[chatStyles.emptyTitle, { color: pal.text }]}>
+                      {chatQuery ? 'No matches' : 'No seller chats yet'}
+                    </Text>
+                    <Text style={[chatStyles.emptySub, { color: pal.muted }]}>
+                      {chatQuery ? `No chat matches "${chatQuery}".` : 'Chats with sellers will show up here.'}
+                    </Text>
+                  </View>
+                }
+              />
+            </>
           )}
         </View>
       )}
@@ -565,17 +632,21 @@ const Shops = ({ navigation }) => {
 
 // ─── Chat tab styles ───────────────────────────────────────────────────────────
 const chatStyles = StyleSheet.create({
-  tabBar: { flexDirection: 'row', marginHorizontal: 16, marginTop: 12, borderRadius: 14, padding: 4 },
-  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center' },
+  tabBar: { flexDirection: 'row', marginHorizontal: 12, marginTop: 12, borderRadius: 18, padding: 4 },
+  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 14, alignItems: 'center' },
   tabBtnText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
-  row: {
-    flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
+  card: {
+    flexDirection: 'row', alignItems: 'center', padding: 12, marginBottom: 10, borderRadius: 18, borderWidth: 1,
+    elevation: 2, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, shadowRadius: 8,
   },
-  avatar: { width: 52, height: 52, borderRadius: 26, marginRight: 12 },
-  name: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
-  meta: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
-  centerWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100 },
+  avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12, borderWidth: 1.5 },
+  name: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  meta: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 1 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 12, marginTop: 14, marginBottom: 10, paddingHorizontal: 14, height: 42, borderRadius: 21, borderWidth: 1 },
+  searchInput: { flex: 1, fontSize: 14, paddingVertical: 0, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+  centerWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100, paddingHorizontal: 30 },
+  emptyTitle: { fontSize: 16, marginTop: 12, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  emptySub: { fontSize: 13, marginTop: 4, textAlign: 'center', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
 });
 
 // ─── Static styles ────────────────────────────────────────────────────────────

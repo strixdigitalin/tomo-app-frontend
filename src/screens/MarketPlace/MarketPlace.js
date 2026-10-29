@@ -101,10 +101,10 @@ const MarketPlace = ({navigation}) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? 'black' : '#f0f2f5',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     headerContainer: {
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       paddingTop: 50,
       paddingBottom: 10,
     },
@@ -125,7 +125,7 @@ const MarketPlace = ({navigation}) => {
     },
     categoriesContainer: {
       paddingVertical: 10,
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
     },
     categoryScrollView: {
       paddingHorizontal: 10,
@@ -219,7 +219,7 @@ const MarketPlace = ({navigation}) => {
     tabBar: {
       flexDirection: 'row',
       paddingVertical: 10,
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       borderBottomWidth: 1,
       borderBottomColor: isDarkMode ? '#3a3b3c' : '#e4e6eb',
     },

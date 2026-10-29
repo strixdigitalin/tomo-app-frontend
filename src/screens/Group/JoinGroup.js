@@ -49,7 +49,7 @@ const JoinGroup = ({ navigation }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginLeft: 14 },
         body: { padding: 20 },
@@ -59,13 +59,13 @@ const JoinGroup = ({ navigation }) => {
         },
         title: { fontSize: 18, fontFamily: FONTS_FAMILY.SourceSans3_Bold, textAlign: 'center' },
         sub: {
-            fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6, marginBottom: 24,
+            fontSize: 13, color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6, marginBottom: 24,
         },
         inputBox: {
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0', borderRadius: 12,
             paddingHorizontal: 14, paddingVertical: 14, color: isDarkMode ? white : '#111',
             fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 14,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
         },
         joinBtn: { marginTop: 20, backgroundColor: primaryColor, paddingVertical: 15, borderRadius: 16, alignItems: 'center' },
         joinBtnDisabled: { opacity: 0.6 },

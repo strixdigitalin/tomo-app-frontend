@@ -91,7 +91,7 @@ const PostDetailModal = ({
       entering={FadeInUp.delay(index * 50).duration(300)}
       style={[
         styles.commentItem,
-        { borderBottomColor: isDarkMode ? '#333' : '#eee' },
+        { borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' },
       ]}>
       <Image
         source={
@@ -136,7 +136,7 @@ const PostDetailModal = ({
     },
     modalContainer: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#000000' : '#ffffff',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
       marginTop: 0,
       borderTopLeftRadius: 0,
       borderTopRightRadius: 0,
@@ -150,7 +150,7 @@ const PostDetailModal = ({
       paddingVertical: 12,
       paddingTop: 20,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#333' : '#eee',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     closeButton: {
       padding: 4,
@@ -244,7 +244,7 @@ const PostDetailModal = ({
       borderRadius: 18,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderColor: isDarkMode ? '#333' : '#ddd',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     actionText: {
       fontSize: 14,
@@ -304,8 +304,8 @@ const PostDetailModal = ({
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderTopWidth: 1,
-      borderTopColor: isDarkMode ? '#333' : '#eee',
-      backgroundColor: isDarkMode ? '#1a1a1a' : 'white',
+      borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       gap: 12,
     },
     inputProfileImage: {

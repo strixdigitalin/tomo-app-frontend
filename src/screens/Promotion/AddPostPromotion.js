@@ -1,302 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import {
-    View,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    StatusBar,
-    TextInput,
-    KeyboardAvoidingView,
-    Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/Feather';
-import CustomText from '../../components/TextComponent';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Text, TouchableOpacity, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useSelector } from 'react-redux';
+import Feather from 'react-native-vector-icons/Feather';
+import FormScreen, { FormSection } from '../../components/FormScreen';
+import FormButton from '../../components/FormButton';
 import SafeImage from '../../components/SafeImage';
-import Row from '../../components/wrapper/row';
+import PromotionFormFields, { PROMO_SCHEMA, PROMO_DEFAULTS, promoRange } from './PromotionFormFields';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import { apiGet, apiPost } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import { white } from '../../common/Colors/colors';
-import useThemeColor from '../../utils/useThemeColor';
+import useForm from '../../utils/useForm';
+import { THEMES } from '../../redux/reducer/theme';
+import { profilePalette } from '../UserDetail/profileTheme';
 
-const PROMOTION_TYPES = ['Advertisement', 'Boost Post'];
-const GOALS = ['Brand Awareness', 'More Followers', 'More Likes', 'Website Traffic', 'Messages'];
-const CURRENCIES = ['INR', 'USD'];
+// Promote one of your posts (web: PaidPromotion/AddPostPromotion.jsx) or, with
+// route.params.mode === 'shop', one of your shops (web: Seller/ShopPromotion/AddShopPromotion.jsx).
+const AddPostPromotion = ({ navigation, route }) => {
+    const isShop = route?.params?.mode === 'shop';
+    const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
+    const accent = (THEMES[selectedColorTheme] || THEMES.default).primary;
+    const c = profilePalette(isDarkMode, accent);
 
-// Matches web's Pages/PaidPromotion/AddPostPromotion.jsx — promotes one of the
-// user's own POSTS (not a shop product), same fields, same endpoint.
-const AddPostPromotion = ({ navigation }) => {
-    const { isDarkMode, primaryColor } = useThemeColor();
-    const insets = useSafeAreaInsets();
-
-    const [allPosts, setAllPosts] = useState([]);
-    const [loadingPosts, setLoadingPosts] = useState(true);
-    const [selectedPost, setSelectedPost] = useState(null);
-
-    const [promotionType, setPromotionType] = useState('Advertisement');
-    const [goal, setGoal] = useState('Website Traffic');
-    const [durationDays, setDurationDays] = useState('15');
-    const [price, setPrice] = useState('1499');
-    const [currency, setCurrency] = useState('INR');
-    const [paymentId, setPaymentId] = useState('');
-    const [startDate, setStartDate] = useState(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const form = useForm(PROMO_DEFAULTS, PROMO_SCHEMA);
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selected, setSelected] = useState(null);
+    const [selectError, setSelectError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchMyPosts();
-    }, []);
+        (async () => {
+            try {
+                const res = await apiGet(isShop ? urls.sellerAllShop : urls.getAllMyPosts);
+                setItems(res?.data || []);
+            } catch (err) {
+                ToastMsg(isShop ? 'Failed to load your shops' : 'Failed to load your posts');
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [isShop]);
 
-    const fetchMyPosts = async () => {
-        try {
-            const res = await apiGet(urls.getAllMyPosts);
-            setAllPosts(res?.data || []);
-        } catch (error) {
-            console.log('AddPostPromotion posts fetch error', error);
-        } finally {
-            setLoadingPosts(false);
-        }
-    };
+    const onSubmit = useCallback(async () => {
+        const { ok, firstError } = form.validateAll();
+        if (!selected) setSelectError(isShop ? 'Please select a shop to promote' : 'Please select a post to promote');
+        if (!selected) return ToastMsg(isShop ? 'Please select a shop to promote' : 'Please select a post to promote');
+        if (!ok) return ToastMsg(firstError);
 
-    const endDate = (() => {
-        if (!startDate || !durationDays) return null;
-        const d = new Date(startDate);
-        d.setDate(d.getDate() + Number(durationDays) - 1);
-        return d;
-    })();
-
-    const onSubmit = async () => {
-        if (!selectedPost) return ToastMsg('Please select a post to promote');
-        if (!startDate) return ToastMsg('Please select a start date');
-        if (!durationDays || Number(durationDays) < 1) return ToastMsg('Duration must be at least 1 day');
-        if (!price || Number(price) <= 0) return ToastMsg('Please enter a valid price');
+        const v = form.values;
+        const { start, end } = promoRange(v.StartDate, v.DurationDays);
+        const payload = {
+            [isShop ? 'SellerShop' : 'Post']: selected._id,
+            PromotionType: v.PromotionType,
+            Goal: v.Goal,
+            DurationDays: Number(v.DurationDays),
+            StartDate: start.toISOString(),
+            EndDate: end.toISOString(),
+            Price: Number(v.Price),
+            Currency: v.Currency,
+            // shop promotions: PaymentId is optional on the backend; post promotions fall back to the currency
+            ...(isShop ? (v.PaymentId.trim() ? { PaymentId: v.PaymentId.trim() } : {}) : { PaymentId: v.PaymentId.trim() || v.Currency }),
+        };
 
         try {
             setSubmitting(true);
-            const res = await apiPost(urls.createPostPromotion, {
-                Post: selectedPost._id,
-                PromotionType: promotionType,
-                Goal: goal,
-                DurationDays: Number(durationDays),
-                StartDate: startDate.toISOString(),
-                EndDate: endDate.toISOString(),
-                Price: Number(price),
-                Currency: currency,
-                PaymentId: paymentId || currency,
-            });
+            const res = await apiPost(isShop ? urls.createShopPromotion : urls.createPostPromotion, payload);
             ToastMsg(res?.message || 'Promotion created successfully!');
             navigation.goBack();
-        } catch (error) {
-            ToastMsg(error?.message || 'Failed to create promotion');
+        } catch (err) {
+            ToastMsg(err?.message || 'Failed to create promotion');
         } finally {
             setSubmitting(false);
         }
-    };
-
-    const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
-        header: { paddingHorizontal: 20, paddingVertical: 14 },
-        headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        headerSub: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 2 },
-        body: { padding: 20, paddingBottom: 60 },
-        sectionLabel: {
-            fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold,
-            color: isDarkMode ? '#D1D5DB' : '#374151', marginTop: 20, marginBottom: 10,
-        },
-        postCard: {
-            flexDirection: 'row', gap: 12, padding: 10, borderRadius: 14, marginBottom: 10,
-            borderWidth: 2, alignItems: 'center',
-        },
-        postImage: { width: 56, height: 56, borderRadius: 10 },
-        postCaption: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Medium, flex: 1 },
-        postMeta: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 4 },
-        chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-        chip: {
-            paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1,
-            borderColor: primaryColor,
-        },
-        chipActive: { backgroundColor: primaryColor },
-        chipText: { fontSize: 13, color: primaryColor, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
-        chipTextActive: { color: white },
-        row2: { flexDirection: 'row', gap: 12 },
-        inputBox: {
-            flex: 1, borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
-            paddingHorizontal: 14, paddingVertical: 12, color: isDarkMode ? white : '#111',
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 14,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA',
-        },
-        dateBox: {
-            flex: 1, borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
-            paddingHorizontal: 14, paddingVertical: 12,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA', justifyContent: 'center',
-        },
-        dateBoxDisabled: { opacity: 0.6 },
-        dateText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? white : '#111' },
-        submitBtn: {
-            marginTop: 26, backgroundColor: primaryColor, paddingVertical: 15, borderRadius: 16, alignItems: 'center',
-        },
-        submitBtnDisabled: { opacity: 0.6 },
-    });
+    }, [form, selected, isShop, navigation]);
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
-            <Row style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="x" size={22} color={isDarkMode ? white : '#111'} />
-                </TouchableOpacity>
-                <View style={{ marginLeft: 14 }}>
-                    <CustomText style={styles.headerTitle}>Promote a Post</CustomText>
-                    <CustomText style={styles.headerSub}>Select one of your posts and set promotion details</CustomText>
-                </View>
-            </Row>
+        <FormScreen
+            title={isShop ? 'Promote a Shop' : 'Promote a Post'}
+            subtitle={isShop ? 'Select one of your shops and set the details' : 'Select one of your posts and set the details'}
+            onBack={() => navigation.goBack()}
+            footer={<FormButton label="Create Promotion" onPress={onSubmit} loading={submitting} disabled={!selected} />}>
 
-            <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-                <CustomText style={styles.sectionLabel}>Select Post</CustomText>
-                {allPosts.length === 0 && !loadingPosts && (
-                    <CustomText style={{ fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>
-                        You don't have any posts yet.
-                    </CustomText>
+            <FormSection title={isShop ? 'Select shop' : 'Select post'}>
+                {loading ? (
+                    <ActivityIndicator color={accent} style={{ marginVertical: 20 }} />
+                ) : items.length === 0 ? (
+                    <Text style={[styles.empty, { color: c.muted }]}>
+                        {isShop ? "You don't have any shops yet." : "You don't have any posts yet."}
+                    </Text>
+                ) : (
+                    items.map(item => {
+                        const active = selected?._id === item._id;
+                        return (
+                            <TouchableOpacity
+                                key={item._id}
+                                activeOpacity={0.85}
+                                onPress={() => { setSelected(item); setSelectError(null); }}
+                                style={[styles.card, { backgroundColor: c.chip, borderColor: active ? accent : c.divider }]}>
+                                <SafeImage uri={isShop ? item?.Image : item?.media} style={styles.thumb} />
+                                <View style={{ flex: 1 }}>
+                                    <Text numberOfLines={2} style={[styles.name, { color: c.text }]}>
+                                        {isShop ? (item?.Name || 'Shop') : (item?.caption || 'No caption')}
+                                    </Text>
+                                    <Text numberOfLines={1} style={[styles.meta, { color: c.muted }]}>
+                                        {isShop ? (item?.Address?.[0]?.LocationName || item?.Services || '') : `❤️ ${item?.TotalLikes || 0}   💬 ${item?.TotalComents || 0}`}
+                                    </Text>
+                                </View>
+                                {active && <Feather name="check-circle" size={22} color={accent} />}
+                            </TouchableOpacity>
+                        );
+                    })
                 )}
-                {allPosts.map((post) => {
-                    const active = selectedPost?._id === post._id;
-                    return (
-                        <TouchableOpacity
-                            key={post._id}
-                            style={[
-                                styles.postCard,
-                                { borderColor: active ? primaryColor : (isDarkMode ? '#2A2A2A' : '#EEE') },
-                            ]}
-                            onPress={() => setSelectedPost(post)}
-                        >
-                            <SafeImage uri={post?.media} style={styles.postImage} />
-                            <View style={{ flex: 1 }}>
-                                <CustomText numberOfLines={2} style={styles.postCaption}>
-                                    {post?.caption || 'No caption'}
-                                </CustomText>
-                                <CustomText style={styles.postMeta}>
-                                    ❤️ {post?.TotalLikes || 0}   💬 {post?.TotalComents || 0}
-                                </CustomText>
-                            </View>
-                            {active && <Icon name="check-circle" size={20} color={primaryColor} />}
-                        </TouchableOpacity>
-                    );
-                })}
+                {!!selectError && <Text style={[styles.error, { color: c.danger }]}>{selectError}</Text>}
+            </FormSection>
 
-                <CustomText style={styles.sectionLabel}>Promotion Type</CustomText>
-                <View style={styles.chipRow}>
-                    {PROMOTION_TYPES.map((t) => (
-                        <TouchableOpacity
-                            key={t}
-                            style={[styles.chip, promotionType === t && styles.chipActive]}
-                            onPress={() => setPromotionType(t)}
-                        >
-                            <CustomText style={[styles.chipText, promotionType === t && styles.chipTextActive]}>{t}</CustomText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                <CustomText style={styles.sectionLabel}>Goal</CustomText>
-                <View style={styles.chipRow}>
-                    {GOALS.map((g) => (
-                        <TouchableOpacity
-                            key={g}
-                            style={[styles.chip, goal === g && styles.chipActive]}
-                            onPress={() => setGoal(g)}
-                        >
-                            <CustomText style={[styles.chipText, goal === g && styles.chipTextActive]}>{g}</CustomText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                <CustomText style={styles.sectionLabel}>Duration & Price</CustomText>
-                <View style={styles.row2}>
-                    <TextInput
-                        style={styles.inputBox}
-                        placeholder="Duration (Days)"
-                        placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                        keyboardType="number-pad"
-                        value={durationDays}
-                        onChangeText={setDurationDays}
-                    />
-                    <TextInput
-                        style={styles.inputBox}
-                        placeholder="Price (₹)"
-                        placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                        keyboardType="number-pad"
-                        value={price}
-                        onChangeText={setPrice}
-                    />
-                </View>
-
-                <CustomText style={styles.sectionLabel}>Schedule</CustomText>
-                <View style={styles.row2}>
-                    <TouchableOpacity style={styles.dateBox} onPress={() => setShowDatePicker(true)}>
-                        <CustomText style={styles.dateText}>
-                            {startDate ? startDate.toLocaleDateString('en-IN') : 'Start Date'}
-                        </CustomText>
-                    </TouchableOpacity>
-                    <View style={[styles.dateBox, styles.dateBoxDisabled]}>
-                        <CustomText style={styles.dateText}>
-                            {endDate ? endDate.toLocaleDateString('en-IN') : 'End Date'}
-                        </CustomText>
-                    </View>
-                </View>
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={startDate || new Date()}
-                        mode="date"
-                        minimumDate={new Date()}
-                        display="default"
-                        onChange={(event, date) => {
-                            setShowDatePicker(false);
-                            if (date) setStartDate(date);
-                        }}
-                    />
-                )}
-
-                <CustomText style={styles.sectionLabel}>Currency</CustomText>
-                <View style={styles.chipRow}>
-                    {CURRENCIES.map((c) => (
-                        <TouchableOpacity
-                            key={c}
-                            style={[styles.chip, currency === c && styles.chipActive]}
-                            onPress={() => setCurrency(c)}
-                        >
-                            <CustomText style={[styles.chipText, currency === c && styles.chipTextActive]}>
-                                {c === 'INR' ? 'INR (₹)' : 'USD ($)'}
-                            </CustomText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                <CustomText style={styles.sectionLabel}>Payment ID (optional)</CustomText>
-                <TextInput
-                    style={styles.inputBox}
-                    placeholder="Leave empty if not available"
-                    placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                    value={paymentId}
-                    onChangeText={setPaymentId}
-                />
-
-                <TouchableOpacity
-                    style={[styles.submitBtn, (submitting || !selectedPost) && styles.submitBtnDisabled]}
-                    onPress={onSubmit}
-                    disabled={submitting || !selectedPost}
-                >
-                    <CustomText style={{ color: white, fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 15 }}>
-                        {submitting ? 'Creating Promotion...' : 'Create Promotion'}
-                    </CustomText>
-                </TouchableOpacity>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            <FormSection title="Promotion details">
+                <PromotionFormFields form={form} minDate={new Date()} />
+            </FormSection>
+        </FormScreen>
     );
 };
+
+const styles = StyleSheet.create({
+    card: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 16, borderWidth: 1.5, marginBottom: 10 },
+    thumb: { width: 56, height: 56, borderRadius: 12 },
+    name: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+    meta: { fontSize: 12, marginTop: 3, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+    empty: { textAlign: 'center', paddingVertical: 20, fontSize: 14 },
+    error: { fontSize: 12, marginTop: 4, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+});
 
 export default AddPostPromotion;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -111,7 +111,9 @@ const MediaViewerModal = ({ visible, onClose, uri }) => {
 
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
-            <View style={styles.overlay}>
+            {/* A Modal renders in its own native window, outside the app-level root view, so the
+                gesture handlers need their own GestureHandlerRootView in here (else: crash) */}
+            <GestureHandlerRootView style={styles.overlay}>
                 <TouchableOpacity style={styles.closeBtn} onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Icon name="x" size={26} color={white} />
                 </TouchableOpacity>
@@ -132,7 +134,7 @@ const MediaViewerModal = ({ visible, onClose, uri }) => {
                     )}
                     <CustomText style={styles.downloadText}>{downloading ? 'Saving...' : 'Download'}</CustomText>
                 </TouchableOpacity>
-            </View>
+            </GestureHandlerRootView>
         </Modal>
     );
 };

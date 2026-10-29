@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import ConfirmModal from '../../components/ConfirmModal';
 import {
     View,
     Image,
@@ -72,26 +73,22 @@ const SellerProfile = ({ navigation }) => {
         }
     };
 
-    const onLogout = () => {
-        Alert.alert('Logout', 'Are you sure you want to logout?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Logout',
-                style: 'destructive',
-                onPress: async () => {
-                    await removeItem('token');
-                    await removeItem('accountType');
-                    dispatch(removeUser());
-                    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-                },
-            },
-        ]);
+    const [showLogout, setShowLogout] = useState(false);
+
+    const onLogout = () => setShowLogout(true);
+
+    const confirmLogout = async () => {
+        setShowLogout(false);
+        await removeItem('token');
+        await removeItem('accountType');
+        dispatch(removeUser());
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
     };
 
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#121212' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             paddingTop: insets.top,
         },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
@@ -101,7 +98,7 @@ const SellerProfile = ({ navigation }) => {
             marginTop: 6,
             padding: 18,
             borderRadius: 20,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             alignItems: 'center',
         },
         avatar: { width: 84, height: 84, borderRadius: 42, marginBottom: 12 },
@@ -109,7 +106,7 @@ const SellerProfile = ({ navigation }) => {
         fullName: {
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 2,
         },
         infoRow: {
@@ -118,12 +115,12 @@ const SellerProfile = ({ navigation }) => {
             paddingVertical: 14,
             paddingHorizontal: 16,
             borderRadius: 16,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
         },
         infoLabel: {
             fontSize: 12,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
         },
         infoValue: {
             fontSize: 15,
@@ -140,7 +137,7 @@ const SellerProfile = ({ navigation }) => {
         sectionTitle: {
             fontSize: 12,
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginHorizontal: 20,
             marginTop: 22,
             marginBottom: 8,
@@ -150,7 +147,7 @@ const SellerProfile = ({ navigation }) => {
         privacyGroup: {
             marginHorizontal: 20,
             borderRadius: 16,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             overflow: 'hidden',
         },
         privacyRow: {
@@ -160,7 +157,7 @@ const SellerProfile = ({ navigation }) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? '#2A2A2A' : '#EDEDED',
+            borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         privacyLabel: {
             fontSize: 14,
@@ -169,7 +166,7 @@ const SellerProfile = ({ navigation }) => {
         privacySub: {
             fontSize: 12,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 2,
         },
         actionRow: {
@@ -178,7 +175,7 @@ const SellerProfile = ({ navigation }) => {
             paddingVertical: 14,
             paddingHorizontal: 16,
             borderRadius: 16,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -225,7 +222,7 @@ const SellerProfile = ({ navigation }) => {
                         <Icon
                             name={privacy.ShowEmail ? 'eye' : 'eye-off'}
                             size={13}
-                            color={isDarkMode ? '#9CA3AF' : '#6B7280'}
+                            color={isDarkMode ? '#94A3B8' : '#64748B'}
                         />
                     </SpaceBetweenRow>
                     <CustomText style={privacy.ShowEmail ? styles.infoValue : styles.infoValueHidden}>
@@ -238,7 +235,7 @@ const SellerProfile = ({ navigation }) => {
                         <Icon
                             name={privacy.ShowMobile ? 'eye' : 'eye-off'}
                             size={13}
-                            color={isDarkMode ? '#9CA3AF' : '#6B7280'}
+                            color={isDarkMode ? '#94A3B8' : '#64748B'}
                         />
                     </SpaceBetweenRow>
                     <CustomText style={privacy.ShowMobile ? styles.infoValue : styles.infoValueHidden}>
@@ -301,7 +298,7 @@ const SellerProfile = ({ navigation }) => {
                         <Icon name="shopping-bag" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>My Shops</CustomText>
                     </Row>
-                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('SellerProduct')}>
@@ -309,7 +306,15 @@ const SellerProfile = ({ navigation }) => {
                         <Icon name="package" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>My Products</CustomText>
                     </Row>
-                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('MyPostPromotions', { mode: 'shop' })}>
+                    <Row style={{ gap: 12 }}>
+                        <Icon name="trending-up" size={18} color={primaryColor} />
+                        <CustomText style={styles.actionLabel}>Shop Promotions</CustomText>
+                    </Row>
+                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.actionRow} onPress={() => navigation.navigate('ThemeSettings')}>
@@ -317,7 +322,7 @@ const SellerProfile = ({ navigation }) => {
                         <Icon name="sliders" size={18} color={primaryColor} />
                         <CustomText style={styles.actionLabel}>Theme Settings</CustomText>
                     </Row>
-                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                    <Icon name="chevron-right" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
@@ -326,6 +331,16 @@ const SellerProfile = ({ navigation }) => {
                     </CustomText>
                 </TouchableOpacity>
             </ScrollView>
+
+            <ConfirmModal
+                visible={showLogout}
+                onClose={() => setShowLogout(false)}
+                onConfirm={confirmLogout}
+                icon="log-out"
+                title="Log out?"
+                message="You will need to sign in again to manage your shop."
+                confirmLabel="Log Out"
+            />
         </View>
     );
 };

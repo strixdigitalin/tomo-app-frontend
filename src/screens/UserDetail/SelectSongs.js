@@ -105,13 +105,13 @@ const ChooseMusicScreen = ({ navigation, route }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     header: {
       paddingTop: 50,
       paddingHorizontal: 16,
       paddingBottom: 12,
-      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     headerRow: {
       flexDirection: 'row',
@@ -127,7 +127,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
     searchContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       borderRadius: 12,
       paddingHorizontal: 12,
       height: 46,
@@ -149,7 +149,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
       paddingHorizontal: 20,
       paddingVertical: 8,
       borderRadius: 20,
-      backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
     },
     activeTabButton: {
       backgroundColor: isDarkMode ? '#FFFFFF' : '#000000',
@@ -163,7 +163,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
       color: isDarkMode ? '#000000' : '#FFFFFF',
     },
     spotifyBanner: {
-      backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       marginHorizontal: 16,
       marginBottom: 16,
       borderRadius: 12,
@@ -211,7 +211,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
       alignItems: 'center',
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#1A1A1A' : '#F0F0F0',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     songCover: {
       width: 56,
@@ -267,9 +267,9 @@ const ChooseMusicScreen = ({ navigation, route }) => {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
       borderTopWidth: 1,
-      borderTopColor: isDarkMode ? '#1A1A1A' : '#F0F0F0',
+      borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       paddingHorizontal: 16,
       paddingVertical: 12,
       paddingBottom: 24,
@@ -373,7 +373,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
         style={[
           styles.songItem,
           selectedSong?.id === item.id && {
-            backgroundColor: isDarkMode ? '#1A1A1A' : '#F5F5F5',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             borderRadius: 12,
             marginVertical: 4,
             paddingHorizontal: 12,
@@ -423,7 +423,7 @@ const ChooseMusicScreen = ({ navigation, route }) => {
     <View style={styles.container}>
       <StatusBar
         translucent={false}
-        backgroundColor={isDarkMode ? '#000000' : '#FFFFFF'}
+        backgroundColor={isDarkMode ? '#0B1220' : '#EEF1F6'}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
 

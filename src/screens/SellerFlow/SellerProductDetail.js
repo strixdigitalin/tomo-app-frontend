@@ -19,6 +19,8 @@ import urls from '../../config/urls';
 import { white } from '../../common/Colors/colors';
 import useThemeColor from '../../utils/useThemeColor';
 import IMG from '../../assets/Images';
+import { productTitle } from '../../utils/productFields';
+import ProductSpecRows from '../../components/ProductSpecRows';
 
 const { width } = Dimensions.get('window');
 
@@ -45,7 +47,7 @@ const SellerProductDetail = ({ navigation, route }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff' },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
         image: { width, height: width * 0.8 },
         backBtn: {
             position: 'absolute',
@@ -99,8 +101,10 @@ const SellerProductDetail = ({ navigation, route }) => {
                         resizeMode="cover"
                     />
                     <View style={styles.body}>
-                        <CustomText style={styles.name}>{product?.ProductName}</CustomText>
+                        <CustomText style={styles.name}>{productTitle(product)}</CustomText>
                         {!!product?.Price && <CustomText style={styles.price}>₹{Number(product.Price).toLocaleString()}</CustomText>}
+
+                        <ProductSpecRows product={product} />
 
                         {!!product?.ProductDetails && (
                             <>

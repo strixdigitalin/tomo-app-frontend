@@ -1,181 +1,109 @@
-
-
-
-
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity,
-  FlatList, StatusBar, ScrollView, Alert, TextInput, InteractionManager,
+  View, Text, FlatList, StatusBar, TouchableOpacity, Modal, TextInput,
+  ActivityIndicator, ScrollView, StyleSheet, KeyboardAvoidingView, Platform,
 } from 'react-native'
-
 import { launchImageLibrary } from 'react-native-image-picker'
-import SpaceBetweenRow from '../../components/wrapper/spacebetween'
-import { PrimaryBackArrow, PrimaryBackWhite } from '../../assets/SVGs'
-import { FONTS_FAMILY } from '../../assets/Fonts'
-import LinearGradient from 'react-native-linear-gradient'
 import { useSelector } from 'react-redux'
-import { apiGet, apiPost, getItem } from '../../utils/Apis'
-import urls from '../../config/urls'
-import { useFocusEffect, useIsFocused } from '@react-navigation/native'
-import useLoader from '../../utils/LoaderHook'
+import { useFocusEffect } from '@react-navigation/native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Feather from 'react-native-vector-icons/Feather'
-import AntDesign from 'react-native-vector-icons/AntDesign'
-import Ionicons from 'react-native-vector-icons/Ionicons'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import { apiGet, apiPost, apiDelete, getItem, BASE_URL } from '../../utils/Apis'
+import urls from '../../config/urls'
+import { ConfirmDialog } from '../../components/ActionMenu'
 import { ToastMsg } from '../../utils/helperFunctions'
-import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
-import GradientIcon from '../../components/GradientIcon'
-import GlowWrapper from '../../components/GlowWrapper/GlowWrapper'
+import { formatInstagramDate } from '../../utils/DateFormat'
+import { FONTS_FAMILY } from '../../assets/Fonts'
 import { THEMES } from '../../redux/reducer/theme'
-import Row from '../../components/wrapper/row'
+import useLoader from '../../utils/LoaderHook'
+import LocationManager from '../../utils/LocationManager'
+import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import CarRatingModal from './CarRatingModal'
+import ProfileHeader from './ProfileHeader'
+import CarCard from './CarCard'
+import { PostTile, ProductCard } from './ProfileTiles'
+import { profilePalette } from './profileTheme'
+import FormField from '../../components/FormField'
+import FormButton from '../../components/FormButton'
+import useForm from '../../utils/useForm'
+import { compose, required, maxLength, username as usernameRule } from '../../utils/validators'
 
-// ─── Static styles — module level, never recreated ───────────────────────────
-const S = StyleSheet.create({
-  container: { flex: 1 },
-  coverPhotoContainer: { height: 200, position: 'relative' },
-  coverPhoto: { width: '100%', height: '100%', resizeMode: 'cover' },
-  profileImageContainer: { position: 'absolute', bottom: -50, left: 20 },
-  profileImage: { width: 100, height: 100, borderRadius: 50, borderWidth: 4 },
-  editImageButton: {
-    position: 'absolute', bottom: 5, right: 5,
-    width: 28, height: 28, borderRadius: 14,
-    justifyContent: 'center', alignItems: 'center', borderWidth: 2,
-  },
-  profileInfoSection: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20 },
-  profileName: { fontSize: 24, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
-  profileUsername: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginBottom: 15 },
-  statsContainer: { flexDirection: 'row', marginBottom: 9 },
-  statItem: { marginRight: 30 },
-  statNumber: { fontSize: 18, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  statLabel: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
-  statusContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  statusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  statusText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
-  joinedText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginLeft: 15 },
-  actionButtons: { flexDirection: 'row', justifyContent: 'center', gap: 12, paddingHorizontal: 20, marginBottom: 20 },
-  followButton: { paddingVertical: 10, paddingHorizontal: 24, borderRadius: 25, minWidth: 100, alignItems: 'center' },
-  messageButton: { backgroundColor: 'transparent', borderWidth: 1, paddingVertical: 10, paddingHorizontal: 24, borderRadius: 25, minWidth: 100, alignItems: 'center' },
-  moreButton: { backgroundColor: 'transparent', borderWidth: 1, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
-  followButtonText: { color: 'white', fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  messageButtonText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  tabContainer: { flexDirection: 'row', borderBottomWidth: 1, marginHorizontal: 10, marginBottom: 20, justifyContent: 'space-between' },
-  tabButton: { paddingVertical: 15, paddingHorizontal: 12, alignItems: 'center', gap: 6 },
-  tabText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
-  activeTabText: { fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  postsContainer: { paddingHorizontal: 10, paddingBottom: 100 },
-  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 50 },
-  emptyStateText: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Regular, textAlign: 'center' },
-  // MySpec
-  mySpecContainer: { marginHorizontal: 20, marginBottom: 20, borderRadius: 12, padding: 16, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  mySpecHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  mySpecTitle: { fontSize: 18, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  editSpecButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  editSpecText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium },
-  specRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  specLabel: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, flex: 1 },
-  specValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium, flex: 1, textAlign: 'right' },
-  seeMoreButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8, paddingVertical: 8 },
-  seeMoreText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Medium, marginRight: 4 },
-  specSectionTitle: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginTop: 16, marginBottom: 8 },
-  ownerNoteContainer: { padding: 12, borderRadius: 8, marginTop: 12 },
-  ownerNoteText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, lineHeight: 20 },
-  addSpecButton: { padding: 20, borderRadius: 12, alignItems: 'center', borderWidth: 2, borderStyle: 'dashed' },
-  addSpecText: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Medium, marginTop: 8 },
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { margin: 20, borderRadius: 12, padding: 20, width: '90%' },
-  modalTitle: { fontSize: 18, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginBottom: 15 },
-  bioInput: { borderWidth: 1, borderRadius: 8, padding: 12, minHeight: 100, textAlignVertical: 'top', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
-  modalButtons: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 15 },
-  modalButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
-  modalButtonText: { fontFamily: FONTS_FAMILY.SourceSans3_Bold, fontSize: 14 },
-  // PostCard
-  postCardWrapper: { width: '48%', margin: '1%' },
-  postCardImg: { width: '100%', height: '100%', borderRadius: 8 },
-  // Header
-  headerText: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  editProfileButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, borderWidth: 2, bottom: 15 },
-  editProfileButtonText: { color: 'white', fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-  musicBtn: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 2, bottom: 15 },
-})
-
-// ─── Module-level helpers — never recreated ─────────────────────────────────
-const isVideo = (url) => url?.toLowerCase().includes('.mp4')
-
-// ─── Image picker options — constant outside component ───────────────────────
-const IMG_PICKER_OPTIONS = {
-  mediaType: 'photo', includeBase64: false,
-  maxHeight: 2000, maxWidth: 2000, quality: 0.8,
+const EDIT_SCHEMA = {
+  FullName: compose(required('Full name'), maxLength(60, 'Full name')),
+  UserName: compose(required('Username'), usernameRule),
+  Bio: maxLength(200, 'Bio'),
 }
 
-// ─── Tab config — constant outside component ─────────────────────────────────
-const TABS = [
-  { key: 'all', label: 'All posts', icon: 'grid', iconType: 'Feather', width: 75 },
-  { key: 'saved', label: 'Saved', icon: 'bookmark', iconType: 'Feather', width: 60 },
-  { key: 'tagged', label: 'Tagged', icon: 'user', iconType: 'AntDesign', width: 65 },
-  { key: 'Marketplace', label: 'Products', icon: 'storefront', iconType: 'Ionicons', width: 80 },
+const IMG_PICKER_OPTIONS = { mediaType: 'photo', includeBase64: false, maxHeight: 2000, maxWidth: 2000, quality: 0.8 }
+
+// Web tabs: Current Car · Gallery · Saved · Tagged · Products (Saved/Tagged are private to the owner)
+const ALL_TABS = [
+  { key: 'car', label: 'Car', icon: 'car-sports', mci: true, page: 4, cols: 1 },
+  { key: 'gallery', label: 'Gallery', icon: 'grid', page: 18, cols: 3 },
+  { key: 'saved', label: 'Saved', icon: 'bookmark', page: 18, cols: 3, ownOnly: true },
+  { key: 'tagged', label: 'Tagged', icon: 'user', page: 18, cols: 3, ownOnly: true },
+  { key: 'products', label: 'Products', icon: 'shopping-bag', page: 8, cols: 2 },
 ]
 
-// ─── PostCard ─────────────────────────────────────────────────────────────────
-const PostCard = React.memo(({ item, activeTab, navigation, isDarkMode, glowColors }) => {
-  const mediaUri = useMemo(() => {
-    if (activeTab === 'saved') return item?.Post?.media
-    if (activeTab === 'Marketplace') return item?.Image
-    return item?.media
-  }, [activeTab, item])
+const EMPTY = {
+  car: ['No car added yet', 'Add your ride to show it off to the community.'],
+  gallery: ['No posts yet', 'Posts will show up here.'],
+  saved: ['Nothing saved', 'Posts you save will be kept here.'],
+  tagged: ['No tagged posts', 'Posts you are tagged in will show up here.'],
+  products: ['No products', 'Listings will show up here.'],
+}
 
-  const navTarget = activeTab === 'Marketplace' ? 'ProductDetail' : 'AllPostOfAUser'
-
-  return (
-    <View style={S.postCardWrapper}>
-      <GlowWrapper
-        containerStyle={{ height: 120 }} borderRadius={8}
-        showStars={false} showShinePatches={false}
-        intensity="low" isDarkMode={isDarkMode} glowColors={glowColors}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.navigate(navTarget, { userId: item?.User?._id })}
-          activeOpacity={0.75} style={{ height: '100%' }}
-        >
-          <Image
-            source={{ uri: mediaUri }}
-            style={S.postCardImg}
-            resizeMode="cover"
-            progressiveRenderingEnabled
-            fadeDuration={150}
-          />
-        </TouchableOpacity>
-      </GlowWrapper>
-    </View>
-  )
+// The add/edit vehicle screen wants the car in its own flat shape
+const toVehicleData = c => ({
+  _id: c._id,
+  vehicleName: c.VehicleInfo?.vehicleName,
+  make: c.VehicleInfo?.make,
+  model: c.VehicleInfo?.model,
+  year: c.VehicleInfo?.year,
+  bodyType: c.VehicleInfo?.bodyType,
+  engine: c.Power?.engine,
+  horsepower: c.Power?.horsepower,
+  torque: c.Power?.torque,
+  drivetrain: c.Power?.drivetrain,
+  transmission: c.Power?.transmission,
+  performance: c.Modifications?.performance || [],
+  suspension: c.Modifications?.suspension || [],
+  brakes: c.Modifications?.brakes || [],
+  paintWrap: c.Style?.paintWrap,
+  exteriorMods: c.Style?.exteriorMods || [],
+  interiorMods: c.Style?.interiorMods || [],
+  mileage: c.Status?.mileage,
+  buildStage: c.Status?.buildStage,
+  ownerNote: c.OwnerNote,
+  zeroToSixty: c.PerformanceStats?.zeroToSixty,
+  quarterMile: c.PerformanceStats?.quarterMile,
+  currentPrice: c.CurrentPrice,
+  PrimaryCar: c.PrimaryCar,
+  images: c.Image ? [c.Image] : [],
 })
-PostCard.displayName = 'PostCard'
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+const timeSince = date => {
+  if (!date) return null
+  const diff = Date.now() - new Date(date).getTime()
+  const m = Math.floor(diff / 60000)
+  const h = Math.floor(diff / 3600000)
+  const d = Math.floor(diff / 86400000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  if (h < 24) return `${h}h ago`
+  if (d < 7) return `${d}d ago`
+  return `${Math.floor(d / 7)}w ago`
+}
+
 const OtherUserDetail = ({ navigation, route }) => {
-  const [activeTab, setActiveTab] = useState('all')
-  const [isBioModalVisible, setBioModalVisible] = useState(false)
-  const [UserDetails, setUserDetails] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [allPosts, setAllPosts] = useState([])
-  const [savedPosts, setSavedPosts] = useState([])
-  const [taggedPosts, setTaggedPosts] = useState([])
-  const [bioText, setBioText] = useState('')
-  const [allProducts, setAllProducts] = useState([])
-  const [carSpec, setCarSpec] = useState(null)
-  const [hasCarSpec, setHasCarSpec] = useState(false)
-  const [isSpecExpanded, setIsSpecExpanded] = useState(false)
-  const [visibleCount, setVisibleCount] = useState(15)
-  const [showRatingModal, setShowRatingModal] = useState(false)
-
+  const insets = useSafeAreaInsets()
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme)
-  const currentTheme = THEMES[selectedColorTheme] || THEMES.default
-  const primaryColor = currentTheme.primary
-  const secondaryColor = currentTheme.secondary
+  const theme = THEMES[selectedColorTheme] || THEMES.default
+  const accent = theme.primary
+  const c = profilePalette(isDarkMode, accent)
   const { showLoader, hideLoader } = useLoader()
 
-  // ✅ Parse selector once
   const rawSelector = useSelector(state => state?.user?.userData)
   const selector = useMemo(() => {
     if (rawSelector && Object.keys(rawSelector).length !== 0) {
@@ -184,552 +112,416 @@ const OtherUserDetail = ({ navigation, route }) => {
     return {}
   }, [rawSelector])
 
-  // ✅ Stable memoized values
-  const glowColors = useMemo(() => [primaryColor, secondaryColor], [primaryColor, secondaryColor])
-  const isOtherUser = !!route?.params?.userId
+  const isOther = !!route?.params?.userId
   const userId = route?.params?.userId || selector?._id
+  const myId = selector?._id
 
-  // ✅ Guard so useFocusEffect only fetches once per userId, not on every tab re-focus
-  const hasFetchedForUserRef = useRef(null)
+  // A preview of the user can be passed from lists/search so the profile shows instantly
+  // and still has something to show if the profile request fails.
+  const preview = route?.params?.user || null
+  const [user, setUser] = useState(preview)
+  const [loading, setLoading] = useState(!preview)
+  const [cars, setCars] = useState([])
+  const [posts, setPosts] = useState([])
+  const [saved, setSaved] = useState([])
+  const [tagged, setTagged] = useState([])
+  const [products, setProducts] = useState([])
+  const [tab, setTab] = useState('car')
+  const [visible, setVisible] = useState(4)
 
-  // ✅ Stable fetch functions — wrapped in useCallback so refs are stable across renders
-  const fetchData = useCallback(async () => {
+  const [editOpen, setEditOpen] = useState(false)
+  const form = useForm({ FullName: '', UserName: '', Bio: '' }, EDIT_SCHEMA)
+  const [ratingCar, setRatingCar] = useState(null)
+  const [deleteCar, setDeleteCar] = useState(null)
+  const [justRequested, setJustRequested] = useState(false)
+
+  const fetchedFor = useRef(null)
+  const allowedRef = useRef(true)
+  const [loadError, setLoadError] = useState(false)
+
+  // ── Data ────────────────────────────────────────────────────────────────────
+  const fetchUser = useCallback(async () => {
+    const endpoint = isOther ? `${urls.getUserById}/${userId}` : urls.userProfile
+    // The server records a profile view (and may 500 on the very first view of a user);
+    // the view is already saved by then, so one retry normally succeeds.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await apiGet(endpoint)
+        setUser(res?.data || null)
+        return res?.data || null
+      } catch (e) {
+        console.log(`fetchUser ${endpoint} (attempt ${attempt + 1}):`, JSON.stringify(e))
+        if (attempt === 0) await new Promise(r => setTimeout(r, 400))
+      }
+    }
+    if (!preview) ToastMsg('Could not load profile. Pull back and try again.')
+    return null
+  }, [isOther, userId, preview])
+
+  const fetchCars = useCallback(async () => {
+    try {
+      const res = await apiGet(isOther ? `/api/user/GetAUserCurrentCar/${userId}` : '/api/user/GetUserCurrentCar')
+      setCars(res?.data || [])
+    } catch (e) { setCars([]) }
+  }, [isOther, userId])
+
+  const fetchRest = useCallback(async () => {
+    const safe = async (fn, set) => { try { const r = await fn(); set(r?.data || []) } catch (e) { set([]) } }
+    await Promise.all([
+      safe(() => apiGet(`${urls.getAllPostsOfAUser}/${userId}`), setPosts),
+      safe(() => apiGet(isOther ? `/api/admin/GetAllProductsOfAUser/${userId}` : '/api/user/GetAllProductsOfUser'), setProducts),
+      ...(isOther ? [] : [
+        safe(() => apiGet(urls.getAllSavedPosts), r => setSaved((r || []).map(i => i?.Post).filter(Boolean))),
+        safe(() => apiGet('/api/user/GetAllMyTaggedPosts'), setTagged),
+      ]),
+    ])
+  }, [isOther, userId])
+
+  // Load the profile first, then — only if the viewer is allowed — its posts / cars / products.
+  // Fail closed: if the profile request fails we do NOT know whether it is private, so we show a
+  // retry state instead of guessing "public" (search results don't carry the privacy flag).
+  const loadAll = useCallback(async () => {
+    setLoadError(false)
     setLoading(true)
     try {
-      const endpoint = route?.params?.userId
-        ? `${urls.getUserById}/${route.params.userId}`
-        : urls.userProfile
-      const res = await apiGet(endpoint)
-      setUserDetails(res?.data)
-      setBioText(res?.data?.Bio || '')
-    } catch (e) { console.error('fetchData:', e) }
-    finally { setLoading(false) }
-  }, [route?.params?.userId])
+      const u = await fetchUser()
+      if (!u && isOther) {
+        allowedRef.current = false
+        setPosts([]); setCars([])
+        setLoadError(true)
+        return
+      }
+      const profile = u || preview
+      const allowed = !isOther || !profile?.PrivateProfile || (!!myId && !!profile?.Follower?.includes(myId))
+      allowedRef.current = allowed
+      if (!allowed) { setPosts([]); setCars([]); return }
+      await Promise.all([fetchCars(), fetchRest()])
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchUser, fetchCars, fetchRest, isOther, myId, preview])
 
-  const fetchCarSpecs = useCallback(async () => {
-    try {
-      // ✅ Viewing someone else's profile must fetch THEIR car, not the logged-in user's own
-      const endpoint = isOtherUser ? `/api/user/GetAUserCurrentCar/${userId}` : '/api/user/GetUserCurrentCar'
-      const res = await apiGet(endpoint)
-      if (res?.data?.length > 0) {
-        const c = res.data[0]
-        setCarSpec({
-          _id: c._id,
-          avgRating: c.avgRating || 0,
-          vehicle: c.VehicleInfo?.vehicleName || 'N/A',
-          make: c.VehicleInfo?.make || 'N/A',
-          model: c.VehicleInfo?.model || 'N/A',
-          year: c.VehicleInfo?.year?.toString() || 'N/A',
-          bodyType: c.VehicleInfo?.bodyType || 'N/A',
-          engine: c.Power?.engine || 'N/A',
-          hp: c.Power?.horsepower ? `${c.Power.horsepower} HP` : 'N/A',
-          torque: c.Power?.torque ? `${c.Power.torque} lb-ft` : 'N/A',
-          drivetrain: c.Power?.drivetrain || 'N/A',
-          transmission: c.Power?.transmission || 'N/A',
-          performanceMods: Array.isArray(c.Modifications?.performance) ? c.Modifications.performance.join(', ') : 'N/A',
-          suspensionMods: Array.isArray(c.Modifications?.suspension) ? c.Modifications.suspension.join(', ') : 'N/A',
-          brakesMods: Array.isArray(c.Modifications?.brakes) ? c.Modifications.brakes.join(', ') : 'N/A',
-          paintWrap: c.Style?.paintWrap || 'N/A',
-          exteriorMods: Array.isArray(c.Style?.exteriorMods) ? c.Style.exteriorMods.join(', ') : 'N/A',
-          interiorMods: Array.isArray(c.Style?.interiorMods) ? c.Style.interiorMods.join(', ') : 'N/A',
-          mileage: c.Status?.mileage ? `${c.Status.mileage.toLocaleString()} miles` : 'N/A',
-          buildStage: c.Status?.buildStage || 'N/A',
-          ownerNote: c.OwnerNote || 'No notes added',
-          performanceStats: c.PerformanceStats?.zeroToSixty ? `0-60: ${c.PerformanceStats.zeroToSixty} | 1/4 Mile: ${c.PerformanceStats.quarterMile}` : null,
-          budgetPrice: c.CurrentPrice ? `$${c.CurrentPrice.toLocaleString()}` : null,
-          image: c.Image || null,
-        })
-        setHasCarSpec(true)
-      } else { setHasCarSpec(false) }
-    } catch (e) { setHasCarSpec(false) }
-  }, [isOtherUser, userId])
-
-  const fetchMyPost = useCallback(async () => {
-    try {
-      const res = await apiGet(`${urls.getAllPostsOfAUser}/${userId}`)
-      setAllPosts(res?.data || [])
-    } catch (e) { console.error('fetchMyPost:', e) }
-  }, [userId])
-
-  const fetchSavedPosts = useCallback(async () => {
-    try {
-      const res = await apiGet(urls.getAllSavedPosts)
-      setSavedPosts(res?.data || [])
-    } catch (e) { console.error('fetchSavedPosts:', e) }
-  }, [])
-
-  const fetchTaggedPosts = useCallback(async () => {
-    try {
-      const res = await apiGet('/api/user/GetAllMyTaggedPosts')
-      setTaggedPosts(res?.data || [])
-    } catch (e) { setTaggedPosts([]) }
-  }, [])
-
-  const fetchAllProducts = useCallback(async () => {
-    try {
-      const res = await apiGet('/api/admin/AllProducts')
-      setAllProducts(res?.data || [])
-    } catch (e) { console.error('fetchAllProducts:', e) }
-  }, [])
-
-  // ✅ Load critical data immediately, defer secondary calls until after nav animation.
-  // Fetches only once per userId — refocusing the same profile tab no longer
-  // re-triggers all 6 API calls / the loading spinner. Direct fetchData() calls
-  // elsewhere (e.g. after profile edit) are unaffected since they bypass this guard.
   useFocusEffect(
     useCallback(() => {
-      if (hasFetchedForUserRef.current === userId) return
-      hasFetchedForUserRef.current = userId
-      fetchData()
-      fetchCarSpecs()
-      const task = InteractionManager.runAfterInteractions(() => {
-        fetchMyPost()
-        fetchSavedPosts()
-        fetchTaggedPosts()
-        fetchAllProducts()
-      })
-      return () => task.cancel()
-    }, [userId, fetchData, fetchCarSpecs, fetchMyPost, fetchSavedPosts, fetchTaggedPosts, fetchAllProducts])
+      if (fetchedFor.current === userId) {
+        // cars can change after Add/Update on another screen, so refresh them (when allowed)
+        if (allowedRef.current) fetchCars()
+        return
+      }
+      fetchedFor.current = userId
+      loadAll()
+    }, [userId, fetchCars, loadAll]),
   )
 
-  const sendFollowRequest = useCallback(async () => {
-    await apiPost(`${urls.sendFollowRequest}/${route?.params?.userId}`)
-  }, [route?.params?.userId])
+  // reset pagination whenever the tab changes
+  const tabs = useMemo(() => ALL_TABS.filter(t => !(t.ownOnly && isOther)), [isOther])
+  const activeTab = tabs.find(t => t.key === tab) || tabs[0]
+  useEffect(() => { setVisible(activeTab.page) }, [activeTab.key])
 
-  const updateUserProfile = useCallback(async (imageType, imageUri, bio = null) => {
+  const data = useMemo(
+    () => ({ car: cars, gallery: posts, saved, tagged, products }[activeTab.key] || []),
+    [activeTab.key, cars, posts, saved, tagged, products],
+  )
+  const shown = useMemo(() => data.slice(0, visible), [data, visible])
+  const hasMore = data.length > visible
+  const loadMore = useCallback(() => { if (hasMore) setVisible(v => v + activeTab.page) }, [hasMore, activeTab.page])
+
+  // ── Follow state / privacy ─────────────────────────────────────────────────
+  const isFollowing = !!myId && !!user?.Follower?.includes(myId)
+  const isRequested = justRequested || (!!myId && !!user?.RequestedFollower?.includes(myId))
+  const followState = isFollowing ? 'following' : isRequested ? 'requested' : 'follow'
+  const canView = !loadError && (!isOther || !user?.PrivateProfile || isFollowing)
+
+  const sendFollow = useCallback(async () => {
+    try {
+      const res = await apiPost(`${urls.sendFollowRequest}/${userId}`)
+      if (res?.statusCode === 200) {
+        setJustRequested(true)
+        ToastMsg(res?.message || 'Follow request sent')
+      }
+    } catch (e) {
+      // e.g. 400 "already requested" — show the server's reason and reflect it in the button
+      ToastMsg(e?.message || 'Failed to send request')
+      if (/already|request/i.test(e?.message || '')) setJustRequested(true)
+    }
+  }, [userId])
+
+  // ── Profile editing ────────────────────────────────────────────────────────
+  const saveProfile = useCallback(async fields => {
     try {
       showLoader()
-      const formData = new FormData()
-      if (imageUri) formData.append(imageType, { uri: imageUri, type: 'image/jpeg', name: `${imageType.toLowerCase()}.jpg` })
-      if (bio !== null) formData.append('bio', bio)
+      const fd = new FormData()
+      Object.entries(fields).forEach(([k, v]) => {
+        if (v === undefined || v === null) return
+        if (typeof v === 'object') fd.append(k, v)
+        else fd.append(k, String(v))
+      })
       const token = await getItem('token')
-      const response = await fetch('https://tomo-backend-app.vercel.app/api/user/UpdateUser', {
+      const res = await fetch(`${BASE_URL}/api/user/UpdateUser`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-        body: formData,
+        body: fd,
       })
-      if (response.ok) { ToastMsg('Profile updated successfully!'); fetchData().catch(() => {}) }
+      if (res.ok) { ToastMsg('Profile updated successfully!'); await fetchUser() }
       else ToastMsg('Failed to update profile')
     } catch { ToastMsg('Failed to update profile') }
     finally { hideLoader() }
-  }, [showLoader, hideLoader])
+  }, [showLoader, hideLoader, fetchUser])
 
-  const handleProfileImageUpdate = useCallback(() => {
-    Alert.alert('Update Profile Picture', 'Choose an option', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Choose from Gallery', onPress: () => launchImageLibrary(IMG_PICKER_OPTIONS, r => { if (!r.didCancel && r.assets?.[0]) updateUserProfile('Image', r.assets[0].uri) }) },
-    ])
-  }, [updateUserProfile])
-
-  const handleCoverImageUpdate = useCallback(() => {
-    Alert.alert('Update Cover Photo', 'Choose an option', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Choose from Gallery', onPress: () => launchImageLibrary(IMG_PICKER_OPTIONS, r => { if (!r.didCancel && r.assets?.[0]) updateUserProfile('CoverImage', r.assets[0].uri) }) },
-    ])
-  }, [updateUserProfile])
-
-  const saveBio = useCallback(() => {
-    updateUserProfile(null, null, bioText)
-    setBioModalVisible(false)
-  }, [bioText, updateUserProfile])
-
-  const handleEditCarSpecs = useCallback(() => {
-    if (!carSpec) return
-    navigation.navigate('AddVehicleSpecs', {
-      vehicleData: {
-        _id: carSpec._id, vehicleName: carSpec.vehicle,
-        make: carSpec.make, model: carSpec.model, year: parseInt(carSpec.year),
-        bodyType: carSpec.bodyType, engine: carSpec.engine,
-        horsepower: parseInt(carSpec.hp.replace(' HP', '')),
-        torque: parseInt(carSpec.torque.replace(' lb-ft', '')),
-        drivetrain: carSpec.drivetrain, transmission: carSpec.transmission,
-        performance: carSpec.performanceMods.split(', '),
-        suspension: carSpec.suspensionMods.split(', '),
-        brakes: carSpec.brakesMods.split(', '),
-        paintWrap: carSpec.paintWrap,
-        exteriorMods: carSpec.exteriorMods.split(', '),
-        interiorMods: carSpec.interiorMods.split(', '),
-        mileage: parseInt(carSpec.mileage.replace(/[^0-9]/g, '')),
-        buildStage: carSpec.buildStage, ownerNote: carSpec.ownerNote,
-        zeroToSixty: carSpec.performanceStats?.split(' | ')[0]?.replace('0-60: ', ''),
-        quarterMile: carSpec.performanceStats?.split(' | ')[1]?.replace('1/4 Mile: ', ''),
-        currentPrice: parseInt(carSpec.budgetPrice?.replace(/[^0-9]/g, '') || 0),
-        images: carSpec.image ? [carSpec.image] : [],
-      }
+  const pickImage = useCallback(field => {
+    launchImageLibrary(IMG_PICKER_OPTIONS, r => {
+      const a = !r.didCancel && r.assets?.[0]
+      if (a) saveProfile({ [field]: { uri: a.uri, type: a.type || 'image/jpeg', name: `${field.toLowerCase()}.jpg` } })
     })
-  }, [carSpec, navigation])
+  }, [saveProfile])
 
-  // ✅ Activity status — computed once
-  const activityStatus = useMemo(() => {
-    if (!selector?.ShowLastActive) return null
-    const diffMs = Date.now() - new Date(selector?.LastActiveAt)
-    const m = Math.floor(diffMs / 60000)
-    const h = Math.floor(diffMs / 3600000)
-    const d = Math.floor(diffMs / 86400000)
-    if (m < 1) return 'just now'
-    if (m < 60) return `${m}m ago`
-    if (h < 24) return `${h}h ago`
-    if (d < 7) return `${d}d ago`
-    return `${Math.floor(d / 7)}w ago`
-  }, [selector?.ShowLastActive, selector?.LastActiveAt])
+  const openEdit = useCallback(() => {
+    form.reset({ FullName: user?.FullName || '', UserName: user?.UserName || '', Bio: user?.Bio || '' })
+    setEditOpen(true)
+  }, [user, form])
 
-  const joinedDate = useMemo(() => {
-    if (!selector?.ShowJoinedDate) return null
-    const d = new Date(selector?.createdAt || Date.now())
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
-  }, [selector?.ShowJoinedDate, selector?.createdAt])
+  const submitEdit = useCallback(() => {
+    const { ok, firstError } = form.validateAll()
+    if (!ok) return ToastMsg(firstError)
+    setEditOpen(false)
+    saveProfile({ FullName: form.values.FullName.trim(), UserName: form.values.UserName.trim(), Bio: form.values.Bio })
+  }, [form, saveProfile])
 
-  // ✅ Posts filtered with useMemo — isVideo is module-level, no re-creation
-  const filteredPosts = useMemo(() => {
-    if (activeTab === 'all') return (allPosts || []).filter(i => i?.media && !isVideo(i.media))
-    if (activeTab === 'saved') return (savedPosts || []).filter(i => i?.Post?.media && !isVideo(i.Post.media))
-    if (activeTab === 'tagged') return (taggedPosts || []).filter(i => i?.media && !isVideo(i.media))
-    return (allProducts || []).filter(i => i?.Image && !isVideo(i.Image))
-  }, [activeTab, allPosts, savedPosts, taggedPosts, allProducts])
+  const updateLocation = useCallback(async () => {
+    try {
+      showLoader()
+      await LocationManager.checkAndUpdateLocation(true)
+      await fetchUser()
+      ToastMsg('Location updated')
+    } catch { ToastMsg('Unable to update location') }
+    finally { hideLoader() }
+  }, [showLoader, hideLoader, fetchUser])
 
-  // ✅ Reset the 15-item pagination window whenever the tab changes
-  useEffect(() => { setVisibleCount(15) }, [activeTab])
+  // ── Cars ───────────────────────────────────────────────────────────────────
+  const confirmDeleteCar = useCallback(async () => {
+    const car = deleteCar
+    setDeleteCar(null)
+    try {
+      const res = await apiDelete(`/api/user/DeleteUserCurrentCar/${car?._id}`)
+      if (res?.statusCode === 200) {
+        setCars(prev => prev.filter(x => x._id !== car._id))
+        ToastMsg(res?.message || 'Vehicle deleted')
+      } else ToastMsg(res?.message || 'Failed to delete vehicle')
+    } catch { ToastMsg('Failed to delete vehicle') }
+  }, [deleteCar])
 
-  // ✅ Paginate "All posts" & "Products" tabs — 15 visible at a time, "Load More" for rest
-  const displayedPosts = useMemo(() => {
-    if (activeTab === 'all' || activeTab === 'Marketplace') return filteredPosts.slice(0, visibleCount)
-    return filteredPosts
-  }, [filteredPosts, activeTab, visibleCount])
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  const openPost = useCallback(post => {
+    navigation.navigate('PostDetail', { post, selector, isDarkMode, formatInstagramDate })
+  }, [navigation, selector, isDarkMode])
 
-  const canLoadMore = (activeTab === 'all' || activeTab === 'Marketplace') && filteredPosts.length > visibleCount
+  const openProduct = useCallback(p => {
+    navigation.navigate(isOther ? 'ProductDetail' : 'ListingProductDetail', { productId: p?._id })
+  }, [navigation, isOther])
 
-  const loadMorePosts = useCallback(() => setVisibleCount(v => v + 15), [])
+  // ── Render ─────────────────────────────────────────────────────────────────
+  const renderItem = useCallback(({ item }) => {
+    switch (activeTab.key) {
+      case 'car':
+        return (
+          <CarCard
+            car={item} isOther={isOther} isDark={isDarkMode} accent={accent}
+            onEdit={car => navigation.navigate('AddVehicleSpecs', { vehicleData: toVehicleData(car) })}
+            onDelete={setDeleteCar}
+            onRate={setRatingCar}
+          />
+        )
+      case 'products':
+        return <ProductCard product={item} isDark={isDarkMode} accent={accent} onPress={() => openProduct(item)} />
+      default:
+        return <PostTile post={item} isDark={isDarkMode} accent={accent} onPress={() => openPost(item)} />
+    }
+  }, [activeTab.key, isOther, isDarkMode, accent, navigation, openPost, openProduct])
 
-  // ✅ Dynamic colors memoized
-  const dyn = useMemo(() => ({
-    containerBg: { backgroundColor: isDarkMode ? '#1b1b1b' : '#f3f2ef' },
-    headerBg: { backgroundColor: isDarkMode ? '#252525' : '#ffffff' },
-    coverBg: { backgroundColor: isDarkMode ? '#333' : '#ddd' },
-    profileBorder: { borderColor: isDarkMode ? '#1b1b1b' : '#ffffff' },
-    editBtnBg: { backgroundColor: primaryColor, borderColor: isDarkMode ? '#1b1b1b' : '#ffffff' },
-    nameColor: { color: isDarkMode ? 'white' : '#000' },
-    subColor: { color: isDarkMode ? '#888' : '#666' },
-    statNumColor: { color: isDarkMode ? 'white' : '#000' },
-    specBg: { backgroundColor: isDarkMode ? '#252525' : '#ffffff' },
-    tabBorderColor: { borderBottomColor: isDarkMode ? '#333' : '#e0e0e0' },
-    tabTextColor: { color: isDarkMode ? '#888' : '#666' },
-    activeTabColor: { color: isDarkMode ? 'white' : '#000' },
-    emptyColor: { color: isDarkMode ? '#888' : '#666' },
-    moreBtnBorder: { borderColor: isDarkMode ? '#666' : '#ddd' },
-    modalBg: { backgroundColor: isDarkMode ? '#252525' : '#ffffff' },
-    bioInputStyle: { borderColor: isDarkMode ? '#444' : '#ddd', color: isDarkMode ? 'white' : '#000' },
-    cancelBtnBg: { backgroundColor: isDarkMode ? '#444' : '#ddd' },
-    cancelTxtColor: { color: isDarkMode ? 'white' : '#000' },
-    ownerNoteBg: { backgroundColor: isDarkMode ? '#1f1f1f' : '#f9f9f9' },
-    ownerNoteTxt: { color: isDarkMode ? '#ccc' : '#333' },
-    addSpecBg: { backgroundColor: isDarkMode ? '#1f1f1f' : '#f9f9f9', borderColor: isDarkMode ? '#404040' : '#ddd' },
-    addSpecTxt: { color: isDarkMode ? '#999' : '#666' },
-    specSectionTxt: { color: isDarkMode ? 'white' : '#000' },
-    specLabelColor: { color: isDarkMode ? '#999' : '#666' },
-    specValueColor: { color: isDarkMode ? 'white' : '#000' },
-  }), [isDarkMode, primaryColor])
+  const header = (
+    <View>
+      <ProfileHeader
+        user={user} isOther={isOther} isDark={isDarkMode} accent={accent} secondary={theme.secondary}
+        postsCount={canView ? posts.length : null} followState={followState}
+        joined={canView && user?.ShowJoinedDate ? new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : null}
+        activity={canView && user?.ShowLastActive ? timeSince(user?.LastActiveAt) : null}
+        location={canView && user?.ShowAddress !== false ? user?.Location?.Address : null}
+        topInset={insets.top + 6}
+        onBack={isOther ? () => navigation.goBack() : undefined}
+        onSettings={() => navigation.navigate('SettingsDrawer')}
+        onEditCover={() => pickImage('CoverImage')}
+        onEditAvatar={() => pickImage('Image')}
+        onEditProfile={openEdit}
+        onUpdateLocation={updateLocation}
+        onFollow={sendFollow}
+        onMessage={canView ? () => navigation.navigate('Chat', { userId: user?._id, userForChat: user }) : undefined}
+        onFollowers={isOther ? undefined : () => navigation.navigate('Followers')}
+        onFollowing={isOther ? undefined : () => navigation.navigate('Followings')}
+      />
 
-  const keyExtractor = useCallback((item, index) => item?._id?.toString() || index.toString(), [])
+      {canView ? (
+        <>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsRow}>
+            {tabs.map(t => {
+              const active = t.key === activeTab.key
+              const Icon = t.mci ? MaterialCommunityIcons : Feather
+              return (
+                <TouchableOpacity
+                  key={t.key}
+                  onPress={() => setTab(t.key)}
+                  activeOpacity={0.8}
+                  style={[styles.tab, { backgroundColor: active ? accent : c.card, borderColor: active ? accent : c.border }]}>
+                  <Icon name={t.icon} size={15} color={active ? '#fff' : c.muted} />
+                  <Text style={[styles.tabText, { color: active ? '#fff' : c.text }]}>{t.label}</Text>
+                </TouchableOpacity>
+              )
+            })}
+          </ScrollView>
 
-  const renderPostItem = useCallback(({ item }) => (
-    <PostCard
-      item={item} activeTab={activeTab}
-      navigation={navigation} isDarkMode={isDarkMode} glowColors={glowColors}
-    />
-  ), [activeTab, navigation, isDarkMode, glowColors])
+          {activeTab.key === 'car' && !isOther && (
+            <TouchableOpacity
+              style={[styles.addCar, { borderColor: accent, backgroundColor: accent + '12' }]}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('AddVehicleSpecs')}>
+              <Feather name="plus" size={16} color={accent} />
+              <Text style={[styles.addCarText, { color: accent }]}>{cars.length ? 'Add more car' : 'Add your first car'}</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      ) : null}
+    </View>
+  )
 
-  if (loading) return <ProfileShimmer />
+  if (loading && !user) return <ProfileShimmer />
 
   return (
-    <View style={[S.container, dyn.containerBg]}>
-      <StatusBar translucent backgroundColor="transparent" barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* Header */}
-        <View>
-          <SpaceBetweenRow style={[{ paddingTop: 50, paddingHorizontal: 20, paddingBottom: 16, elevation: 2 }, dyn.headerBg]}>
-            <TouchableOpacity onPress={() => navigation.navigate('Tab', { screen: 'Home' })}>
-              {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
-            </TouchableOpacity>
-            <Text style={[S.headerText, dyn.nameColor]}>
-              {UserDetails?.UserName || UserDetails?.FullName}
-            </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SettingsDrawer')}>
-              <GradientIcon colors={glowColors} size={18} iconType="Feather" name="settings" />
-            </TouchableOpacity>
-          </SpaceBetweenRow>
-          </View>
-
-          {/* Cover Photo */}
-          <View style={[S.coverPhotoContainer, dyn.coverBg]}>
-          <Image
-            source={{ uri: UserDetails?.CoverImage || 'https://images.unsplash.com/photo-1497366216548-37526070297c' }}
-            style={S.coverPhoto}
-            progressiveRenderingEnabled fadeDuration={200}
-          />
-          <View style={S.profileImageContainer}>
-            <Image
-              source={{ uri: carSpec?.image || UserDetails?.CarImage || 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068' }}
-              style={[S.profileImage, dyn.profileBorder]}
-              progressiveRenderingEnabled fadeDuration={200}
-            />
-            {!isOtherUser && (
-              <TouchableOpacity style={[S.editImageButton, dyn.editBtnBg]} onPress={handleCoverImageUpdate}>
-                <Feather name="camera" size={14} color="white" />
-              </TouchableOpacity>
-            )}
-          </View>
-          {!isOtherUser && (
-            <TouchableOpacity style={[S.editImageButton, dyn.editBtnBg, { right: 20, bottom: 10 }]} onPress={handleProfileImageUpdate}>
-              <Feather name="camera" size={14} color="white" />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Profile Info */}
-        <View style={S.profileInfoSection}>
-          <SpaceBetweenRow>
-            <View>
-              <Text style={[S.profileName, dyn.nameColor]}>{UserDetails?.FullName}</Text>
-              <Text style={[S.profileUsername, dyn.subColor]}>{UserDetails?.UserName}</Text>
-            </View>
-            <Row style={{ gap: 10 }}>
-              {!isOtherUser && (
-                <TouchableOpacity
-                  style={[S.musicBtn, { backgroundColor: primaryColor, borderColor: isDarkMode ? '#1b1b1b' : '#ffffff' }]}
-                  onPress={() => navigation.navigate('ChooseMusicScreen')}
-                >
-                  <Feather name="music" size={14} color="white" />
-                </TouchableOpacity>
-              )}
-              {!isOtherUser && (
-                <TouchableOpacity
-                  style={[S.editProfileButton, { backgroundColor: primaryColor, borderColor: isDarkMode ? '#1b1b1b' : '#ffffff' }]}
-                  onPress={() => setBioModalVisible(true)}
-                >
-                  <Text style={S.editProfileButtonText}>Edit profile</Text>
-                </TouchableOpacity>
-              )}
-            </Row>
-          </SpaceBetweenRow>
-
-          <View style={S.statsContainer}>
-            <TouchableOpacity style={S.statItem} onPress={() => navigation.navigate('Followers')}>
-              <Text style={[S.statNumber, dyn.statNumColor]}>{UserDetails?.Follower?.length || 0}</Text>
-              <Text style={[S.statLabel, dyn.subColor]}>Followers</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={S.statItem} onPress={() => navigation.navigate('Followings')}>
-              <Text style={[S.statNumber, dyn.statNumColor]}>{UserDetails?.Following?.length || 0}</Text>
-              <Text style={[S.statLabel, dyn.subColor]}>Following</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={S.statusContainer}>
-            {activityStatus && (
-              <>
-                <View style={[S.statusDot, { backgroundColor: primaryColor }]} />
-                <Text style={[S.statusText, dyn.subColor]}>{activityStatus}</Text>
-              </>
-            )}
-            {joinedDate && <Text style={[S.joinedText, dyn.subColor]}>📅 Joined {joinedDate}</Text>}
-          </View>
-
-          {isOtherUser && (
-            <View style={S.actionButtons}>
-              <TouchableOpacity style={[S.followButton, { backgroundColor: primaryColor }]} onPress={sendFollowRequest}>
-                <Text style={S.followButtonText}>Follow</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[S.messageButton, { borderColor: primaryColor }]} onPress={() => navigation.navigate('Chat')}>
-                <Text style={[S.messageButtonText, { color: primaryColor }]}>Message</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[S.moreButton, dyn.moreBtnBorder]}>
-                <Text style={dyn.subColor}>•••</Text>
+    <View style={[styles.screen, { backgroundColor: c.screen }]}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <FlatList
+        key={canView ? activeTab.key : 'private'}
+        data={canView ? shown : []}
+        numColumns={canView ? activeTab.cols : 1}
+        columnWrapperStyle={canView && activeTab.cols > 1 ? styles.columns : undefined}
+        keyExtractor={(item, i) => item?._id?.toString() || String(i)}
+        renderItem={renderItem}
+        ListHeaderComponent={header}
+        ListEmptyComponent={
+          loadError ? (
+            <View style={styles.empty}>
+              <View style={[styles.lockCircle, { backgroundColor: c.danger + '1F' }]}>
+                <Feather name="wifi-off" size={26} color={c.danger} />
+              </View>
+              <Text style={[styles.emptyTitle, { color: c.text }]}>Couldn't load this profile</Text>
+              <Text style={[styles.emptySub, { color: c.muted }]}>Check your connection and try again.</Text>
+              <TouchableOpacity style={[styles.retryBtn, { backgroundColor: accent }]} onPress={loadAll} activeOpacity={0.85}>
+                <Feather name="refresh-cw" size={15} color="#fff" />
+                <Text style={styles.retryText}>Retry</Text>
               </TouchableOpacity>
             </View>
-          )}
-        </View>
-
-        {/* My Spec */}
-        <View style={[S.mySpecContainer, dyn.specBg]}>
-          {!hasCarSpec || !carSpec ? (
-            <TouchableOpacity style={[S.addSpecButton, dyn.addSpecBg]} onPress={() => navigation.navigate('AddVehicleSpecs')}>
-              <MaterialCommunityIcons name="car-sports" size={40} color={isDarkMode ? '#404040' : '#ddd'} />
-              <Text style={[S.addSpecText, dyn.addSpecTxt]}>Add Your Vehicle Specs</Text>
-            </TouchableOpacity>
-          ) : (
-            <>
-              <View style={S.mySpecHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MaterialCommunityIcons name="car-sports" size={20} color={primaryColor} />
-                  <Text style={[S.mySpecTitle, dyn.nameColor]}>My Spec</Text>
-                </View>
-                {!isOtherUser && (
-                  <TouchableOpacity style={S.editSpecButton} onPress={handleEditCarSpecs}>
-                    <Feather name="edit-2" size={14} color={primaryColor} />
-                    <Text style={[S.editSpecText, { color: primaryColor }]}>Edit</Text>
-                  </TouchableOpacity>
-                )}
-                {isOtherUser && (
-                  <TouchableOpacity style={S.editSpecButton} onPress={() => setShowRatingModal(true)}>
-                    <Feather name="star" size={14} color={primaryColor} />
-                    <Text style={[S.editSpecText, { color: primaryColor }]}>Add Rating</Text>
-                  </TouchableOpacity>
-                )}
+          ) : !canView ? (
+            <View style={styles.empty}>
+              <View style={[styles.lockCircle, { backgroundColor: accent + '1F' }]}>
+                <Feather name="lock" size={28} color={accent} />
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Feather
-                    key={s} name="star" size={14}
-                    color={s <= Math.round(carSpec.avgRating || 0) ? primaryColor : (isDarkMode ? '#333' : '#E5E7EB')}
-                  />
-                ))}
-                <Text style={[S.specLabel, dyn.specLabelColor, { marginLeft: 4 }]}>
-                  {carSpec.avgRating ? carSpec.avgRating.toFixed(1) : 'New'}
-                </Text>
-              </View>
-              {[['Vehicle', carSpec.vehicle], ['Make', carSpec.make], ['Model', carSpec.model], ['Year', carSpec.year], ['Body Type', carSpec.bodyType]].map(([label, value]) => (
-                <View key={label} style={S.specRow}>
-                  <Text style={[S.specLabel, dyn.specLabelColor]}>{label}</Text>
-                  <Text style={[S.specValue, dyn.specValueColor]}>{value}</Text>
-                </View>
-              ))}
-              {isSpecExpanded && (
-                <View>
-                  {[
-                    ['⚡ Power', [['Engine', carSpec.engine], ['HP / Torque', `${carSpec.hp} / ${carSpec.torque}`], ['Drivetrain', carSpec.drivetrain], ['Transmission', carSpec.transmission]]],
-                    ['🔧 Modifications', [['Performance', carSpec.performanceMods], ['Suspension', carSpec.suspensionMods], ['Brakes', carSpec.brakesMods]]],
-                    ['🎨 Style', [['Paint/Wrap', carSpec.paintWrap], ['Exterior Mods', carSpec.exteriorMods], ['Interior Mods', carSpec.interiorMods]]],
-                    ['📊 Status', [['Mileage', carSpec.mileage], ['Build Stage', carSpec.buildStage]]],
-                  ].map(([section, rows]) => (
-                    <View key={section}>
-                      <Text style={[S.specSectionTitle, dyn.specSectionTxt]}>{section}</Text>
-                      {rows.map(([label, value]) => (
-                        <View key={label} style={S.specRow}>
-                          <Text style={[S.specLabel, dyn.specLabelColor]}>{label}</Text>
-                          <Text style={[S.specValue, dyn.specValueColor]}>{value}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  ))}
-                  <Text style={[S.specSectionTitle, dyn.specSectionTxt]}>📝 Owner Note</Text>
-                  <View style={[S.ownerNoteContainer, dyn.ownerNoteBg]}>
-                    <Text style={[S.ownerNoteText, dyn.ownerNoteTxt]}>{carSpec.ownerNote}</Text>
-                  </View>
-                  {carSpec.performanceStats && (
-                    <View style={S.specRow}>
-                      <Text style={[S.specValue, dyn.specValueColor]}>{carSpec.performanceStats}</Text>
-                    </View>
-                  )}
-                  {carSpec.budgetPrice && (
-                    <View style={S.specRow}>
-                      <Text style={[S.specValue, dyn.specValueColor]}>{carSpec.budgetPrice}</Text>
-                    </View>
-                  )}
-                </View>
-              )}
-              <TouchableOpacity style={S.seeMoreButton} onPress={() => setIsSpecExpanded(p => !p)}>
-                <Text style={[S.seeMoreText, { color: primaryColor }]}>{isSpecExpanded ? 'See Less' : 'See More'}</Text>
-                <Feather name={isSpecExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={primaryColor} />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        {/* Tabs */}
-        <View style={[S.tabContainer, dyn.tabBorderColor]}>
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.key
-            const iconColor = isActive ? (isDarkMode ? '#fff' : '#000') : (isDarkMode ? '#888' : '#666')
-            return (
-              <TouchableOpacity key={tab.key} style={S.tabButton} onPress={() => setActiveTab(tab.key)}>
-                {tab.iconType === 'Feather' && <Feather name={tab.icon} size={16} color={iconColor} />}
-                {tab.iconType === 'AntDesign' && <AntDesign name={tab.icon} size={16} color={iconColor} />}
-                {tab.iconType === 'Ionicons' && <Ionicons name={tab.icon} size={16} color={iconColor} />}
-                <Text style={[S.tabText, dyn.tabTextColor, isActive && S.activeTabText, isActive && dyn.activeTabColor]}>
-                  {tab.label}
-                </Text>
-                {isActive && (
-                  <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-                    <LinearGradient colors={glowColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 2, width: tab.width, borderRadius: 5 }} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            )
-          })}
-        </View>
-
-        {/* Posts Grid */}
-        <View style={S.postsContainer}>
-          {filteredPosts.length === 0 ? (
-            <View style={S.emptyState}>
-              <Text style={[S.emptyStateText, dyn.emptyColor]}>
-                {activeTab === 'all' ? 'No posts yet' : activeTab === 'saved' ? 'No saved posts' : activeTab === 'tagged' ? 'No tagged posts' : 'No products found'}
+              <Text style={[styles.emptyTitle, { color: c.text }]}>This profile is private</Text>
+              <Text style={[styles.emptySub, { color: c.muted }]}>
+                Follow {user?.UserName || 'this user'} to see their posts, cars and products.
               </Text>
             </View>
           ) : (
-            <>
-              <FlatList
-                data={displayedPosts}
-                numColumns={2}
-                renderItem={renderPostItem}
-                keyExtractor={keyExtractor}
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={false}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                maxToRenderPerBatch={8}
-                initialNumToRender={6}
-                removeClippedSubviews={true}
-              />
-              {canLoadMore && (
-                <TouchableOpacity
-                  style={[S.seeMoreButton, { borderWidth: 1, borderColor: primaryColor, borderRadius: 20, alignSelf: 'center', paddingHorizontal: 20 }]}
-                  onPress={loadMorePosts}
-                >
-                  <Text style={[S.seeMoreText, { color: primaryColor }]}>Load More</Text>
-                  <Feather name="chevron-down" size={16} color={primaryColor} />
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-        </View>
-      </ScrollView>
-
-      {/* Bio Modal */}
-      {isBioModalVisible && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}>
-          <TouchableOpacity activeOpacity={1} onPress={() => setBioModalVisible(false)} style={S.modalOverlay}>
-            <View style={[S.modalContent, dyn.modalBg]}>
-              <TouchableOpacity activeOpacity={1}>
-                <Text style={[S.modalTitle, dyn.nameColor]}>Edit Bio</Text>
-                <TextInput
-                  style={[S.bioInput, dyn.bioInputStyle]}
-                  value={bioText} onChangeText={setBioText}
-                  placeholder="Write your bio..." placeholderTextColor={isDarkMode ? '#999' : '#666'}
-                  multiline maxLength={500}
-                />
-                <View style={S.modalButtons}>
-                  <TouchableOpacity style={[S.modalButton, dyn.cancelBtnBg]} onPress={() => setBioModalVisible(false)}>
-                    <Text style={[S.modalButtonText, dyn.cancelTxtColor]}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[S.modalButton, { backgroundColor: primaryColor }]} onPress={saveBio}>
-                    <Text style={[S.modalButtonText, { color: 'white' }]}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
+            <View style={styles.empty}>
+              <Feather name="inbox" size={34} color={c.muted} />
+              <Text style={[styles.emptyTitle, { color: c.text }]}>{EMPTY[activeTab.key][0]}</Text>
+              <Text style={[styles.emptySub, { color: c.muted }]}>{EMPTY[activeTab.key][1]}</Text>
             </View>
-          </TouchableOpacity>
-        </View>
-      )}
+          )
+        }
+        ListFooterComponent={canView && hasMore ? <ActivityIndicator style={{ marginVertical: 18 }} color={accent} /> : <View style={{ height: 110 }} />}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        initialNumToRender={9}
+        maxToRenderPerBatch={9}
+        windowSize={7}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={canView && activeTab.cols > 1 ? () => <View style={{ height: 6 }} /> : undefined}
+      />
+
+      {/* Edit profile */}
+      <Modal visible={editOpen} transparent animationType="slide" onRequestClose={() => setEditOpen(false)}>
+        <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setEditOpen(false)} />
+          <View style={[styles.sheet, { backgroundColor: c.card, borderColor: c.border, paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
+            <View style={[styles.grabber, { backgroundColor: c.divider }]} />
+            <Text style={[styles.sheetTitle, { color: c.text }]}>Edit profile</Text>
+
+            <View style={{ marginTop: 14 }}>
+              <FormField
+                label="Full name" required leftIcon="user" autoCapitalize="words" maxLength={60}
+                value={form.values.FullName} error={form.errors.FullName}
+                onChangeText={t => form.set('FullName', t)} onBlur={() => form.blur('FullName')}
+              />
+              <FormField
+                label="Username" required leftIcon="at-sign" maxLength={30}
+                value={form.values.UserName} error={form.errors.UserName}
+                onChangeText={t => form.set('UserName', t)} onBlur={() => form.blur('UserName')}
+              />
+              <FormField
+                label="Bio" multiline maxLength={200} showCounter autoCapitalize="sentences"
+                placeholder="Write something about yourself..."
+                value={form.values.Bio} error={form.errors.Bio}
+                onChangeText={t => form.set('Bio', t)} onBlur={() => form.blur('Bio')}
+              />
+            </View>
+
+            <View style={styles.sheetBtns}>
+              <FormButton label="Cancel" variant="outline" onPress={() => setEditOpen(false)} style={{ flex: 1 }} />
+              <FormButton label="Save" onPress={submitEdit} style={{ flex: 1 }} />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <ConfirmDialog
+        visible={!!deleteCar}
+        onClose={() => setDeleteCar(null)}
+        title="Delete vehicle"
+        message="Are you sure you want to delete this vehicle?"
+        onConfirm={confirmDeleteCar}
+      />
 
       <CarRatingModal
-        visible={showRatingModal}
-        onClose={() => setShowRatingModal(false)}
-        carId={carSpec?._id}
-        onSubmitted={fetchCarSpecs}
+        visible={!!ratingCar}
+        onClose={() => setRatingCar(null)}
+        carId={ratingCar?._id}
+        onSubmitted={fetchCars}
       />
     </View>
   )
 }
 
-export default React.memo(OtherUserDetail)
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  tabsRow: { paddingHorizontal: 12, paddingVertical: 16, gap: 8 },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1 },
+  tabText: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  columns: { gap: 6, paddingHorizontal: 12 },
+  addCar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginHorizontal: 12, marginBottom: 14, paddingVertical: 12, borderRadius: 16, borderWidth: 1.5, borderStyle: 'dashed' },
+  addCarText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  empty: { alignItems: 'center', paddingVertical: 50, paddingHorizontal: 30 },
+  retryBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 18, paddingHorizontal: 24, paddingVertical: 11, borderRadius: 16 },
+  retryText: { color: '#fff', fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  lockCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontSize: 16, marginTop: 12, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  emptySub: { fontSize: 13, marginTop: 4, textAlign: 'center', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+  overlay: { flex: 1, backgroundColor: 'rgba(2,6,23,0.6)', justifyContent: 'flex-end' },
+  sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, borderTopWidth: 1, paddingHorizontal: 20, paddingTop: 10 },
+  grabber: { width: 44, height: 5, borderRadius: 3, alignSelf: 'center', marginBottom: 12 },
+  sheetTitle: { fontSize: 18, textAlign: 'center', fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+  label: { fontSize: 12, marginBottom: 6, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  input: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 11, fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+  sheetBtns: { flexDirection: 'row', gap: 12, marginTop: 18 },
+  sheetBtn: { flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
+  sheetBtnText: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
+})
+
+export default OtherUserDetail

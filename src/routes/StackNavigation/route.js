@@ -176,14 +176,14 @@ const StackNavigation = () => {
           name={'Followers'}
           component={Followers}
           options={{
-            animation: 'slide_from_bottom',
+            animation: 'slide_from_right',
           }}
         />
         <Stack.Screen
           name={'Followings'}
           component={Follwing}
           options={{
-            animation: 'slide_from_bottom',
+            animation: 'slide_from_right',
           }}
         />
         <Stack.Screen

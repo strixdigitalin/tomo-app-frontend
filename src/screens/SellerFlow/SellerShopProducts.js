@@ -22,6 +22,7 @@ import { apiGet, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
 import useThemeColor from '../../utils/useThemeColor';
+import { productTitle } from '../../utils/productFields';
 
 // Matches web's Pages/Seller/Product/SellerAllProductofShop.jsx — products
 // scoped to ONE shop (GetAllProductsOfSellerShop/:id), reached by tapping a
@@ -81,16 +82,16 @@ const SellerShopProducts = ({ navigation, route }) => {
         : [];
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-        headerSub: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 2 },
+        headerSub: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: 2 },
         addBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: primaryColor },
         grid: { paddingHorizontal: 14, paddingBottom: 120 },
         card: {
             flex: 1, margin: 6, borderRadius: 16, overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
+            borderWidth: 1, borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         cardImage: { width: '100%', height: 130 },
         menuBtn: {
@@ -108,7 +109,7 @@ const SellerShopProducts = ({ navigation, route }) => {
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
             fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
     });
 
@@ -139,7 +140,7 @@ const SellerShopProducts = ({ navigation, route }) => {
                     <Icon name="more-vertical" size={16} color={white} />
                 </TouchableOpacity>
                 <View style={styles.cardBody}>
-                    <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
+                    <CustomText numberOfLines={1} style={styles.productName}>{productTitle(item)}</CustomText>
                     {!!item?.Price && <CustomText style={styles.productPrice}>₹{Number(item.Price).toLocaleString()}</CustomText>}
                 </View>
             </TouchableOpacity>
@@ -192,7 +193,7 @@ const SellerShopProducts = ({ navigation, route }) => {
             <ActionMenu
                 visible={!!menuProduct}
                 onClose={() => setMenuProduct(null)}
-                title={menuProduct?.ProductName}
+                title={productTitle(menuProduct)}
                 options={menuOptions}
             />
             <ConfirmDialog

@@ -266,7 +266,7 @@ const AIChatBot = ({ navigation }) => {
             <View style={[styles.messageContainer, isMyMessage && styles.myMessage]}>
                 <View style={[
                     styles.messageBubble,
-                    { backgroundColor: isDarkMode ? '#2a2a2a' : '#F1F1F1' },
+                    { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
                     isMyMessage && styles.myMessageBubble,
                 ]}>
                     {item.message && (
@@ -360,7 +360,7 @@ const AIChatBot = ({ navigation }) => {
                 {/* Typing Indicator */}
                 {isTyping && (
                     <View style={styles.typingContainer}>
-                        <View style={[styles.typingBubble, { backgroundColor: isDarkMode ? '#2a2a2a' : '#F1F1F1' }]}>
+                        <View style={[styles.typingBubble, { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' }]}>
                             <View style={styles.typingDots}>
                                 <View style={[styles.typingDot, { backgroundColor: isDarkMode ? '#666' : '#999' }]} />
                                 <View style={[styles.typingDot, { backgroundColor: isDarkMode ? '#666' : '#999' }]} />

@@ -49,7 +49,7 @@ const StoryViewModel = ({
             margin: 0,
         },
         modalContent: {
-            backgroundColor: isDarkMode ? '#252525' : 'white',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             maxHeight: Dimensions.get('window').height * 0.8,

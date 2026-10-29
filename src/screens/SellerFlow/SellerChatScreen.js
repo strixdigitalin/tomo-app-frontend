@@ -85,7 +85,13 @@ const SellerChatScreen = ({ navigation, route }) => {
 
         socket.current.on('receiveUserSellerMessage', (msg) => {
             if (belongsToOpenConversation(msg)) {
-                setChat((prev) => [msg, ...prev]);
+                setChat((prev) => (prev.some((m) => m?._id === msg?._id) ? prev : [msg, ...prev]));
+                // Tell the sender it arrived and was read (web does the same)
+                const senderId = msg?.sender?._id || msg?.sender;
+                if (senderId !== currentSellerId) {
+                    socket.current?.emit('markUserSellerMessageDelivered', { messageId: msg?._id });
+                    socket.current?.emit('markUserSellerMessageRead', { messageId: msg?._id });
+                }
             }
         });
 
@@ -182,7 +188,7 @@ const SellerChatScreen = ({ navigation, route }) => {
     };
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff' },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
         header: {
             paddingTop: 50,
             paddingHorizontal: 16,
@@ -190,7 +196,7 @@ const SellerChatScreen = ({ navigation, route }) => {
             flexDirection: 'row',
             alignItems: 'center',
             borderBottomWidth: 1,
-            borderBottomColor: isDarkMode ? '#2A2A2A' : '#F0F0F0',
+            borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         avatar: { width: 40, height: 40, borderRadius: 20, marginLeft: 12, marginRight: 10 },
         userName: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
@@ -207,7 +213,7 @@ const SellerChatScreen = ({ navigation, route }) => {
             borderBottomRightRadius: 4,
         },
         theirBubble: {
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F1F1F1',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             alignSelf: 'flex-start',
             borderBottomLeftRadius: 4,
         },
@@ -220,14 +226,14 @@ const SellerChatScreen = ({ navigation, route }) => {
             paddingHorizontal: 14,
             paddingVertical: 10,
             borderTopWidth: 1,
-            borderTopColor: isDarkMode ? '#2A2A2A' : '#F0F0F0',
+            borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         input: {
             flex: 1,
             height: 44,
             borderRadius: 22,
             paddingHorizontal: 16,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F3F4F6',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             color: isDarkMode ? '#fff' : '#111827',
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             marginRight: 10,
@@ -243,7 +249,7 @@ const SellerChatScreen = ({ navigation, route }) => {
     });
 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
             <Row style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -274,7 +280,7 @@ const SellerChatScreen = ({ navigation, route }) => {
                                     </CustomText>
                                 )}
                                 <Row style={{ justifyContent: 'flex-end', gap: 4 }}>
-                                    <CustomText style={[styles.msgMeta, { color: isMine ? white : (isDarkMode ? '#9CA3AF' : '#6B7280') }]}>
+                                    <CustomText style={[styles.msgMeta, { color: isMine ? white : (isDarkMode ? '#94A3B8' : '#64748B') }]}>
                                         {moment(item?.timestamp || item?.createdAt).format('hh:mm A')}
                                     </CustomText>
                                     {isMine && (
@@ -293,7 +299,7 @@ const SellerChatScreen = ({ navigation, route }) => {
                 ListEmptyComponent={
                     !loading && (
                         <View style={{ alignItems: 'center', marginTop: 60 }}>
-                            <CustomText style={{ color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>No messages yet</CustomText>
+                            <CustomText style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>No messages yet</CustomText>
                         </View>
                     )
                 }
@@ -308,7 +314,7 @@ const SellerChatScreen = ({ navigation, route }) => {
                     {uploadingImage ? (
                         <ActivityIndicator size="small" color={primaryColor} />
                     ) : (
-                        <Icon name="image" size={22} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                        <Icon name="image" size={22} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                     )}
                 </TouchableOpacity>
                 <TextInput

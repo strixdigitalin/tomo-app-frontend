@@ -24,6 +24,9 @@ import { useFocusEffect } from '@react-navigation/native'
 import { BASE_URL, getItem } from '../../utils/Apis'
 import useLoader from '../../utils/LoaderHook'
 import { ToastMsg } from '../../utils/helperFunctions'
+import { validatePostMedia } from '../../utils/uploadHelpers'
+import { ensureGalleryPermission, getGalleryAssets } from '../../utils/mediaPermission'
+import PermissionNotice from '../../components/PermissionNotice'
 import Row from '../../components/wrapper/row'
 import { BackIcon, PrimaryBackArrow } from '../../assets/SVGs'
 import { FONTS_FAMILY } from '../../assets/Fonts'
@@ -39,6 +42,8 @@ const GalleryForAddPost = ({ navigation }) => {
   const [photos, setPhotos] = useState([])
   const [videos, setVideos] = useState([])
   const [errorMsg, setErrorMsg] = useState('')
+  const [blocked, setBlocked] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
   const [selectedImage, setSelectedImage] = useState(null)
   const [caption, setCaption] = useState('')
   const [activeTab, setActiveTab] = useState('Images')
@@ -305,23 +310,29 @@ const GalleryForAddPost = ({ navigation }) => {
   useEffect(() => {
     const requestPermissionAndLoad = async () => {
       try {
-        if (Platform.OS === 'android') {
-          await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-            PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          ])
+        setErrorMsg('')
+        // Ask for access, but always try to read — some Android versions report "denied"
+        // for partial access ("Select photos") even though reading works.
+        const perm = await ensureGalleryPermission({ video: true })
+        try {
+          const imageResult = await getGalleryAssets(CameraRoll, { first: 50, assetType: 'Photos', include: ['fileSize'] })
+          setPhotos(imageResult.edges)
+          const videoResult = await getGalleryAssets(CameraRoll, { first: 50, assetType: 'Videos', include: ['fileSize', 'playableDuration'] })
+          setVideos(videoResult.edges)
+          if (!perm.granted && imageResult.edges.length === 0 && videoResult.edges.length === 0) {
+            setBlocked(perm.blocked)
+            setErrorMsg('Allow gallery access to choose photos and videos.')
+          }
+        } catch (readError) {
+          setBlocked(perm.blocked)
+          setErrorMsg('Allow gallery access to choose photos and videos.')
         }
-        const imageResult = await CameraRoll.getPhotos({ first: 50, assetType: 'Photos' })
-        setPhotos(imageResult.edges)
-        const videoResult = await CameraRoll.getPhotos({ first: 50, assetType: 'Videos' })
-        setVideos(videoResult.edges)
       } catch (error) {
         setErrorMsg(error.message || 'Something went wrong')
       }
     }
     requestPermissionAndLoad()
-  }, [])
+  }, [retryKey])
 
   const SearchTags = async (tag) => {
     try {
@@ -455,7 +466,14 @@ const GalleryForAddPost = ({ navigation }) => {
   }
 
   // ✅ SIMPLIFIED - NO ImagePicker.openPicker
-  const handleSelect = async (uri) => {
+  const handleSelect = async (uri, meta) => {
+    // Same limits as web: image ≤ 20 MB; video ≤ 500 MB and ≤ 180 s
+    const mediaError = validatePostMedia({
+      type: activeTab === 'Videos' ? 'video' : 'image',
+      size: meta?.fileSize,
+      duration: meta?.playableDuration,
+    })
+    if (mediaError) return ToastMsg(mediaError)
     console.log('📸 Selected URI:', uri)
     setSelectedImage(uri)
     setSelectedMediaType(activeTab === 'Videos' ? 'video' : 'image')
@@ -469,7 +487,14 @@ const GalleryForAddPost = ({ navigation }) => {
       quality: 0.8,
     }, response => {
       if (!response.didCancel && !response.errorCode) {
-        const uri = response?.assets?.[0]?.uri
+        const asset = response?.assets?.[0]
+        const uri = asset?.uri
+        const mediaError = validatePostMedia({
+          type: activeTab === 'Videos' ? 'video' : 'image',
+          size: asset?.fileSize,
+          duration: asset?.duration,
+        })
+        if (mediaError) return ToastMsg(mediaError)
         if (uri) {
           setSelectedImage(uri)
           setSelectedMediaType(activeTab === 'Videos' ? 'video' : 'image')
@@ -493,7 +518,7 @@ const GalleryForAddPost = ({ navigation }) => {
     const uri = item.node.image.uri
     const isSelected = selectedImage === uri
     return (
-      <TouchableOpacity onPress={() => handleSelect(uri)} activeOpacity={0.8}>
+      <TouchableOpacity onPress={() => handleSelect(uri, item.node.image)} activeOpacity={0.8}>
         <View style={[styles.imageTile, isSelected && styles.selectedTile]}>
           <Image source={{ uri }} style={styles.image} resizeMode='cover' />
           {activeTab === 'Videos' && (
@@ -513,7 +538,7 @@ const GalleryForAddPost = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: isDarkMode ? '#252525' : '#fff' }}>
+      <View style={{ flex: 1, backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }}>
         <StatusBar backgroundColor='transparent' translucent barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         
         <Row style={styles.header}>
@@ -544,7 +569,7 @@ const GalleryForAddPost = ({ navigation }) => {
           ))}
         </View>
 
-        {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : (
+        {errorMsg ? <PermissionNotice message={errorMsg} blocked={blocked} onRetry={() => setRetryKey(k => k + 1)} /> : (
           <>
             <FlatList data={activeTab === 'Images' ? photos : videos} keyExtractor={(item, index) => index.toString()}
               numColumns={3} renderItem={renderItem} contentContainerStyle={{ paddingBottom: 100, alignSelf: 'center' }}
@@ -559,8 +584,8 @@ const GalleryForAddPost = ({ navigation }) => {
         )}
 
         {isPreviewVisible && selectedImage && (
-          <View style={[styles.previewContainer, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={[styles.previewContainer, { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }]}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
               
               <View style={[styles.previewHeader, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa' }]}>
                 <TouchableOpacity onPress={handleBackPress} style={styles.headerButton}>
@@ -735,7 +760,7 @@ const GalleryForAddPost = ({ navigation }) => {
                     <Text style={[styles.captionTitle, { color: isDarkMode ? '#fff' : '#333' }]}>Write a caption</Text>
                   </View>
                   <View style={[styles.captionInputContainer, { 
-                    backgroundColor: isDarkMode ? '#2a2a2a' : '#fff', borderColor: isDarkMode ? '#3a3a3a' : '#e1e5e9' }]}>
+                    backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                     <TextInput style={[styles.captionInput, { color: isDarkMode ? '#fff' : '#333' }]}
                       placeholder="What's on your mind?" placeholderTextColor={isDarkMode ? '#888' : '#666'}
                       value={caption} onChangeText={setCaption} multiline maxLength={2200} />
@@ -764,7 +789,7 @@ const GalleryForAddPost = ({ navigation }) => {
                   )}
                   <Row style={{ width: '100%', gap: 10, alignItems: 'center' }}>
                     <View style={[styles.captionInputContainer, { borderWidth: 1, borderRadius: 12, padding: 3, minHeight: 48, flex: 1,
-                      backgroundColor: isDarkMode ? '#2a2a2a' : '#fff', borderColor: isDarkMode ? '#3a3a3a' : '#e1e5e9' }]}>
+                      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                       <TextInput style={[styles.captionInput, { color: isDarkMode ? '#fff' : '#333' }]}
                         placeholder="Enter hashtags" placeholderTextColor={isDarkMode ? '#888' : '#666'}
                         value={hashtagsInput} onChangeText={(text) => { setHashtagsInput(text); SearchTags(text) }}
@@ -777,7 +802,7 @@ const GalleryForAddPost = ({ navigation }) => {
                   </Row>
                   {suggestions.length > 0 && (
                     <View style={[styles.suggestionsContainer, {
-                      backgroundColor: isDarkMode ? '#2a2a2a' : '#fff', borderColor: isDarkMode ? '#3a3a3a' : '#e1e5e9' }]}>
+                      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                       <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
                         {suggestions.map((item, index) => (
                           <TouchableOpacity key={index} style={styles.suggestionItem} onPress={() => addHashtag(item.Tag)}>
@@ -817,7 +842,7 @@ const GalleryForAddPost = ({ navigation }) => {
               </ScrollView>
 
               <View style={[styles.postButtonContainer, { 
-                backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa', borderTopColor: isDarkMode ? '#333' : '#e1e5e9' }]}>
+                backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa', borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                 <TouchableOpacity onPress={onSubmit} disabled={!selectedImage || isSubmitting}>
                   <LinearGradient colors={['#21B7FF', '#0084F8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                     style={[{ borderRadius: 8 }, styles.postBtn, { opacity: (selectedImage && !isSubmitting) ? 1 : 0.5 }]}>
@@ -841,7 +866,7 @@ const GalleryForAddPost = ({ navigation }) => {
               transparent={false}
               onRequestClose={() => setShowTagModal(false)}
             >
-              <View style={{ flex: 1, backgroundColor: isDarkMode ? '#000' : '#fff' }}>
+              <View style={{ flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' }}>
                 
                 <View style={[styles.modalHeader, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa' }]}>
                   <TouchableOpacity onPress={() => setShowTagModal(false)} style={styles.modalCloseBtn}>
@@ -855,7 +880,7 @@ const GalleryForAddPost = ({ navigation }) => {
 
                 <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa' }]}>
                   <View style={[styles.searchInputContainer, { 
-                    backgroundColor: isDarkMode ? '#2a2a2a' : '#fff', borderColor: isDarkMode ? '#3a3a3a' : '#e1e5e9' }]}>
+                    backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF', borderColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}>
                     <Icon name='search' size={20} color={isDarkMode ? '#888' : '#666'} />
                     <TextInput
                       style={[styles.searchInput, { color: isDarkMode ? '#fff' : '#333' }]}
@@ -887,7 +912,7 @@ const GalleryForAddPost = ({ navigation }) => {
                         <TouchableOpacity
                           key={user._id}
                           onPress={() => toggleTagUser(user)}
-                          style={[styles.userItem, { borderBottomColor: isDarkMode ? '#2a2a2a' : '#e1e5e9' }]}
+                          style={[styles.userItem, { borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' }]}
                         >
                           <View style={styles.userAvatar}>
                             <Icon name='person-circle' size={48} color={isDarkMode ? '#888' : '#666'} />

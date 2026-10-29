@@ -21,6 +21,7 @@ import { apiGet, apiDelete } from '../../utils/Apis';
 import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
 import useThemeColor from '../../utils/useThemeColor';
+import { productTitle } from '../../utils/productFields';
 
 const SellerProduct = ({ navigation }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
@@ -76,7 +77,7 @@ const SellerProduct = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#121212' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             paddingTop: insets.top,
         },
         header: {
@@ -90,7 +91,7 @@ const SellerProduct = ({ navigation }) => {
         headerSub: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 2,
         },
         addBtn: {
@@ -110,9 +111,9 @@ const SellerProduct = ({ navigation }) => {
             margin: 6,
             borderRadius: 16,
             overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         cardImage: {
             width: '100%',
@@ -164,7 +165,7 @@ const SellerProduct = ({ navigation }) => {
         emptySub: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             textAlign: 'center',
             marginTop: 6,
         },
@@ -197,7 +198,7 @@ const SellerProduct = ({ navigation }) => {
                     <Icon name="more-vertical" size={16} color={white} />
                 </TouchableOpacity>
                 <View style={styles.cardBody}>
-                    <CustomText numberOfLines={1} style={styles.productName}>{item?.ProductName}</CustomText>
+                    <CustomText numberOfLines={1} style={styles.productName}>{productTitle(item)}</CustomText>
                     {!!item?.Price && <CustomText style={styles.productPrice}>₹{Number(item.Price).toLocaleString()}</CustomText>}
                 </View>
             </TouchableOpacity>
@@ -245,7 +246,7 @@ const SellerProduct = ({ navigation }) => {
             <ActionMenu
                 visible={!!menuProduct}
                 onClose={() => setMenuProduct(null)}
-                title={menuProduct?.ProductName}
+                title={productTitle(menuProduct)}
                 options={menuOptions}
             />
             <ConfirmDialog

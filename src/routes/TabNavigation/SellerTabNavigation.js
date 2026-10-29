@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Dimensions } from 'react-native';
+import { Dimensions, View } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { verticalScale } from 'react-native-size-matters';
 import Animated, {
@@ -15,19 +16,6 @@ import Animated, {
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 
-import {
-  ActiveHomeNew,
-  BottomTabLinenew,
-  DeActiveHome,
-  DeActiveHomeWhite,
-  DeActiveLast,
-  DeActiveMsg,
-  DeactiveWhiteMsg,
-  MarketDeactive,
-  MarketDeactiveForLite,
-  MarketplaceActiveTabNew,
-  MessageActiveTabNew,
-} from '../../assets/SVGs';
 import { THEMES } from '../../redux/reducer/theme';
 
 import SellerHome from '../../screens/SellerFlow/SellerHome';
@@ -97,7 +85,7 @@ const AnimatedTabIcon = ({ focused, children, index, glowColors }) => {
   );
 };
 
-const AnimatedBottomLine = () => {
+const AnimatedBottomLine = ({ color }) => {
   const scaleX = useSharedValue(0);
   const translateY = useSharedValue(10);
   const opacity = useSharedValue(0);
@@ -120,12 +108,12 @@ const AnimatedBottomLine = () => {
 
   return (
     <Animated.View style={animatedStyle}>
-      <BottomTabLinenew />
+      <View style={{ width: 22, height: 4, borderRadius: 2, backgroundColor: color, alignSelf: 'center' }} />
     </Animated.View>
   );
 };
 
-const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
+const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle, accent }) => {
   const gradientShift = useSharedValue(0);
 
   React.useEffect(() => {
@@ -140,9 +128,9 @@ const AnimatedTabBarBackground = ({ isDarkMode, tabBarAnimatedStyle }) => {
   }));
 
   return (
-    <Animated.View style={[{ flex: 1 }, tabBarAnimatedStyle, backgroundStyle]}>
+    <Animated.View style={[{ flex: 1, borderTopWidth: 1, borderTopColor: accent + '40' }, tabBarAnimatedStyle, backgroundStyle]}>
       <LinearGradient
-        colors={isDarkMode ? ['#2a2a2a', '#252525', '#1a1a1a'] : ['#ffffff', '#fafafa', '#f5f5f5']}
+        colors={isDarkMode ? ['#131B2B', '#131B2B', '#131B2B'] : ['#FFFFFF', '#FFFFFF', '#FFFFFF']}
         style={{ flex: 1 }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -159,7 +147,8 @@ function SellerTabNavigation() {
   const tabBarScale = useSharedValue(0.9);
 
   const currentTheme = THEMES[selectedColorTheme] || THEMES.default;
-  const glowColors = [currentTheme.primary, currentTheme.secondary];
+  const primaryColor = currentTheme.primary;
+  const glowColors = React.useMemo(() => [currentTheme.primary, currentTheme.secondary], [currentTheme.primary, currentTheme.secondary]);
 
   React.useEffect(() => {
     tabBarTranslateY.value = withDelay(
@@ -200,7 +189,7 @@ function SellerTabNavigation() {
           shadowRadius: 15,
         },
         tabBarBackground: () => (
-          <AnimatedTabBarBackground isDarkMode={isDarkMode} tabBarAnimatedStyle={tabBarAnimatedStyle} />
+          <AnimatedTabBarBackground isDarkMode={isDarkMode} tabBarAnimatedStyle={tabBarAnimatedStyle} accent={primaryColor} />
         ),
       }}
     >
@@ -211,14 +200,8 @@ function SellerTabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={0} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <ActiveHomeNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <DeActiveHomeWhite /> : <DeActiveHome />}</>
-              )}
+              <Feather name="home" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -231,14 +214,8 @@ function SellerTabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={1} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <MarketplaceActiveTabNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}</>
-              )}
+              <Feather name="package" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -251,14 +228,8 @@ function SellerTabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
-              {focused ? (
-                <>
-                  <MessageActiveTabNew />
-                  <AnimatedBottomLine />
-                </>
-              ) : (
-                <>{isDarkMode ? <DeactiveWhiteMsg /> : <DeActiveMsg />}</>
-              )}
+              <Feather name="message-circle" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}
@@ -271,8 +242,8 @@ function SellerTabNavigation() {
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
             <AnimatedTabIcon focused={focused} index={3} glowColors={glowColors}>
-              <DeActiveLast />
-              {focused && <AnimatedBottomLine />}
+              <Feather name="user" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
         }}

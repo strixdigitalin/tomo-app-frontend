@@ -32,9 +32,16 @@ const PREDEFINED_THEMES = {
   royal: { 
     id: 'royal',
     name: 'Royal', 
-    primary: '#9C27B0', 
+    primary: '#9C27B0',
     secondary: '#E1BEE7',
     accent: '#9C27B0'
+  },
+  pink: {
+    id: 'pink',
+    name: 'Pink',
+    primary: '#EC4899',
+    secondary: '#F9A8D4',
+    accent: '#EC4899'
   },
 };
 

@@ -85,6 +85,20 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    // One APK per CPU type instead of one big APK that carries every architecture's native
+    // libraries. Phones are almost all arm64-v8a ("v8", 64-bit) or armeabi-v7a ("v7", older 32-bit),
+    // so each APK only carries what that phone can run => a much smaller download/install.
+    // Output (release): app/build/outputs/apk/release/app-arm64-v8a-release.apk and
+    //                   app-armeabi-v7a-release.apk
+    // Pass -PnoAbiSplit to build one APK instead.
+    splits {
+        abi {
+            enable !project.hasProperty('noAbiSplit')
+            reset()
+            include "armeabi-v7a", "arm64-v8a"
+            universalApk false
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')

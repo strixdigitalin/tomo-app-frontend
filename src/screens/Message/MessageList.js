@@ -126,7 +126,7 @@ const GRADIENT_COLORS = ['#21B7FF', '#0084F8'];
 const MessageCard = React.memo(({ item, isDarkMode, primaryColor, onPress, onAvatarPress, userHasStory }) => {
   const borderColor = isDarkMode ? '#000' : '#fff';
   const noBorderColor = isDarkMode ? '#1a1a1a' : '#E0E0E0';
-  const cardBorder = { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' };
+  const cardBorder = { borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' };
   const nameColor = { color: isDarkMode ? '#fff' : '#000' };
   const msgColor = { color: isDarkMode ? '#999' : '#666' };
 
@@ -191,7 +191,7 @@ MessageCard.displayName = 'MessageCard';
 // ─── GroupCard — the Groups tab's row ──────────────────────────────────────
 const GroupCard = React.memo(({ item, isDarkMode, primaryColor, onPress }) => {
   const g = item?.Group || {};
-  const cardBorder = { borderBottomColor: isDarkMode ? '#1a1a1a' : '#F0F0F0' };
+  const cardBorder = { borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' };
   const nameColor = { color: isDarkMode ? '#fff' : '#000' };
   const metaColor = { color: isDarkMode ? '#999' : '#666' };
 
@@ -252,7 +252,7 @@ const MessageList = ({ navigation }) => {
       setMyGroups(res?.data || []);
     } catch (error) {
       console.log('MessageList fetchGroups error', error);
-      ToastMsg(error?.message || 'Could not reach local group backend — is it running?');
+      ToastMsg(error?.message || 'Could not load groups. Check your connection.');
     } finally {
       setGroupsLoading(false);
     }
@@ -364,10 +364,10 @@ const MessageList = ({ navigation }) => {
 
   // ✅ Dynamic colors memoized
   const dynStyles = useMemo(() => ({
-    containerBg: { backgroundColor: isDarkMode ? '#000' : '#fff' },
-    searchBg: { backgroundColor: isDarkMode ? '#1a1a1a' : '#F5F5F5' },
+    containerBg: { backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6' },
+    searchBg: { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
     searchColor: { color: isDarkMode ? '#fff' : '#000' },
-    backBtnBg: { backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5' },
+    backBtnBg: { backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
     titleColor: { color: isDarkMode ? '#fff' : '#000' },
     emptyColor: { color: isDarkMode ? '#666' : '#999' },
     onlineDotBorder: { borderColor: isDarkMode ? '#000' : '#FFF' },
@@ -442,6 +442,7 @@ const MessageList = ({ navigation }) => {
               keyExtractor={keyExtractor}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 110 }}
               maxToRenderPerBatch={10}
               initialNumToRender={12}
               windowSize={7}
@@ -488,6 +489,7 @@ const MessageList = ({ navigation }) => {
                 keyExtractor={groupKeyExtractor}
                 renderItem={renderGroupItem}
                 showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 110 }}
                 ListEmptyComponent={
                   <View style={S.emptyContainer}>
                     <Text style={[S.emptyText, dynStyles.emptyColor]}>No groups yet</Text>

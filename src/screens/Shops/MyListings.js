@@ -78,7 +78,7 @@ const MyListings = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#121212' : '#fff',
+            backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
             paddingTop: insets.top,
         },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
@@ -98,9 +98,9 @@ const MyListings = ({ navigation }) => {
             marginBottom: 16,
             borderRadius: 18,
             overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
             borderWidth: 1,
-            borderColor: isDarkMode ? '#2A2A2A' : '#EFEFEF',
+            borderColor: primaryColor + '40', shadowColor: primaryColor, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 10, elevation: 3,
         },
         cardImage: { width: '100%', height: 150 },
         menuBtn: {
@@ -119,7 +119,7 @@ const MyListings = ({ navigation }) => {
         shopMeta: {
             fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280',
+            color: isDarkMode ? '#94A3B8' : '#64748B',
             marginTop: 4,
         },
         chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
@@ -145,7 +145,7 @@ const MyListings = ({ navigation }) => {
         emptyTitle: { fontSize: 17, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
         emptySub: {
             fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? '#9CA3AF' : '#6B7280', textAlign: 'center', marginTop: 6,
+            color: isDarkMode ? '#94A3B8' : '#64748B', textAlign: 'center', marginTop: 6,
         },
         emptyBtn: {
             marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 6,

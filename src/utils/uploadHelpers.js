@@ -30,3 +30,23 @@ export async function uploadChatImage(asset) {
     }
     return result.data;
 }
+
+// Upload limits shared with the web app (AddPost.jsx / AddStoryModel.jsx).
+export const MEDIA_RULES = {
+    postImageMaxBytes: 20 * 1024 * 1024,
+    postVideoMaxBytes: 500 * 1024 * 1024,
+    postVideoMaxSeconds: 180,
+    storyImageMaxBytes: 15 * 1024 * 1024,
+};
+
+// Returns an error message when the picked media breaks the rules, else null.
+// `size` in bytes and `duration` in seconds may be undefined (then not checked).
+export function validatePostMedia({ type, size, duration }) {
+    if (type === 'video') {
+        if (size && size > MEDIA_RULES.postVideoMaxBytes) return `Video too large. Max ${MEDIA_RULES.postVideoMaxBytes / 1024 / 1024} MB`;
+        if (duration && duration > MEDIA_RULES.postVideoMaxSeconds) return `Video must be ${MEDIA_RULES.postVideoMaxSeconds} seconds or shorter`;
+        return null;
+    }
+    if (size && size > MEDIA_RULES.postImageMaxBytes) return `File too large. Max ${MEDIA_RULES.postImageMaxBytes / 1024 / 1024} MB`;
+    return null;
+}

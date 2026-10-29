@@ -49,10 +49,10 @@ const ThemeSettings = ({ navigation }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? 'black' : '#f0f2f5',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     headerContainer: {
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       paddingTop: 50,
       paddingBottom: 15,
     },
@@ -82,7 +82,7 @@ const ThemeSettings = ({ navigation }) => {
     },
     
     settingCard: {
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       paddingVertical: 16,
       paddingHorizontal: 16,
       marginHorizontal: 16,
@@ -168,7 +168,7 @@ const ThemeSettings = ({ navigation }) => {
     },
     
     sliderCard: {
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       paddingVertical: 20,
       paddingHorizontal: 16,
       marginHorizontal: 16,
@@ -194,7 +194,7 @@ const ThemeSettings = ({ navigation }) => {
     },
     
     previewCard: {
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       padding: 16,
       marginTop: 12,
       borderRadius: 12,
@@ -218,7 +218,7 @@ const ThemeSettings = ({ navigation }) => {
     },
     listViewOption: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#252525' : 'white',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       padding: 16,
       borderRadius: 12,
       alignItems: 'center',
@@ -241,7 +241,7 @@ const ThemeSettings = ({ navigation }) => {
       width: 36,
       height: 36,
       borderRadius: 18,
-      backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb',
+      backgroundColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       marginRight: 10,
     },
     listViewContent: {
@@ -250,7 +250,7 @@ const ThemeSettings = ({ navigation }) => {
     listViewLine: {
       height: 8,
       borderRadius: 4,
-      backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb',
+      backgroundColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       marginVertical: 3,
     },
     listViewLabel: {
@@ -262,7 +262,7 @@ const ThemeSettings = ({ navigation }) => {
     
     divider: {
       height: 1,
-      backgroundColor: isDarkMode ? '#3a3b3c' : '#e4e6eb',
+      backgroundColor: isDarkMode ? '#1E293B' : '#E2E8F0',
       marginVertical: 20,
       marginHorizontal: 16,
     },
@@ -390,7 +390,7 @@ const ThemeSettings = ({ navigation }) => {
             value={isDarkMode}
             onValueChange={(value) => setSpecificTheme(value)}
             trackColor={{ 
-              false: isDarkMode ? '#3a3b3c' : '#e4e6eb', 
+              false: isDarkMode ? '#1E293B' : '#E2E8F0', 
               true: primaryColor // ✅ THEME COLOR (pehle #1877f2 tha)
             }}
             thumbColor={'#ffffff'}
@@ -413,7 +413,7 @@ const ThemeSettings = ({ navigation }) => {
                 value={messageCornerRadius}
                 onValueChange={(value) => updateMessageCornerRadius(value)}
                 minimumTrackTintColor={primaryColor} // ✅ THEME COLOR
-                maximumTrackTintColor={isDarkMode ? '#3a3b3c' : '#e4e6eb'}
+                maximumTrackTintColor={isDarkMode ? '#1E293B' : '#E2E8F0'}
                 thumbTintColor={primaryColor} // ✅ THEME COLOR
               />
               <CustomText style={styles.sliderValue}>

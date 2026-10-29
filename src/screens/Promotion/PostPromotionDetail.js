@@ -35,6 +35,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
     const { isDarkMode, primaryColor } = useThemeColor();
     const insets = useSafeAreaInsets();
     const id = route?.params?.id;
+    const isShop = route?.params?.mode === 'shop';
 
     const [promotion, setPromotion] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
     const fetchDetail = async () => {
         try {
             setLoading(true);
-            const res = await apiGet(`${urls.postPromotionDetail}/${id}`);
+            const res = await apiGet(`${isShop ? urls.shopPromotionDetail : urls.postPromotionDetail}/${id}`);
             setPromotion(res?.data || null);
         } catch (error) {
             console.log('PostPromotionDetail fetch error', error);
@@ -58,7 +59,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
     );
 
     const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
+        container: { flex: 1, backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6', paddingTop: insets.top },
         header: { paddingHorizontal: 20, paddingVertical: 14 },
         headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginLeft: 14 },
         body: { paddingBottom: 60 },
@@ -79,25 +80,25 @@ const PostPromotionDetail = ({ navigation, route }) => {
         infoRow: { flexDirection: 'row', gap: 12, marginTop: 20 },
         infoCard: {
             flex: 1, flexDirection: 'row', gap: 10, padding: 14, borderRadius: 14,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7',
+            backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
         },
         infoIconWrap: {
             width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
             backgroundColor: isDarkMode ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)',
         },
-        infoLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
+        infoLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         infoValue: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, marginTop: 2 },
-        infoSub: { fontSize: 12, color: isDarkMode ? '#9CA3AF' : '#6B7280', fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
+        infoSub: { fontSize: 12, color: isDarkMode ? '#94A3B8' : '#64748B', fontFamily: FONTS_FAMILY.SourceSans3_Regular, marginTop: 2 },
         sectionTitle: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginTop: 24, marginBottom: 12 },
         statsRow: { flexDirection: 'row', gap: 12 },
-        statBox: { flex: 1, alignItems: 'center', padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7' },
+        statBox: { flex: 1, alignItems: 'center', padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9' },
         statValue: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginTop: 6 },
-        statLabel: { fontSize: 11, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 2 },
-        remarkBox: { padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1E1E1E' : '#F7F7F7', marginTop: 12 },
+        statLabel: { fontSize: 11, color: isDarkMode ? '#94A3B8' : '#64748B', marginTop: 2 },
+        remarkBox: { padding: 14, borderRadius: 14, backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9', marginTop: 12 },
         remarkText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? '#D1D5DB' : '#374151', lineHeight: 20 },
         footerRow: {
             flexDirection: 'row', justifyContent: 'space-between', marginTop: 24, paddingTop: 16,
-            borderTopWidth: 1, borderTopColor: isDarkMode ? '#2A2A2A' : '#EEE',
+            borderTopWidth: 1, borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
         },
         footerText: { fontSize: 11, color: isDarkMode ? '#6B7280' : '#9CA3AF', fontFamily: FONTS_FAMILY.SourceSans3_Regular },
         centerWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -130,13 +131,13 @@ const PostPromotionDetail = ({ navigation, route }) => {
                 <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
                 {renderHeader()}
                 <View style={styles.centerWrap}>
-                    <CustomText style={{ color: isDarkMode ? '#9CA3AF' : '#6B7280' }}>Promotion not found</CustomText>
+                    <CustomText style={{ color: isDarkMode ? '#94A3B8' : '#64748B' }}>Promotion not found</CustomText>
                 </View>
             </View>
         );
     }
 
-    const post = promotion?.Post || {};
+    const post = (isShop ? promotion?.SellerShop : promotion?.Post) || {};
     const statusStyle = STATUS_COLORS[promotion?.Status] || STATUS_COLORS.Pending;
 
     return (
@@ -145,7 +146,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
             {renderHeader()}
             <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
                 <View style={styles.imageWrap}>
-                    <SafeImage uri={post?.media} style={styles.image} />
+                    <SafeImage uri={isShop ? post?.Image : post?.media} style={styles.image} />
                     <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                         <CustomText style={[styles.statusText, { color: statusStyle.text }]}>{promotion?.Status}</CustomText>
                     </View>
@@ -158,7 +159,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.content}>
-                    <CustomText style={styles.caption}>{post?.caption || 'Untitled Post'}</CustomText>
+                    <CustomText style={styles.caption}>{isShop ? (post?.Name || 'Shop') : (post?.caption || 'Untitled Post')}</CustomText>
                     {Array.isArray(post?.Hashtags) && post.Hashtags.length > 0 && (
                         <View style={styles.hashtagRow}>
                             {post.Hashtags.map((tag, i) => (
@@ -218,22 +219,24 @@ const PostPromotionDetail = ({ navigation, route }) => {
                     <CustomText style={styles.sectionTitle}>Performance</CustomText>
                     <View style={styles.statsRow}>
                         <View style={styles.statBox}>
-                            <Icon name="eye" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="eye" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.statValue}>{promotion?.TotalViews ?? 0}</CustomText>
                             <CustomText style={styles.statLabel}>Views</CustomText>
                         </View>
                         <View style={styles.statBox}>
-                            <Icon name="mouse-pointer" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="mouse-pointer" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.statValue}>{promotion?.TotalClicks ?? 0}</CustomText>
                             <CustomText style={styles.statLabel}>Clicks</CustomText>
                         </View>
                         <View style={styles.statBox}>
-                            <Icon name="users" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="users" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.statValue}>{promotion?.TotalReach ?? 0}</CustomText>
                             <CustomText style={styles.statLabel}>Reach</CustomText>
                         </View>
                     </View>
 
+                    {!isShop && (
+                        <>
                     <CustomText style={styles.sectionTitle}>Post Engagement</CustomText>
                     <View style={styles.statsRow}>
                         <View style={styles.statBox}>
@@ -242,7 +245,7 @@ const PostPromotionDetail = ({ navigation, route }) => {
                             <CustomText style={styles.statLabel}>Likes</CustomText>
                         </View>
                         <View style={styles.statBox}>
-                            <Icon name="thumbs-down" size={18} color={isDarkMode ? '#9CA3AF' : '#6B7280'} />
+                            <Icon name="thumbs-down" size={18} color={isDarkMode ? '#94A3B8' : '#64748B'} />
                             <CustomText style={styles.statValue}>{post?.TotalUnLikes ?? 0}</CustomText>
                             <CustomText style={styles.statLabel}>Unlikes</CustomText>
                         </View>
@@ -252,6 +255,9 @@ const PostPromotionDetail = ({ navigation, route }) => {
                             <CustomText style={styles.statLabel}>Comments</CustomText>
                         </View>
                     </View>
+
+                        </>
+                    )}
 
                     {!!promotion?.AdminRemark && (
                         <>

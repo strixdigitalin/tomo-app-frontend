@@ -1,394 +1,159 @@
-import React, { useState } from 'react';
-import {
-    View,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    StatusBar,
-    TextInput,
-    KeyboardAvoidingView,
-    Keyboard,
-    Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { launchImageLibrary } from 'react-native-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/Feather';
-import CustomText from '../../components/TextComponent';
-import SafeImage from '../../components/SafeImage';
-import Row from '../../components/wrapper/row';
-import { FONTS_FAMILY } from '../../assets/Fonts';
+import React, { useCallback, useState } from 'react';
+import { Keyboard, Platform, View } from 'react-native';
+import FormScreen, { FormSection } from '../../components/FormScreen';
+import FormField from '../../components/FormField';
+import FormButton from '../../components/FormButton';
+import ImageUploadBox from '../../components/ImageUploadBox';
+import DateTimeField from '../../components/DateTimeField';
 import { BASE_URL, getItem } from '../../utils/Apis';
-import { ToastMsg } from '../../utils/helperFunctions';
 import urls from '../../config/urls';
-import { white } from '../../common/Colors/colors';
-import useThemeColor from '../../utils/useThemeColor';
+import { ToastMsg } from '../../utils/helperFunctions';
+import useForm from '../../utils/useForm';
+import { compose, required, maxLength, number, url } from '../../utils/validators';
 
-// pad("5") -> "05" — used to build HH:MM the same way web's <input type="time"> does
-const pad = (n) => String(n).padStart(2, '0');
-const toDateStr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const toTimeStr = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+// Create / update event — web's Pages/Event/AddEvent.jsx + UpdateEventModel.jsx
+// (same fields, api/user/UserCreateEvent and api/user/UserUpdateEvent/:id).
+const SCHEMA = {
+    Name: compose(required('Event name'), maxLength(100, 'Event name')),
+    City: required('City'),
+    VenuePlace: required('Venue place'),
+    VenueAddress: required('Venue address'),
+    Date: required('Date'),
+    TimeFrom: required('Start time'),
+    TimeTo: compose(required('End time'), (v, vals) => (vals.TimeFrom && v && v <= vals.TimeFrom ? 'End time must be after the start time' : null)),
+    Genre: required('Genre'),
+    Promoter: maxLength(80, 'Promoter'),
+    Promotionallinks: url,
+    MinAge: number('Minimum age', { min: 0, max: 120, integer: true }),
+    Cost: number('Cost', { min: 0 }),
+    EventDetail: maxLength(1500, 'Event details'),
+};
 
-// Create/Update Event — matches web's Pages/Event/AddEvent.jsx + UpdateEventModel.jsx
-// (same fields, same api/user/UserCreateEvent + api/user/UserUpdateEvent/:id).
+const str = v => (v === undefined || v === null ? '' : String(v));
+
 const AddEvent = ({ navigation, route }) => {
-    const { isDarkMode, primaryColor } = useThemeColor();
-    const insets = useSafeAreaInsets();
+    const editing = route?.params?.event || null;
+    const isEdit = !!editing;
 
-    const editingEvent = route?.params?.event || null;
-    const isEditMode = !!editingEvent;
+    const form = useForm({
+        Name: str(editing?.Name), City: str(editing?.City), VenuePlace: str(editing?.VenuePlace),
+        VenueAddress: str(editing?.VenueAddress), Date: str(editing?.Date).slice(0, 10), TimeFrom: str(editing?.TimeFrom),
+        TimeTo: str(editing?.TimeTo), Genre: str(editing?.Genre), Promoter: str(editing?.Promoter),
+        Promotionallinks: str(editing?.Promotionallinks), MinAge: str(editing?.MinAge), Cost: str(editing?.Cost),
+        EventDetail: str(editing?.EventDetail),
+    }, SCHEMA);
+    const { values: v, errors: e } = form;
 
-    const [name, setName] = useState(editingEvent?.Name || '');
-    const [city, setCity] = useState(editingEvent?.City || '');
-    const [venuePlace, setVenuePlace] = useState(editingEvent?.VenuePlace || '');
-    const [venueAddress, setVenueAddress] = useState(editingEvent?.VenueAddress || '');
-    const [date, setDate] = useState(editingEvent?.Date || '');
-    const [timeFrom, setTimeFrom] = useState(editingEvent?.TimeFrom || '');
-    const [timeTo, setTimeTo] = useState(editingEvent?.TimeTo || '');
-    const [genre, setGenre] = useState(editingEvent?.Genre || '');
-    const [promoter, setPromoter] = useState(editingEvent?.Promoter || '');
-    const [promotionalLinks, setPromotionalLinks] = useState(editingEvent?.Promotionallinks || '');
-    const [minAge, setMinAge] = useState(editingEvent?.MinAge ? String(editingEvent.MinAge) : '');
-    const [cost, setCost] = useState(editingEvent?.Cost ? String(editingEvent.Cost) : '');
-    const [eventDetail, setEventDetail] = useState(editingEvent?.EventDetail || '');
+    const [image, setImage] = useState(editing?.Image ? { uri: editing.Image, isExisting: true } : null);
+    const [saving, setSaving] = useState(false);
 
-    const [file, setFile] = useState(null);
-    const [preview, setPreview] = useState(editingEvent?.Image || null);
+    const text = name => ({
+        value: v[name], error: e[name],
+        onChangeText: t => form.set(name, t), onBlur: () => form.blur(name),
+    });
 
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showTimeFromPicker, setShowTimeFromPicker] = useState(false);
-    const [showTimeToPicker, setShowTimeToPicker] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleFilePick = () => {
-        launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 }, (response) => {
-            if (response.didCancel) return;
-            if (response.errorMessage) {
-                console.log('Image Picker Error:', response.errorMessage);
-                return;
-            }
-            const asset = response.assets?.[0];
-            if (asset) {
-                setFile({ uri: asset.uri, type: asset.type, name: asset.fileName });
-                setPreview(asset.uri);
-            }
-        });
-    };
-
-    const removeImage = () => {
-        setFile(null);
-        setPreview(null);
-    };
-
-    const onSubmit = async () => {
-        if (!name.trim()) return ToastMsg('Event name is required');
-        if (!city.trim()) return ToastMsg('City is required');
-        if (!venuePlace.trim()) return ToastMsg('Venue place is required');
-        if (!venueAddress.trim()) return ToastMsg('Venue address is required');
-        if (!date) return ToastMsg('Date is required');
-        if (!timeFrom) return ToastMsg('Start time is required');
-        if (!timeTo) return ToastMsg('End time is required');
-        if (!genre.trim()) return ToastMsg('Genre is required');
+    const onSubmit = useCallback(async () => {
+        const { ok, firstError } = form.validateAll();
+        if (!ok) return ToastMsg(firstError);
 
         try {
-            setIsSubmitting(true);
+            setSaving(true);
             const token = await getItem('token');
-
-            const formData = new FormData();
-            if (file?.uri) {
-                formData.append('Image', {
-                    uri: Platform.OS === 'android' ? file.uri : file.uri.replace('file://', ''),
-                    type: file.type || 'image/jpeg',
-                    name: file.name || 'event.jpg',
+            const fd = new FormData();
+            if (image && !image.isExisting) {
+                fd.append('Image', {
+                    uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
+                    type: image.type || 'image/jpeg',
+                    name: image.name || 'event.jpg',
                 });
             }
-            formData.append('Name', name.trim());
-            formData.append('City', city.trim());
-            formData.append('VenuePlace', venuePlace.trim());
-            formData.append('VenueAddress', venueAddress.trim());
-            formData.append('Date', date);
-            formData.append('TimeFrom', timeFrom);
-            formData.append('TimeTo', timeTo);
-            formData.append('Genre', genre.trim());
-            formData.append('Promoter', promoter.trim());
-            formData.append('Promotionallinks', promotionalLinks.trim());
-            formData.append('MinAge', minAge);
-            formData.append('Cost', cost);
-            formData.append('EventDetail', eventDetail.trim());
+            ['Name', 'City', 'VenuePlace', 'VenueAddress', 'Genre', 'Promoter', 'Promotionallinks', 'EventDetail']
+                .forEach(k => fd.append(k, v[k].trim()));
+            ['Date', 'TimeFrom', 'TimeTo', 'MinAge', 'Cost'].forEach(k => fd.append(k, v[k]));
 
-            const endpoint = isEditMode
-                ? `${BASE_URL}${urls.updateEvent}/${editingEvent._id}`
-                : `${BASE_URL}${urls.createEvent}`;
-
-            const response = await fetch(endpoint, {
-                method: isEditMode ? 'PUT' : 'POST',
+            const endpoint = isEdit ? `${BASE_URL}${urls.updateEvent}/${editing._id}` : `${BASE_URL}${urls.createEvent}`;
+            const res = await fetch(endpoint, {
+                method: isEdit ? 'PUT' : 'POST',
                 headers: { Authorization: `Bearer ${token}` },
-                body: formData,
+                body: fd,
             });
-            const result = await response.json();
-            // Backend quirk: Create/Update Event swap data & message — the success
-            // string comes back in `data`, and the created/updated event object in
-            // `message`. Only show whichever field is actually a string.
+            const result = await res.json();
+            // Backend quirk: create/update swap `data` and `message` — the success text can be in
+            // `data`. Only show whichever is actually a string.
             const successText = typeof result?.data === 'string'
                 ? result.data
                 : typeof result?.message === 'string'
                     ? result.message
-                    : (isEditMode ? 'Event updated successfully' : 'Event created successfully');
+                    : (isEdit ? 'Event updated successfully' : 'Event created successfully');
             ToastMsg(successText);
-            if (response.ok) {
+            if (res.ok) {
                 Keyboard.dismiss();
                 setTimeout(() => navigation.goBack(), 50);
             }
-        } catch (error) {
-            console.log('AddEvent submit error', error);
+        } catch (err) {
+            console.log('AddEvent submit error', err);
             ToastMsg('Failed to submit event');
         } finally {
-            setIsSubmitting(false);
+            setSaving(false);
         }
-    };
-
-    const styles = StyleSheet.create({
-        container: { flex: 1, backgroundColor: isDarkMode ? '#121212' : '#fff', paddingTop: insets.top },
-        header: { paddingHorizontal: 20, paddingVertical: 14 },
-        headerTitle: { fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginLeft: 14 },
-        body: { padding: 20, paddingBottom: 60 },
-        label: { fontSize: 13, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold, color: isDarkMode ? '#D1D5DB' : '#374151', marginBottom: 8, marginTop: 16 },
-        required: { color: '#EF4136' },
-        uploadBox: {
-            width: '100%', height: 180, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed',
-            borderColor: primaryColor, alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA',
-        },
-        uploadImage: { width: '100%', height: '100%' },
-        removeImgBtn: {
-            position: 'absolute', top: 10, right: 10, width: 30, height: 30, borderRadius: 15,
-            backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center',
-        },
-        uploadHint: { fontSize: 13, color: isDarkMode ? '#9CA3AF' : '#6B7280', marginTop: 8 },
-        inputBox: {
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
-            paddingHorizontal: 14, paddingVertical: 12, color: isDarkMode ? white : '#111',
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular, fontSize: 14,
-            backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA',
-        },
-        textArea: { minHeight: 100, textAlignVertical: 'top' },
-        row2: { flexDirection: 'row', gap: 12 },
-        flex1: { flex: 1 },
-        dateBox: {
-            borderWidth: 1, borderColor: isDarkMode ? '#2A2A2A' : '#E5E7EB', borderRadius: 12,
-            paddingHorizontal: 14, paddingVertical: 12, backgroundColor: isDarkMode ? '#1E1E1E' : '#FAFAFA', justifyContent: 'center',
-        },
-        dateText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_Regular, color: isDarkMode ? white : '#111' },
-        charCount: { fontSize: 11, color: isDarkMode ? '#6B7280' : '#9CA3AF', textAlign: 'right', marginTop: 4 },
-        submitBtn: { marginTop: 26, backgroundColor: primaryColor, paddingVertical: 15, borderRadius: 16, alignItems: 'center' },
-        submitBtnDisabled: { opacity: 0.6 },
-        submitBtnText: { color: white, fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
-    });
+    }, [form, image, v, isEdit, editing, navigation]);
 
     return (
-        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
-            <Row style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="x" size={22} color={isDarkMode ? white : '#111'} />
-                </TouchableOpacity>
-                <CustomText style={styles.headerTitle}>{isEditMode ? 'Update Event' : 'Add New Event'}</CustomText>
-            </Row>
+        <FormScreen
+            title={isEdit ? 'Update Event' : 'Create Event'}
+            subtitle="Tell people what, when and where"
+            onBack={() => navigation.goBack()}
+            footer={<FormButton label={isEdit ? 'Save Changes' : 'Create Event'} onPress={onSubmit} loading={saving} />}>
 
-            <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-                <CustomText style={styles.label}>Event Image</CustomText>
-                <TouchableOpacity style={styles.uploadBox} onPress={handleFilePick} activeOpacity={0.85}>
-                    {preview ? (
-                        <>
-                            <SafeImage uri={preview} style={styles.uploadImage} />
-                            <TouchableOpacity style={styles.removeImgBtn} onPress={removeImage}>
-                                <Icon name="x" size={16} color={white} />
-                            </TouchableOpacity>
-                        </>
-                    ) : (
-                        <>
-                            <Icon name="upload" size={28} color={primaryColor} />
-                            <CustomText style={styles.uploadHint}>Click to upload image (PNG, JPG up to 10MB)</CustomText>
-                        </>
-                    )}
-                </TouchableOpacity>
+            <FormSection title="Event poster">
+                <ImageUploadBox label="Event image" image={image} onChange={setImage} />
+            </FormSection>
 
-                <CustomText style={styles.label}>Event Name <CustomText style={styles.required}>*</CustomText></CustomText>
-                <TextInput
-                    style={styles.inputBox}
-                    placeholder="e.g. Summer Music Festival"
-                    placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                    value={name}
-                    onChangeText={setName}
+            <FormSection title="Basics">
+                <FormField label="Event name" required placeholder="e.g. Sunday Cars & Coffee" autoCapitalize="words" maxLength={100} {...text('Name')} />
+                <FormField label="Genre" required placeholder="e.g. Meetup, Track day, Auto show" autoCapitalize="words" {...text('Genre')} />
+                <FormField label="Event details" placeholder="What is this event about?" multiline maxLength={1500} showCounter autoCapitalize="sentences" {...text('EventDetail')} />
+            </FormSection>
+
+            <FormSection title="When">
+                <DateTimeField
+                    label="Date" required mode="date" value={v.Date} error={e.Date}
+                    minimumDate={isEdit ? undefined : new Date()}
+                    onChange={d => { form.set('Date', d); form.blur('Date'); }}
                 />
-
-                <View style={styles.row2}>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>City <CustomText style={styles.required}>*</CustomText></CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="e.g. Chandigarh"
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            value={city}
-                            onChangeText={setCity}
-                        />
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <View style={{ flex: 1 }}>
+                        <DateTimeField label="From" required mode="time" value={v.TimeFrom} error={e.TimeFrom}
+                            onChange={t => { form.set('TimeFrom', t); form.blur('TimeFrom'); }} />
                     </View>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Genre <CustomText style={styles.required}>*</CustomText></CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="e.g. EDM, Rock"
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            value={genre}
-                            onChangeText={setGenre}
-                        />
+                    <View style={{ flex: 1 }}>
+                        <DateTimeField label="To" required mode="time" value={v.TimeTo} error={e.TimeTo}
+                            onChange={t => { form.set('TimeTo', t); form.blur('TimeTo'); }} />
                     </View>
                 </View>
+            </FormSection>
 
-                <CustomText style={styles.label}>Venue Place <CustomText style={styles.required}>*</CustomText></CustomText>
-                <TextInput
-                    style={styles.inputBox}
-                    placeholder="e.g. Sector 17 Plaza"
-                    placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                    value={venuePlace}
-                    onChangeText={setVenuePlace}
-                />
+            <FormSection title="Where">
+                <FormField label="City" required leftIcon="map-pin" placeholder="e.g. Indore" autoCapitalize="words" {...text('City')} />
+                <FormField label="Venue place" required placeholder="e.g. Meghdoot Garden" autoCapitalize="words" {...text('VenuePlace')} />
+                <FormField label="Venue address" required placeholder="Full address" multiline autoCapitalize="sentences" {...text('VenueAddress')} />
+            </FormSection>
 
-                <CustomText style={styles.label}>Venue Address <CustomText style={styles.required}>*</CustomText></CustomText>
-                <TextInput
-                    style={styles.inputBox}
-                    placeholder="Full address"
-                    placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                    value={venueAddress}
-                    onChangeText={setVenueAddress}
-                />
-
-                <CustomText style={styles.label}>Date <CustomText style={styles.required}>*</CustomText></CustomText>
-                <TouchableOpacity style={styles.dateBox} onPress={() => setShowDatePicker(true)}>
-                    <CustomText style={styles.dateText}>{date || 'Select date'}</CustomText>
-                </TouchableOpacity>
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={date ? new Date(date) : new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={(event, selected) => {
-                            setShowDatePicker(false);
-                            if (selected) setDate(toDateStr(selected));
-                        }}
-                    />
-                )}
-
-                <View style={styles.row2}>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Time From <CustomText style={styles.required}>*</CustomText></CustomText>
-                        <TouchableOpacity style={styles.dateBox} onPress={() => setShowTimeFromPicker(true)}>
-                            <CustomText style={styles.dateText}>{timeFrom || 'Start time'}</CustomText>
-                        </TouchableOpacity>
-                        {showTimeFromPicker && (
-                            <DateTimePicker
-                                value={new Date()}
-                                mode="time"
-                                is24Hour={true}
-                                display="default"
-                                onChange={(event, selected) => {
-                                    setShowTimeFromPicker(false);
-                                    if (selected) setTimeFrom(toTimeStr(selected));
-                                }}
-                            />
-                        )}
+            <FormSection title="More info">
+                <FormField label="Promoter / Organizer" placeholder="Promoter or organizer name" autoCapitalize="words" maxLength={80} {...text('Promoter')} />
+                <FormField label="Promotional link" placeholder="https://..." keyboardType="url" {...text('Promotionallinks')} />
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                    <View style={{ flex: 1 }}>
+                        <FormField label="Min age" placeholder="e.g. 18" keyboardType="number-pad" maxLength={3} {...text('MinAge')}
+                            onChangeText={t => form.set('MinAge', t.replace(/\D/g, ''))} />
                     </View>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Time To <CustomText style={styles.required}>*</CustomText></CustomText>
-                        <TouchableOpacity style={styles.dateBox} onPress={() => setShowTimeToPicker(true)}>
-                            <CustomText style={styles.dateText}>{timeTo || 'End time'}</CustomText>
-                        </TouchableOpacity>
-                        {showTimeToPicker && (
-                            <DateTimePicker
-                                value={new Date()}
-                                mode="time"
-                                is24Hour={true}
-                                display="default"
-                                onChange={(event, selected) => {
-                                    setShowTimeToPicker(false);
-                                    if (selected) setTimeTo(toTimeStr(selected));
-                                }}
-                            />
-                        )}
+                    <View style={{ flex: 1 }}>
+                        <FormField label="Cost (₹)" placeholder="0 = free" keyboardType="decimal-pad" {...text('Cost')}
+                            onChangeText={t => form.set('Cost', t.replace(/[^0-9.]/g, ''))} />
                     </View>
                 </View>
-
-                <View style={styles.row2}>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Promoter</CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="Promoter / Organizer name"
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            value={promoter}
-                            onChangeText={setPromoter}
-                        />
-                    </View>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Promotional Link</CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="https://..."
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            autoCapitalize="none"
-                            value={promotionalLinks}
-                            onChangeText={setPromotionalLinks}
-                        />
-                    </View>
-                </View>
-
-                <View style={styles.row2}>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Minimum Age</CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="e.g. 18"
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            keyboardType="number-pad"
-                            value={minAge}
-                            onChangeText={setMinAge}
-                        />
-                    </View>
-                    <View style={styles.flex1}>
-                        <CustomText style={styles.label}>Cost / Ticket Price</CustomText>
-                        <TextInput
-                            style={styles.inputBox}
-                            placeholder="e.g. 499 or Free"
-                            placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                            value={cost}
-                            onChangeText={setCost}
-                        />
-                    </View>
-                </View>
-
-                <CustomText style={styles.label}>Event Details</CustomText>
-                <TextInput
-                    style={[styles.inputBox, styles.textArea]}
-                    placeholder="Describe the event, lineup, special guests, etc."
-                    placeholderTextColor={isDarkMode ? '#6B7280' : '#9CA3AF'}
-                    multiline
-                    maxLength={1000}
-                    value={eventDetail}
-                    onChangeText={setEventDetail}
-                />
-                <CustomText style={styles.charCount}>{eventDetail.length} / 1000</CustomText>
-
-                <TouchableOpacity
-                    style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
-                    onPress={onSubmit}
-                    disabled={isSubmitting}
-                >
-                    <CustomText style={styles.submitBtnText}>
-                        {isSubmitting ? 'Please Wait...' : isEditMode ? 'Update Event' : 'Create Event'}
-                    </CustomText>
-                </TouchableOpacity>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </FormSection>
+        </FormScreen>
     );
 };
 

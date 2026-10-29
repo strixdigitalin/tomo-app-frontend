@@ -14,10 +14,11 @@ import {
   StyleSheet,
   Modal,
   TouchableWithoutFeedback,
+  Alert,
 } from 'react-native'
 import Animated, { FadeIn, FadeInUp, SlideInDown } from 'react-native-reanimated'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
-import Video from 'react-native-video'
+import PostMedia from '../../components/PostMedia'
 import IMG from '../../assets/Images'
 import { FONTS_FAMILY } from '../../assets/Fonts'
 import GradientIcon from '../../components/GradientIcon'
@@ -35,6 +36,8 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [comments, setComments] = useState([])
   const [isMuted, setIsMuted] = useState(true)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editCaption, setEditCaption] = useState('')
   const scrollViewRef = useRef(null)
   const inputFocusTimerRef = useRef(null)
   const { showLoader, hideLoader } = useLoader()
@@ -159,6 +162,50 @@ const PostDetailScreen = ({ route, navigation }) => {
     })
   }
 
+  // ✅ EDIT / DELETE OWN POST (web: UpdatePostModal / DeletePostModal)
+  const handleSaveCaption = async () => {
+    try {
+      showLoader()
+      const res = await apiPut(`/api/user/UpdatePost/${post._id}`, {
+        Caption: editCaption,
+        Hashtags: JSON.stringify(post?.Hashtags || []),
+      })
+      hideLoader()
+      if (res?.statusCode === 200) {
+        setPost(prev => ({ ...prev, caption: editCaption }))
+        setShowEditModal(false)
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to update post')
+      }
+    } catch (e) {
+      hideLoader()
+      Alert.alert('Error', 'Failed to update post')
+    }
+  }
+
+  const handleDeletePost = () => {
+    setShowReportModal(false)
+    Alert.alert('Delete Post', 'Are you sure you want to delete this post?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            showLoader()
+            const res = await apiDelete(`/api/user/DeletePost/${post._id}`)
+            hideLoader()
+            if (res?.statusCode === 200) navigation.goBack()
+            else Alert.alert('Error', res?.message || 'Failed to delete post')
+          } catch (e) {
+            hideLoader()
+            Alert.alert('Error', 'Failed to delete post')
+          }
+        },
+      },
+    ])
+  }
+
   if (!post) {
     navigation.goBack()
     return null
@@ -177,11 +224,11 @@ const PostDetailScreen = ({ route, navigation }) => {
       entering={index < 8 ? FadeInUp.delay(index * 30).duration(220) : undefined}
       style={[
         styles.commentItem,
-        { borderBottomColor: isDarkMode ? '#333' : '#eee' },
+        { borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0' },
       ]}>
       <Image
         source={
-          item?.User?.Image ? { uri: item?.User?.Image } : IMG.ProfileImagePost
+          item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile
         }
         style={styles.commentProfileImage}
       />
@@ -217,7 +264,7 @@ const PostDetailScreen = ({ route, navigation }) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDarkMode ? '#000000' : '#ffffff',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
     },
     header: {
       flexDirection: 'row',
@@ -227,7 +274,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       paddingVertical: 12,
       paddingTop: 50,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#333' : '#eee',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     closeButton: {
       padding: 4,
@@ -281,7 +328,7 @@ const PostDetailScreen = ({ route, navigation }) => {
     media: {
       width: screenWidth,
       height: 300,
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
     },
     soundButton: {
       position: 'absolute',
@@ -318,7 +365,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       borderRadius: 18,
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderColor: isDarkMode ? '#333' : '#ddd',
+      borderColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     actionText: {
       fontSize: 14,
@@ -377,8 +424,8 @@ const PostDetailScreen = ({ route, navigation }) => {
       paddingHorizontal: 16,
       paddingVertical: 12,
       borderTopWidth: 1,
-      borderTopColor: isDarkMode ? '#333' : '#eee',
-      backgroundColor: isDarkMode ? '#000000' : 'white',
+      borderTopColor: isDarkMode ? '#1E293B' : '#E2E8F0',
+      backgroundColor: isDarkMode ? '#0B1220' : '#EEF1F6',
       gap: 12,
     },
     inputProfileImage: {
@@ -393,7 +440,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       paddingVertical: 8,
       maxHeight: 80,
       fontSize: 14,
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       color: isDarkMode ? 'white' : 'black',
     },
     sendButton: {
@@ -409,7 +456,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       justifyContent: 'flex-end',
     },
     reportModalContainer: {
-      backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+      backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF',
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       paddingBottom: 30,
@@ -418,7 +465,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       alignItems: 'center',
       paddingVertical: 16,
       borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#333' : '#eee',
+      borderBottomColor: isDarkMode ? '#1E293B' : '#E2E8F0',
     },
     reportModalTitle: {
       fontSize: 16,
@@ -442,7 +489,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       marginHorizontal: 16,
       marginTop: 8,
       paddingVertical: 14,
-      backgroundColor: isDarkMode ? '#2a2a2a' : '#f5f5f5',
+      backgroundColor: isDarkMode ? '#1B2538' : '#F1F5F9',
       borderRadius: 12,
       alignItems: 'center',
     },
@@ -457,7 +504,7 @@ const PostDetailScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar
-        backgroundColor={isDarkMode ? '#000000' : '#ffffff'}
+        backgroundColor={isDarkMode ? '#0B1220' : '#EEF1F6'}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       
@@ -474,21 +521,17 @@ const PostDetailScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Post</Text>
         
-        {/* ✅ CONDITIONAL MENU ICON - Only show if NOT my post */}
-        {!isMyPost ? (
-          <TouchableOpacity 
-            style={styles.moreButton}
-            onPress={() => setShowReportModal(true)}
-          >
-            <MaterialIcons
-              name='more-vert'
-              size={24}
-              color={isDarkMode ? 'white' : 'black'}
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 32 }} />
-        )}
+        {/* Menu: report for others' posts, edit/delete for mine */}
+        <TouchableOpacity
+          style={styles.moreButton}
+          onPress={() => setShowReportModal(true)}
+        >
+          <MaterialIcons
+            name='more-vert'
+            size={24}
+            color={isDarkMode ? 'white' : 'black'}
+          />
+        </TouchableOpacity>
       </Animated.View>
 
       <KeyboardAvoidingView
@@ -509,7 +552,7 @@ const PostDetailScreen = ({ route, navigation }) => {
               source={
                 post?.User?.Image
                   ? { uri: post?.User?.Image }
-                  : IMG.ProfileImagePost
+                  : IMG.MessageProfile
               }
               style={styles.userAvatar}
             />
@@ -523,33 +566,24 @@ const PostDetailScreen = ({ route, navigation }) => {
 
           {/* Media */}
           <View style={styles.mediaContainer}>
-            {isVideo ? (
-              <View style={styles.videoWrapper}>
-                <Video
-                  source={{ uri: mediaUrl }}
-                  style={styles.media}
-                  resizeMode='cover'
-                  repeat={true}
-                  muted={isMuted}
-                  paused={false}
-                />
+            <View style={styles.videoWrapper}>
+              {/* Whole image/video visible (contain) over a blurred copy, same as the feed */}
+              <PostMedia
+                uri={mediaUrl}
+                isVideo={isVideo}
+                width={screenWidth}
+                controls={isVideo}
+                muted={isMuted}
+                maxHeightRatio={0.85}
+              />
+              {isVideo && (
                 <TouchableOpacity
                   style={styles.soundButton}
                   onPress={() => setIsMuted(!isMuted)}>
-                  {isMuted ? (
-                    <MaterialIcons name='volume-off' size={20} color='white' />
-                  ) : (
-                    <MaterialIcons name='volume-up' size={20} color='white' />
-                  )}
+                  <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={20} color='white' />
                 </TouchableOpacity>
-              </View>
-            ) : (
-              <Image
-                source={{ uri: mediaUrl }}
-                style={styles.media}
-                resizeMode='cover'
-              />
-            )}
+              )}
+            </View>
           </View>
 
           {/* Caption */}
@@ -642,7 +676,7 @@ const PostDetailScreen = ({ route, navigation }) => {
             source={
               selector?.Image
                 ? { uri: selector?.Image }
-                : IMG.ProfileImagePost
+                : IMG.MessageProfile
             }
             style={styles.inputProfileImage}
           />
@@ -694,9 +728,25 @@ const PostDetailScreen = ({ route, navigation }) => {
                 style={styles.reportModalContainer}
               >
                 <View style={styles.reportModalHeader}>
-                  <Text style={styles.reportModalTitle}>Report Post</Text>
+                  <Text style={styles.reportModalTitle}>{isMyPost ? 'Post Options' : 'Report Post'}</Text>
                 </View>
 
+                {isMyPost ? (
+                  <>
+                    <TouchableOpacity
+                      style={styles.reportOption}
+                      onPress={() => { setShowReportModal(false); setEditCaption(post?.caption || ''); setShowEditModal(true) }}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="edit" size={24} color={isDarkMode ? '#fff' : '#000'} />
+                      <Text style={styles.reportOptionText}>Edit caption</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.reportOption} onPress={handleDeletePost} activeOpacity={0.7}>
+                      <MaterialIcons name="delete" size={24} color="#EF4136" />
+                      <Text style={[styles.reportOptionText, { color: '#EF4136' }]}>Delete post</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
                 <TouchableOpacity 
                   style={styles.reportOption}
                   onPress={handleReport}
@@ -711,6 +761,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                     Report this post
                   </Text>
                 </TouchableOpacity>
+                )}
 
                 <TouchableOpacity 
                   style={styles.cancelButton}
@@ -720,6 +771,35 @@ const PostDetailScreen = ({ route, navigation }) => {
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
               </Animated.View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* ✅ EDIT CAPTION MODAL */}
+      <Modal visible={showEditModal} transparent animationType="fade" onRequestClose={() => setShowEditModal(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowEditModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.reportModalContainer}>
+                <View style={styles.reportModalHeader}>
+                  <Text style={styles.reportModalTitle}>Edit Caption</Text>
+                </View>
+                <TextInput
+                  value={editCaption}
+                  onChangeText={setEditCaption}
+                  multiline
+                  placeholder="Write a caption..."
+                  placeholderTextColor="#888"
+                  style={{ minHeight: 90, borderWidth: 1, borderColor: '#888', borderRadius: 10, padding: 10, margin: 16, color: isDarkMode ? '#fff' : '#000', textAlignVertical: 'top' }}
+                />
+                <TouchableOpacity style={styles.reportOption} onPress={handleSaveCaption} activeOpacity={0.7}>
+                  <Text style={styles.reportOptionText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setShowEditModal(false)} activeOpacity={0.7}>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>

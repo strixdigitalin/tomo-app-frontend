@@ -1,13 +1,9 @@
 import axios from 'axios';
-import { getItem } from './Apis';
+import { getItem, BASE_URL } from './Apis';
 
-// Verified live on production (2026-09-17): CreateGroup/GetAllMyGroups and
-// the socket.io handshake both work against the deployed backend, so Group
-// Chat now talks to the same backend as the rest of the app — this was
-// previously pointed at the local dev backend (10.0.2.2:8080), which is why
-// web (already on production) and mobile showed different group/chat data
-// under the same login: two different databases, not a display bug.
-export const GROUP_BASE_URL = 'https://tomo-backend-app.vercel.app';
+// Groups use the same backend as the rest of the app (and web): REST and the socket.io
+// connection both go to BASE_URL.
+export const GROUP_BASE_URL = BASE_URL;
 
 async function groupHeaders() {
     const token = await getItem('token');
@@ -25,7 +21,7 @@ async function groupReq(endPoint, data, method) {
         return result?.data;
     } catch (error) {
         if (error?.response?.data) throw error.response.data;
-        throw { message: 'Network error — check the local backend is running and reachable', msg: 'Network Error' };
+        throw { message: 'Network error — please check your connection', msg: 'Network Error' };
     }
 }
 
@@ -34,12 +30,14 @@ export const groupApiPost = (endPoint, data) => groupReq(endPoint, data, 'post')
 export const groupApiPut = (endPoint, data) => groupReq(endPoint, data, 'put');
 export const groupApiDelete = (endPoint, data) => groupReq(endPoint, data, 'delete');
 
-export async function groupApiPostFormData(endPoint, formData) {
+export async function groupApiPostFormData(endPoint, formData, method = 'POST') {
     const token = await getItem('token');
     const response = await fetch(GROUP_BASE_URL + endPoint, {
-        method: 'POST',
+        method,
         headers: { Authorization: token ? `Bearer ${token}` : '' },
         body: formData,
     });
     return response.json();
 }
+
+export const groupApiPutFormData = (endPoint, formData) => groupApiPostFormData(endPoint, formData, 'PUT');
