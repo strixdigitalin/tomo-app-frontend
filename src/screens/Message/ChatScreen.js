@@ -30,6 +30,7 @@ import { apiGet, apiPut, getItem, BASE_URL } from "../../utils/Apis";
 import { uploadChatImage } from "../../utils/uploadHelpers";
 import MediaViewerModal from "../../components/MediaViewerModal";
 import { io } from "socket.io-client";
+import ConfirmModal from '../../components/ConfirmModal';
 import moment from "moment";
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector } from "react-redux";
@@ -213,6 +214,7 @@ const ChatScreen = ({ route, navigation }) => {
     // ── Edit / Delete ─────────────────────────────────────────────────────────
     const [selectedMessage, setSelectedMessage]     = useState(null);
     const [showMessageOptions, setShowMessageOptions] = useState(false);
+    const [showDeleteMsg, setShowDeleteMsg] = useState(false);
     const [editingMessage, setEditingMessage]        = useState(null);
 
     // ── LIVE applied theme states ─────────────────────────────────────────────
@@ -417,19 +419,17 @@ const ChatScreen = ({ route, navigation }) => {
         editFocusTimer.current = setTimeout(() => inputRef.current?.focus(), 100);
     };
 
+    // close the options sheet first (two RN modals can't be open at once on iOS), then confirm
     const handleDeleteMessage = () => {
-        Alert.alert('Delete Message', 'Are you sure you want to delete this message?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Delete', style: 'destructive',
-                onPress: () => {
-                    socket.current.emit('deleteMessage', { messageId: selectedMessage._id });
-                    setChatMessages(prev => prev.filter(m => m._id !== selectedMessage._id));
-                    setShowMessageOptions(false);
-                    ToastMsg('Message deleted');
-                },
-            },
-        ]);
+        setShowMessageOptions(false);
+        setTimeout(() => setShowDeleteMsg(true), 250);
+    };
+
+    const confirmDeleteMessage = () => {
+        socket.current.emit('deleteMessage', { messageId: selectedMessage._id });
+        setChatMessages(prev => prev.filter(m => m._id !== selectedMessage._id));
+        setShowDeleteMsg(false);
+        ToastMsg('Message deleted');
     };
 
     const cancelEdit = () => { setEditingMessage(null); setInputText(''); };
@@ -661,6 +661,16 @@ const ChatScreen = ({ route, navigation }) => {
             </KeyboardAvoidingView>
 
             {/* ── Message options modal ── */}
+            <ConfirmModal
+                visible={showDeleteMsg}
+                onClose={() => setShowDeleteMsg(false)}
+                onConfirm={confirmDeleteMessage}
+                icon="trash-2"
+                title="Delete message?"
+                message="This message will be removed from the chat."
+                confirmLabel="Delete"
+            />
+
             <Modal
                 visible={showMessageOptions}
                 transparent

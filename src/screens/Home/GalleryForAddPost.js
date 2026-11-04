@@ -27,6 +27,7 @@ import { ToastMsg } from '../../utils/helperFunctions'
 import { validatePostMedia } from '../../utils/uploadHelpers'
 import { ensureGalleryPermission, getGalleryAssets } from '../../utils/mediaPermission'
 import PermissionNotice from '../../components/PermissionNotice'
+import MusicSelector from '../../components/MusicSelector'
 import Row from '../../components/wrapper/row'
 import { BackIcon, PrimaryBackArrow } from '../../assets/SVGs'
 import { FONTS_FAMILY } from '../../assets/Fonts'
@@ -44,6 +45,8 @@ const GalleryForAddPost = ({ navigation }) => {
   const [errorMsg, setErrorMsg] = useState('')
   const [blocked, setBlocked] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
+  // optional music for the post: { music, start, duration } (web: AddPost.jsx)
+  const [music, setMusic] = useState(null)
   const [selectedImage, setSelectedImage] = useState(null)
   const [caption, setCaption] = useState('')
   const [activeTab, setActiveTab] = useState('Images')
@@ -272,6 +275,7 @@ const GalleryForAddPost = ({ navigation }) => {
               deleteDraft()
               setIsPreviewVisible(false)
               setSelectedImage(null)
+              setMusic(null)
               setCaption('')
               setHashtags([])
               setTaggedUsers([])
@@ -440,6 +444,11 @@ const GalleryForAddPost = ({ navigation }) => {
       formData.append('Filter', selectedFilter)
       // ✅ Send only _id array for TaggedUsers
       formData.append('TagedUser', JSON.stringify(taggedUsers.map(u => u._id)))
+      if (music) {
+        formData.append('MusicId', music.music._id)
+        formData.append('MusicStart', String(music.start))
+        formData.append('MusicDuration', String(music.duration))
+      }
 
       console.log('📤 Submitting post...')
 
@@ -768,6 +777,14 @@ const GalleryForAddPost = ({ navigation }) => {
                   <View style={styles.captionFooter}>
                     <Text style={[styles.characterCount, { color: isDarkMode ? '#888' : '#666' }]}>{caption.length}/2200</Text>
                   </View>
+                </View>
+
+                <View style={[styles.captionContainer, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa' }]}>
+                  <View style={styles.captionHeader}>
+                    <Icon name='musical-notes' size={20} color={isDarkMode ? '#fff' : '#333'} />
+                    <Text style={[styles.captionTitle, { color: isDarkMode ? '#fff' : '#333' }]}>Music</Text>
+                  </View>
+                  <MusicSelector value={music} onChange={setMusic} style={{ marginTop: 8 }} />
                 </View>
 
                 <View style={[styles.captionContainer, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa' }]}>

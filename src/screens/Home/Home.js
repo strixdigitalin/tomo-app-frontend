@@ -65,6 +65,7 @@ import { formatInstagramDate } from '../../utils/DateFormat'
 import FeedCard from './FeedsCards'
 import InfoCard from '../../components/InfoCard'
 import { ActionMenu } from '../../components/ActionMenu'
+import ConfirmModal from '../../components/ConfirmModal'
 import PromotedSection from '../../components/PromotedSection'
 import PromotedPostModal from '../../components/PromotedPostModal'
 import ShopPromoModal from '../../components/ShopPromoModal'
@@ -146,6 +147,7 @@ const Home = ({ navigation }) => {
   const [searchText, setSearchText] = useState("")
   const [suggestions, setSuggestions] = useState([])
   const [searchFocused, setSearchFocused] = useState(false)
+  const [showExit, setShowExit] = useState(false)
   const [tagLoading, setTagLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
@@ -500,17 +502,7 @@ const Home = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        Alert.alert('Exit App', 'Are you sure you want to exit the app?', [
-          {
-            text: 'Cancel',
-            onPress: () => null,
-            style: 'cancel',
-          },
-          {
-            text: 'EXIT',
-            onPress: () => BackHandler.exitApp(),
-          },
-        ])
+        setShowExit(true)
         return true
       }
 
@@ -1618,6 +1610,7 @@ const Home = ({ navigation }) => {
           isDarkMode={isDarkMode}
           glowColors={glowColors}
           isNewsItem={isNewsItem}
+          screenActive={isFocused}
           isVideo={isVideo}
           mediaUrl={mediaUrl}
           visibleVideoIndex={visibleVideoIndex}
@@ -1673,6 +1666,7 @@ const Home = ({ navigation }) => {
     doubleTapIndex,
     heartOpacity,
     heartScale,
+    isFocused,
     renderAdvertisement,
     handlePostClick,
     triggerHeartAnimation,
@@ -2332,6 +2326,17 @@ const Home = ({ navigation }) => {
                 }),
               }]
         }
+      />
+
+      <ConfirmModal
+        visible={showExit}
+        onClose={() => setShowExit(false)}
+        onConfirm={() => BackHandler.exitApp()}
+        icon="log-out"
+        title="Exit Tomo?"
+        message="Are you sure you want to exit the app?"
+        confirmLabel="Exit"
+        destructive={false}
       />
 
       <PromotedPostModal

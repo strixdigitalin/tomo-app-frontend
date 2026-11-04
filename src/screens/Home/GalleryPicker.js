@@ -20,6 +20,7 @@ import { ToastMsg } from '../../utils/helperFunctions';
 import { MEDIA_RULES } from '../../utils/uploadHelpers';
 import { ensureGalleryPermission, getGalleryAssets } from '../../utils/mediaPermission';
 import PermissionNotice from '../../components/PermissionNotice';
+import MusicSelector from '../../components/MusicSelector';
 import { useSelector } from 'react-redux';
 import Row from '../../components/wrapper/row';
 import { BackIcon, PrimaryBackArrow } from '../../assets/SVGs';
@@ -40,6 +41,8 @@ const GalleryScreen = ({ navigation }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [blocked, setBlocked] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  // optional music for the story: { music, start, duration } (web: AddStoryModel.jsx)
+  const [music, setMusic] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const { isDarkMode } = useSelector(state => state.theme);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -94,6 +97,11 @@ const GalleryScreen = ({ navigation }) => {
         type: 'image/jpeg',
         name: fileName || 'upload.jpg',
       });
+      if (music) {
+        formData.append('MusicId', music.music._id);
+        formData.append('MusicStart', String(music.start));
+        formData.append('MusicDuration', String(music.duration));
+      }
 
       const response = await fetch(`${BASE_URL}/api/user/AddStory`, {
         method: 'POST',
@@ -239,6 +247,12 @@ const GalleryScreen = ({ navigation }) => {
           />
 
           {selectedImage && (
+            <View style={styles.musicDock}>
+              <MusicSelector value={music} onChange={setMusic} />
+            </View>
+          )}
+
+          {selectedImage && (
             <TouchableOpacity style={styles.postButton} onPress={handlePostStory}>
               <Icon name="arrow-up-circle-outline" size={20} color="#fff" />
               <Text style={styles.postButtonText}>Post Story</Text>
@@ -252,6 +266,10 @@ const GalleryScreen = ({ navigation }) => {
           <ImageZoom cropWidth={width} cropHeight={height} imageWidth={width} imageHeight={height}>
             <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="contain" />
           </ImageZoom>
+
+          <View style={styles.previewMusic}>
+            <MusicSelector value={music} onChange={setMusic} />
+          </View>
 
           <TouchableOpacity onPress={() => { handlePostStory(); setIsPreviewVisible(false); }} style={styles.postBtn}>
             <Text style={styles.postText}>Post Story</Text>
@@ -328,6 +346,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 2,
   },
+  musicDock: { position: 'absolute', left: 16, right: 16, bottom: 92 },
+  previewMusic: { position: 'absolute', left: 20, right: 20, bottom: 162 },
   postButton: {
     position: 'absolute',
     bottom: 30,

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import GradientIcon from '../../components/GradientIcon';
 import PostMedia from '../../components/PostMedia';
+import PostMusic from '../../components/PostMusic';
 import { SpeakerOff } from '../../assets/SVGs';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -86,6 +87,7 @@ function FeedCard({
   heartScale,
   isDarkMode,
   glowColors,
+  screenActive = true,
   onPostPress,
   onUserPress,
   onMediaPress,
@@ -151,6 +153,11 @@ function FeedCard({
             paused={visibleVideoIndex !== index || !!pausedVideos[index]}
             muted={isMuted}
           />
+
+          {/* Song attached to the post: plays while this post is the one on screen */}
+          {!isNewsItem && !!post?.Music?.File && (
+            <PostMusic item={post} active={screenActive && visibleVideoIndex === index} loop />
+          )}
 
           {!isNewsItem && doubleTapIndex === index && (
             <Animated.View

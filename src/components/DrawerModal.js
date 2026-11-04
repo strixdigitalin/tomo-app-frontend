@@ -32,6 +32,7 @@ const MENU_ITEMS = [
   { label: 'All Shops',          icon: 'shopping-bag',    iconType: 'Feather',                nav: 'AllShops',           sellerOnly: true,  nonSellerOnly: false },
   { label: 'Become a Seller',    icon: 'briefcase',       iconType: 'Feather',                nav: 'RequestBecomeSeller', sellerOnly: false, nonSellerOnly: true },
   { label: 'AI Chat Bot',        icon: 'robot',           iconType: 'MaterialCommunityIcons', nav: 'ReactNativeChatbot', sellerOnly: false, nonSellerOnly: false },
+  { label: 'Tomo Sound',         icon: 'music',           iconType: 'Feather',                nav: 'TomoSound',          badge: 'NEW',      sellerOnly: false, nonSellerOnly: false },
   { label: 'Events',             icon: 'calendar',        iconType: 'Feather',                nav: 'AllEvents',          badge: 'NEW',      sellerOnly: false, nonSellerOnly: false },
   { label: 'Settings',           icon: 'settings',        iconType: 'Feather',                nav: 'Settings',           sellerOnly: false, nonSellerOnly: false },
   { label: 'Feedback',           icon: 'message-square',  iconType: 'Feather',                nav: 'FeedBack',           sellerOnly: false, nonSellerOnly: false },

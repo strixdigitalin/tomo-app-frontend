@@ -1,3 +1,4 @@
+import ConfirmModal from '../../components/ConfirmModal';
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback, TextInput, BackHandler, Alert } from "react-native";
 import CustomText from "../../components/TextComponent";
@@ -30,6 +31,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
     const storyOpacity = useRef(new Animated.Value(0)).current;
     const feedTranslateY = useRef(new Animated.Value(20)).current;
     const [loading, setLoading] = useState(false)
+    const [showExit, setShowExit] = useState(false)
     const [allPosts, setAllPosts] = useState([])
     const [allStories, setAllStories] = useState([])
     const [followedStories, setFollowedStories] = useState([])
@@ -55,21 +57,7 @@ const AllPostOfAUser = ({ navigation, route }) => {
 
     useFocusEffect(() => {
         const backAction = () => {
-            Alert.alert(
-                "Exit App",
-                "Are you sure you want to exit the app?",
-                [
-                    {
-                        text: "Cancel",
-                        onPress: () => null,
-                        style: "cancel"
-                    },
-                    {
-                        text: "EXIT",
-                        onPress: () => BackHandler.exitApp()
-                    }
-                ]
-            );
+            setShowExit(true);
             return true;
         };
         const backHandler = BackHandler.addEventListener(
@@ -946,6 +934,16 @@ const AllPostOfAUser = ({ navigation, route }) => {
             {loading ? <FeedShimmerLoader isDarkMode={isDarkMode} count={5} /> :
                 renderFeeds()}
             {renderCommentModal()}
+            <ConfirmModal
+                visible={showExit}
+                onClose={() => setShowExit(false)}
+                onConfirm={() => BackHandler.exitApp()}
+                icon="log-out"
+                title="Exit Tomo?"
+                message="Are you sure you want to exit the app?"
+                confirmLabel="Exit"
+                destructive={false}
+            />
             <PostDetailModal
                 visible={postDetailVisible}
                 onClose={() => {

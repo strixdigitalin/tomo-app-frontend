@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, Modal, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import PostMedia from './PostMedia';
+import PostMusic from './PostMusic';
 import { FONTS_FAMILY } from '../assets/Fonts';
 import IMG from '../assets/Images';
 import { apiGet } from '../utils/Apis';
@@ -86,7 +87,10 @@ const PromotedPostModal = ({ visible, promotion, onClose, isDarkMode, accent, wi
               </View>
 
               {!!post.media && (
-                <PostMedia uri={post.media} isVideo={isVideo} width={width} controls muted={false} repeat={false} maxHeightRatio={1.1} />
+                <View>
+                  <PostMedia uri={post.media} isVideo={isVideo} width={width} controls muted={false} repeat={false} maxHeightRatio={1.1} />
+                  <PostMusic item={post} active={visible} loop />
+                </View>
               )}
 
               <View style={[styles.statsRow, { borderBottomColor: border }]}>

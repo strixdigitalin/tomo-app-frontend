@@ -11,7 +11,7 @@ import { MEDIA_RULES } from '../utils/uploadHelpers';
 
 // Single-image picker with preview / change / remove and an inline error.
 //   image: { uri, type?, name?, isExisting? } | null
-const ImageUploadBox = ({ label, required, image, onChange, error, hint = 'Tap to upload (JPG, PNG, WebP)', height = 170 }) => {
+const ImageUploadBox = ({ label, required, image, onChange, error, hint = 'Tap to upload (JPG, PNG, WebP)', height = 170, maxBytes = MEDIA_RULES.postImageMaxBytes }) => {
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
   const accent = (THEMES[selectedColorTheme] || THEMES.default).primary;
   const c = profilePalette(isDarkMode, accent);
@@ -22,10 +22,10 @@ const ImageUploadBox = ({ label, required, image, onChange, error, hint = 'Tap t
       if (response?.errorMessage) return ToastMsg('Error picking image');
       const a = response?.assets?.[0];
       if (!a?.uri) return;
-      if (a.fileSize && a.fileSize > MEDIA_RULES.postImageMaxBytes) {
-        return ToastMsg(`File too large. Max ${MEDIA_RULES.postImageMaxBytes / 1024 / 1024} MB`);
+      if (a.fileSize && a.fileSize > maxBytes) {
+        return ToastMsg(`File too large. Max ${Math.round(maxBytes / 1024 / 1024)} MB`);
       }
-      onChange({ uri: a.uri, type: a.type, name: a.fileName || `image_${Date.now()}.jpg`, isExisting: false });
+      onChange({ uri: a.uri, type: a.type, name: a.fileName || `image_${Date.now()}.jpg`, size: a.fileSize, isExisting: false });
     });
   };
 

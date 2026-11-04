@@ -27,6 +27,14 @@ import StoryViewModel from './StoryViewersModal';
 import { apiGet, apiPost } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { ToastMsg } from '../../utils/helperFunctions';
+import PostMusic from '../../components/PostMusic';
+import { getClipRange, setMusicMuted, useMusicMuted } from '../../utils/musicStore';
+import Feather from 'react-native-vector-icons/Feather';
+
+const DEFAULT_STORY_MS = 5000;
+// A story with music lasts as long as the chosen clip (web: getStoryDuration)
+const getStoryDuration = story =>
+    story?.Music?.File ? getClipRange(story.Music, story.MusicStart, story.MusicDuration).length * 1000 : DEFAULT_STORY_MS;
 
 const { width, height } = Dimensions.get('window');
 
@@ -57,6 +65,9 @@ const StoryScreen = ({ route, navigation }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [showViewers, setShowViewers] = useState(false);
+    const [activityTab, setActivityTab] = useState('viewers');
+    const [allReplies, setAllReplies] = useState([]);
+    const [allReactions, setAllReactions] = useState([]);
     const [isInputFocused, setIsInputFocused] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -112,17 +123,28 @@ const StoryScreen = ({ route, navigation }) => {
 
             if (currentStoryId) {
                 const res = await apiGet(`${urls?.getStoryViewers}/${currentStoryId}`);
-                if (res?.success && res?.data) {
-                    setStoryViewers(res.data);
+                const d = res?.data;
+                // API returns { viewers, replies, reactions } (older shape: just the viewers array)
+                if (Array.isArray(d)) {
+                    setStoryViewers(d);
+                    setAllReplies(currentUserStories[currentIndex]?.replies || []);
+                    setAllReactions(currentUserStories[currentIndex]?.reactions || []);
+                } else if (d?.viewers) {
+                    setStoryViewers(d.viewers || []);
+                    setAllReplies(d.replies || []);
+                    setAllReactions(d.reactions || []);
                 } else {
-                    const currentStoryViewers = currentUserStories[currentIndex]?.viewers || [];
-                    setStoryViewers(currentStoryViewers);
+                    setStoryViewers(currentUserStories[currentIndex]?.viewers || []);
+                    setAllReplies(currentUserStories[currentIndex]?.replies || []);
+                    setAllReactions(currentUserStories[currentIndex]?.reactions || []);
                 }
             }
         } catch (error) {
             console.error('Error fetching story viewers:', error);
             const currentStoryViewers = currentUserStories[currentIndex]?.viewers || [];
             setStoryViewers(currentStoryViewers);
+            setAllReplies(currentUserStories[currentIndex]?.replies || []);
+            setAllReactions(currentUserStories[currentIndex]?.reactions || []);
         } finally {
             setLoadingViewers(false);
         }
@@ -315,7 +337,7 @@ const StoryScreen = ({ route, navigation }) => {
 
         animation.current = Animated.timing(progressBars[currentIndex], {
             toValue: 1,
-            duration: 5000,
+            duration: getStoryDuration(currentUserStories[currentIndex]),
             useNativeDriver: false,
         });
 
@@ -478,7 +500,8 @@ const StoryScreen = ({ route, navigation }) => {
         };
     }, []);
 
-    const handleViewersPress = () => {
+    const handleViewersPress = (tab = 'viewers') => {
+        setActivityTab(tab);
         setShowViewers(true);
         pause();
     };
@@ -509,6 +532,20 @@ const StoryScreen = ({ route, navigation }) => {
     }
 
     const currentStory = currentUserStories[currentIndex];
+    const storyMuted = useMusicMuted('story');
+
+    // Debug aid for story music: shows in the Metro console whether the API sent the song
+    useEffect(() => {
+        if (!currentStory) return;
+        const m = currentStory.Music;
+        console.log('[StoryMusic]', {
+            storyId: currentStory._id,
+            keys: Object.keys(currentStory),
+            Music: m ? (typeof m === 'object' ? { name: m.Name, hasFile: !!m.File, duration: m.Duration } : `not populated: ${String(m)}`) : 'missing',
+            MusicStart: currentStory.MusicStart,
+            MusicDuration: currentStory.MusicDuration,
+        });
+    }, [currentStory?._id]);
 
     return (
         <View style={styles.container}>
@@ -560,16 +597,48 @@ const StoryScreen = ({ route, navigation }) => {
                                     <CustomText style={styles.timeAgo}>
                                         {getTimeAgo(currentStory?.createdAt)}
                                     </CustomText>
+                                    {/* song under the name, like Instagram */}
+                                    {!!currentStory?.Music?.File && (
+                                        <View style={styles.musicRow}>
+                                            <Feather name="music" size={11} color="#fff" />
+                                            <CustomText numberOfLines={1} style={styles.musicText}>
+                                                {currentStory.Music.Name}{currentStory.Music.ArtistName ? ` · ${currentStory.Music.ArtistName}` : ''}
+                                            </CustomText>
+                                        </View>
+                                    )}
                                 </View>
                             </Row>
 
-                            <Pressable
-                                style={styles.closeButton}
-                                onPress={() => navigation.goBack()}
-                            >
-                                <Text style={styles.closeButtonText}>×</Text>
-                            </Pressable>
+                            <View style={styles.headerActions}>
+                                {!!currentStory?.Music?.File && (
+                                    <Pressable
+                                        style={styles.speakerButton}
+                                        onPress={() => setMusicMuted(!storyMuted, 'story')}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    >
+                                        <Feather name={storyMuted ? 'volume-x' : 'volume-2'} size={20} color="#fff" />
+                                    </Pressable>
+                                )}
+                                <Pressable
+                                    style={styles.closeButton}
+                                    onPress={() => navigation.goBack()}
+                                >
+                                    <Text style={styles.closeButtonText}>×</Text>
+                                </Pressable>
+                            </View>
                         </View>
+                    )}
+
+                    {/* Song attached to this story: plays for the length of the clip, pauses with the story */}
+                    {!!currentStory?.Music?.File && (
+                        <PostMusic
+                            key={currentStory?._id || currentIndex}
+                            item={currentStory}
+                            active={!isPaused && imageLoaded}
+                            loop={false}
+                            scope="story"
+                            hidePill
+                        />
                     )}
 
                     {/* Story Content */}
@@ -629,15 +698,23 @@ const StoryScreen = ({ route, navigation }) => {
                 >
                     <View style={styles.bottomActions}>
                         {isMyStory ? (
-                            <TouchableOpacity
-                                style={styles.viewersButton}
-                                onPress={handleViewersPress}
-                                disabled={loadingViewers}
-                            >
-                                <Text style={styles.viewersButtonText}>
-                                    {loadingViewers ? '...' : `👁 ${storyViewers.length}`}
-                                </Text>
-                            </TouchableOpacity>
+                            <View style={styles.ownBar}>
+                                {[
+                                    ['viewers', 'eye', storyViewers.length],
+                                    ['reactions', 'smile', allReactions.length],
+                                    ['replies', 'message-circle', allReplies.length],
+                                ].map(([key, icon, count]) => (
+                                    <TouchableOpacity
+                                        key={key}
+                                        style={styles.ownStat}
+                                        onPress={() => handleViewersPress(key)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Feather name={icon} size={18} color="#fff" />
+                                        <Text style={styles.ownStatText}>{loadingViewers ? '…' : count}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         ) : (
                             <View style={styles.replyContainer}>
                                 <TextInput
@@ -708,6 +785,9 @@ const StoryScreen = ({ route, navigation }) => {
             <StoryViewModel
                 showViewers={showViewers}
                 storyViewers={storyViewers}
+                reactions={allReactions}
+                replies={allReplies}
+                initialTab={activityTab}
                 closeViewersModal={closeViewersModal}
             />
         </View>
@@ -728,7 +808,7 @@ const styles = StyleSheet.create({
         marginTop: 40
     },
     overlay: {
-        ...StyleSheet.absoluteFillObject,
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.1)',
     },
     safeArea: {
@@ -803,6 +883,32 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0, 0, 0, 0.8)',
         textShadowOffset: { width: 0, height: 1 },
         textShadowRadius: 4,
+    },
+    musicRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        marginTop: 2,
+    },
+    musicText: {
+        flexShrink: 1,
+        fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+        color: '#fff',
+        fontSize: 12,
+        textShadowColor: 'rgba(0, 0, 0, 0.8)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 4,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+    },
+    speakerButton: {
+        width: 28,
+        height: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     closeButton: {
         width: 24,
@@ -893,6 +999,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: 50,
+    },
+    ownBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    ownStat: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        minWidth: 76,
+        justifyContent: 'center',
+        paddingHorizontal: 18,
+        paddingVertical: 11,
+        borderRadius: 24,
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.28)',
+    },
+    ownStatText: {
+        color: '#fff',
+        fontSize: 15,
+        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
     },
     viewersButton: {
         backgroundColor: 'rgba(255, 255, 255, 0.4)',

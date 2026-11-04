@@ -31,6 +31,7 @@ import AddPostPromotion from '../../screens/Promotion/AddPostPromotion';
 import MyPostPromotions from '../../screens/Promotion/MyPostPromotions';
 import PostPromotionDetail from '../../screens/Promotion/PostPromotionDetail';
 import AllEvents from '../../screens/Event/AllEvents';
+import TomoSound from '../../screens/TomoSound/TomoSound';
 import MyEvents from '../../screens/Event/MyEvents';
 import AddEvent from '../../screens/Event/AddEvent';
 import EventDetail from '../../screens/Event/EventDetail';
@@ -289,6 +290,13 @@ const StackNavigation = () => {
         <Stack.Screen
           name={'PostPromotionDetail'}
           component={PostPromotionDetail}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
+          name={'TomoSound'}
+          component={TomoSound}
           options={{
             animation: 'slide_from_right',
           }}

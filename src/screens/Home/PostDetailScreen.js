@@ -19,6 +19,10 @@ import {
 import Animated, { FadeIn, FadeInUp, SlideInDown } from 'react-native-reanimated'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import PostMedia from '../../components/PostMedia'
+import ConfirmModal from '../../components/ConfirmModal'
+import { ToastMsg } from '../../utils/helperFunctions'
+import PostMusic from '../../components/PostMusic'
+import { useIsFocused } from '@react-navigation/native'
 import IMG from '../../assets/Images'
 import { FONTS_FAMILY } from '../../assets/Fonts'
 import GradientIcon from '../../components/GradientIcon'
@@ -36,7 +40,10 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [comments, setComments] = useState([])
   const [isMuted, setIsMuted] = useState(true)
   const [showReportModal, setShowReportModal] = useState(false)
+  const isScreenFocused = useIsFocused()
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeletePost, setShowDeletePost] = useState(false)
+  const [deletingPost, setDeletingPost] = useState(false)
   const [editCaption, setEditCaption] = useState('')
   const scrollViewRef = useRef(null)
   const inputFocusTimerRef = useRef(null)
@@ -175,35 +182,34 @@ const PostDetailScreen = ({ route, navigation }) => {
         setPost(prev => ({ ...prev, caption: editCaption }))
         setShowEditModal(false)
       } else {
-        Alert.alert('Error', res?.message || 'Failed to update post')
+        ToastMsg(res?.message || 'Failed to update post')
       }
     } catch (e) {
       hideLoader()
-      Alert.alert('Error', 'Failed to update post')
+      ToastMsg('Failed to update post')
     }
   }
 
   const handleDeletePost = () => {
     setShowReportModal(false)
-    Alert.alert('Delete Post', 'Are you sure you want to delete this post?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            showLoader()
-            const res = await apiDelete(`/api/user/DeletePost/${post._id}`)
-            hideLoader()
-            if (res?.statusCode === 200) navigation.goBack()
-            else Alert.alert('Error', res?.message || 'Failed to delete post')
-          } catch (e) {
-            hideLoader()
-            Alert.alert('Error', 'Failed to delete post')
-          }
-        },
-      },
-    ])
+    setShowDeletePost(true)
+  }
+
+  const confirmDeletePost = async () => {
+    try {
+      setDeletingPost(true)
+      const res = await apiDelete(`/api/user/DeletePost/${post._id}`)
+      if (res?.statusCode === 200) {
+        setShowDeletePost(false)
+        navigation.goBack()
+      } else {
+        ToastMsg(res?.message || 'Failed to delete post')
+      }
+    } catch (e) {
+      ToastMsg('Failed to delete post')
+    } finally {
+      setDeletingPost(false)
+    }
   }
 
   if (!post) {
@@ -576,6 +582,8 @@ const PostDetailScreen = ({ route, navigation }) => {
                 muted={isMuted}
                 maxHeightRatio={0.85}
               />
+              {/* song attached to the post — plays while this screen is open */}
+              <PostMusic item={post} active={isScreenFocused} loop />
               {isVideo && (
                 <TouchableOpacity
                   style={styles.soundButton}
@@ -775,6 +783,17 @@ const PostDetailScreen = ({ route, navigation }) => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      <ConfirmModal
+        visible={showDeletePost}
+        onClose={() => !deletingPost && setShowDeletePost(false)}
+        onConfirm={confirmDeletePost}
+        icon="trash-2"
+        title="Delete post?"
+        message="This post, its likes and comments will be permanently removed."
+        confirmLabel="Delete"
+        loading={deletingPost}
+      />
 
       {/* ✅ EDIT CAPTION MODAL */}
       <Modal visible={showEditModal} transparent animationType="fade" onRequestClose={() => setShowEditModal(false)}>
