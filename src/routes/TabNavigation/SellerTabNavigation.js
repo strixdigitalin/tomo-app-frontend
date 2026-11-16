@@ -18,6 +18,8 @@ import { useSelector } from 'react-redux';
 
 import { THEMES } from '../../redux/reducer/theme';
 
+import SellerDashboard from '../../screens/SellerFlow/SellerDashboard';
+import ScanVehicle from '../../screens/SellerFlow/ScanVehicle';
 import SellerHome from '../../screens/SellerFlow/SellerHome';
 import SellerProduct from '../../screens/SellerFlow/SellerProduct';
 import SellerChatList from '../../screens/SellerFlow/SellerChatList';
@@ -169,7 +171,7 @@ function SellerTabNavigation() {
 
   return (
     <Tab.Navigator
-      initialRouteName="SellerHome"
+      initialRouteName="SellerDashboard"
       screenOptions={{
         headerShown: false,
         lazy: true,
@@ -194,13 +196,27 @@ function SellerTabNavigation() {
       }}
     >
       <Tab.Screen
+        name="SellerDashboard"
+        component={SellerDashboard}
+        options={{
+          tabBarLabel: () => null,
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabIcon focused={focused} index={0} glowColors={glowColors}>
+              <Feather name="grid" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
+            </AnimatedTabIcon>
+          ),
+        }}
+      />
+
+      <Tab.Screen
         name="SellerHome"
         component={SellerHome}
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={0} glowColors={glowColors}>
-              <Feather name="home" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+            <AnimatedTabIcon focused={focused} index={1} glowColors={glowColors}>
+              <Feather name="shopping-bag" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
               {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
@@ -213,8 +229,22 @@ function SellerTabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={1} glowColors={glowColors}>
+            <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
               <Feather name="package" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
+              {focused && <AnimatedBottomLine color={primaryColor} />}
+            </AnimatedTabIcon>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="SellerScan"
+        component={ScanVehicle}
+        options={{
+          tabBarLabel: () => null,
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabIcon focused={focused} index={3} glowColors={glowColors}>
+              <Feather name="maximize" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
               {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
           ),
@@ -227,7 +257,7 @@ function SellerTabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={2} glowColors={glowColors}>
+            <AnimatedTabIcon focused={focused} index={4} glowColors={glowColors}>
               <Feather name="message-circle" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
               {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>
@@ -241,7 +271,7 @@ function SellerTabNavigation() {
         options={{
           tabBarLabel: () => null,
           tabBarIcon: ({ focused }) => (
-            <AnimatedTabIcon focused={focused} index={3} glowColors={glowColors}>
+            <AnimatedTabIcon focused={focused} index={5} glowColors={glowColors}>
               <Feather name="user" size={24} color={focused ? primaryColor : (isDarkMode ? '#94A3B8' : '#64748B')} />
               {focused && <AnimatedBottomLine color={primaryColor} />}
             </AnimatedTabIcon>

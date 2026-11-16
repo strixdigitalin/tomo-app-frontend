@@ -4,7 +4,7 @@ import CustomText from './TextComponent';
 import { FONTS_FAMILY } from '../assets/Fonts';
 
 // Card for What's New → Tips / Blog items (fields: Name, Detail, Link, Image, createdAt)
-const InfoCard = ({ item, isDarkMode }) => {
+const InfoCard = ({ item, isDarkMode, onLinkPress }) => {
   const d = item?.createdAt ? new Date(item.createdAt) : null;
   const when = d ? d.toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
   return (
@@ -13,7 +13,7 @@ const InfoCard = ({ item, isDarkMode }) => {
       {!!when && <CustomText style={styles.date}>{when}</CustomText>}
       {!!item?.Detail && <CustomText style={styles.detail}>{item.Detail.replace(/<[^>]*>/g, '')}</CustomText>}
       {!!item?.Link && (
-        <TouchableOpacity onPress={() => Linking.openURL(item.Link).catch(() => {})}>
+        <TouchableOpacity onPress={() => (onLinkPress ? onLinkPress(item.Link, item.Name) : Linking.openURL(item.Link).catch(() => {}))}>
           <CustomText style={styles.link}>Read More</CustomText>
         </TouchableOpacity>
       )}

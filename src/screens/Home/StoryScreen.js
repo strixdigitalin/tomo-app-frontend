@@ -13,6 +13,7 @@ import {
     TextInput,
     Modal,
     ScrollView,
+    ActivityIndicator,
     FlatList,
     TouchableOpacity,
     KeyboardAvoidingView,
@@ -30,6 +31,7 @@ import { ToastMsg } from '../../utils/helperFunctions';
 import PostMusic from '../../components/PostMusic';
 import { getClipRange, setMusicMuted, useMusicMuted } from '../../utils/musicStore';
 import Feather from 'react-native-vector-icons/Feather';
+import Video from 'react-native-video';
 
 const DEFAULT_STORY_MS = 5000;
 // A story with music lasts as long as the chosen clip (web: getStoryDuration)
@@ -63,6 +65,7 @@ const StoryScreen = ({ route, navigation }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [videoError, setVideoError] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [showViewers, setShowViewers] = useState(false);
     const [activityTab, setActivityTab] = useState('viewers');
@@ -291,12 +294,13 @@ const StoryScreen = ({ route, navigation }) => {
         }
 
         setImageLoaded(false);
+        setVideoError(false);
         resetAllProgress();
         fillPreviousProgress();
     }, [currentIndex, currentUserIndex]);
 
     useEffect(() => {
-        if (imageLoaded && !isPaused) {
+        if (imageLoaded && !isPaused && currentUserStories[currentIndex]?.type !== 'video') {
             if (storyStartTimerRef.current) {
                 clearTimeout(storyStartTimerRef.current);
             }
@@ -355,7 +359,8 @@ const StoryScreen = ({ route, navigation }) => {
 
     const resume = () => {
         setIsPaused(false);
-        if (imageLoaded) {
+        // video stories are driven by the player's own progress, not the timer
+        if (imageLoaded && currentUserStories[currentIndex]?.type !== 'video') {
             animateCurrent();
         }
     };
@@ -532,6 +537,7 @@ const StoryScreen = ({ route, navigation }) => {
     }
 
     const currentStory = currentUserStories[currentIndex];
+    const isVideoStory = currentStory?.type === 'video';
     const storyMuted = useMusicMuted('story');
 
     // Debug aid for story music: shows in the Metro console whether the API sent the song
@@ -552,7 +558,7 @@ const StoryScreen = ({ route, navigation }) => {
             <StatusBar barStyle="light-content" backgroundColor="black" />
 
             <ImageBackground
-                source={{ uri: currentStory?.media }}
+                source={isVideoStory ? undefined : { uri: currentStory?.media }}
                 style={styles.backgroundImage}
                 resizeMode="cover"
                 onLoad={handleImageLoad}
@@ -643,13 +649,49 @@ const StoryScreen = ({ route, navigation }) => {
 
                     {/* Story Content */}
                     <View style={styles.storyContent}>
-                        <Image
-                            source={{ uri: currentStory?.media }}
-                            style={styles.storyImage}
-                            resizeMode="contain"
-                            onLoad={handleImageLoad}
-                            onLoadStart={() => setImageLoaded(false)}
-                        />
+                        {isVideoStory ? (
+                            <>
+                                <Video
+                                    key={currentStory?._id || `v${currentIndex}`}
+                                    source={{ uri: currentStory?.media }}
+                                    style={styles.storyImage}
+                                    resizeMode="contain"
+                                    paused={isPaused}
+                                    // with a song attached the video's own sound is muted (web: MUTE_VIDEO_WITH_MUSIC)
+                                    muted={!!currentStory?.Music?.File}
+                                    repeat={false}
+                                    playInBackground={false}
+                                    playWhenInactive={false}
+                                    ignoreSilentSwitch="ignore"
+                                    progressUpdateInterval={100}
+                                    onLoad={handleImageLoad}
+                                    onProgress={({ currentTime, seekableDuration, playableDuration }) => {
+                                        const d = seekableDuration || playableDuration;
+                                        if (d > 0) progressBars[currentIndex]?.setValue(Math.min(currentTime / d, 1));
+                                    }}
+                                    onEnd={() => {
+                                        progressBars[currentIndex]?.setValue(1);
+                                        setCurrentIndex(prev => prev + 1);
+                                    }}
+                                    onError={() => { setVideoError(true); setImageLoaded(true); }}
+                                />
+                                {!imageLoaded && !videoError && <ActivityIndicator style={StyleSheet.absoluteFill} color="#fff" size="large" />}
+                                {videoError && (
+                                    <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
+                                        <Feather name="alert-circle" size={32} color="#fff" />
+                                        <Text style={{ color: '#fff', marginTop: 8 }}>Could not play this video</Text>
+                                    </View>
+                                )}
+                            </>
+                        ) : (
+                            <Image
+                                source={{ uri: currentStory?.media }}
+                                style={styles.storyImage}
+                                resizeMode="contain"
+                                onLoad={handleImageLoad}
+                                onLoadStart={() => setImageLoaded(false)}
+                            />
+                        )}
                     </View>
 
                     <View style={styles.touchableContainer}>

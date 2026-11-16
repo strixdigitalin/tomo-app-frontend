@@ -64,6 +64,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import { formatInstagramDate } from '../../utils/DateFormat'
 import FeedCard from './FeedsCards'
 import InfoCard from '../../components/InfoCard'
+import { storyThumb } from '../../utils/storyVideo'
 import { ActionMenu } from '../../components/ActionMenu'
 import ConfirmModal from '../../components/ConfirmModal'
 import PromotedSection from '../../components/PromotedSection'
@@ -995,6 +996,11 @@ const Home = ({ navigation }) => {
     }
   }, [])
 
+  // What's New links (news "Read More", tips, blogs) open inside the app with a back button
+  const openLink = useCallback((url, title) => {
+    navigation.navigate('WebViewScreen', { url, title })
+  }, [navigation])
+
   const handlePostClick = useCallback((item) => {
     navigation.navigate('PostDetail', {
       post: item,
@@ -1117,7 +1123,7 @@ const Home = ({ navigation }) => {
                       styles.tabText,
                       selectedTab === tab && [styles.tabTextActive, { color: primaryColor }]
                     ]}>
-                    {tab === 'home' ? 'Home' : tab}
+                    {tab === 'home' ? 'Home' : tab === 'News' ? "What's New" : tab}
                   </CustomText>
                   {selectedTab === tab && (
                     <Animated.View entering={ZoomIn.duration(300)}>
@@ -1404,8 +1410,8 @@ const Home = ({ navigation }) => {
                   <View style={styles.storyImageContainer}>
                     <Image
                       source={
-                        allStories[0]?.media
-                          ? { uri: allStories[0]?.media }
+                        storyThumb(allStories[0])
+                          ? { uri: storyThumb(allStories[0]) }
                           : IMG.TomoLogo
                       }
                       style={styles.storyImage}
@@ -1458,7 +1464,7 @@ const Home = ({ navigation }) => {
                           <Image
                             source={
                               item.User?.Stories?.length > 0
-                                ? { uri: item.User?.Stories[0]?.media }
+                                ? { uri: storyThumb(item.User?.Stories[0]) || item.User?.Image }
                                 : IMG.AddStoryImage
                             }
                             style={styles.storyImage}
@@ -1589,7 +1595,7 @@ const Home = ({ navigation }) => {
 
     const post = item.data
     if (post?._info) {
-      return <InfoCard item={post} isDarkMode={isDarkMode} />
+      return <InfoCard item={post} isDarkMode={isDarkMode} onLinkPress={openLink} />
     }
     const isNewsItem = selectedTab === 'News'
     const mediaUrl = post.media
@@ -1651,6 +1657,7 @@ const Home = ({ navigation }) => {
           }}
           onBookmarkPress={() => SavePost(post)}
           onMorePress={() => setMenuPost(post)}
+          onLinkPress={openLink}
           onMuteToggle={() => setIsMuted(!isMuted)}
         />
       </Animated.View>
@@ -1673,6 +1680,7 @@ const Home = ({ navigation }) => {
     onLikeUnlike,
     onDisLikes,
     SavePost,
+    openLink,
     navigation,
   ])
 

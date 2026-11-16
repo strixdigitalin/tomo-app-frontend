@@ -32,6 +32,8 @@ import Row from '../../components/wrapper/row'
 import { BackIcon, PrimaryBackArrow } from '../../assets/SVGs'
 import { FONTS_FAMILY } from '../../assets/Fonts'
 import CustomText from '../../components/TextComponent'
+import UploadProgressModal from '../../components/UploadProgressModal'
+import { useUpload } from '../../utils/uploadWithProgress'
 
 const screenWidth = Dimensions.get('window').width
 const imageSize = screenWidth / 3 - 10
@@ -63,6 +65,7 @@ const GalleryForAddPost = ({ navigation }) => {
   const [showTagModal, setShowTagModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const upload = useUpload()
   
   // ✅ NEW: Followers state
   const [followers, setFollowers] = useState([])
@@ -452,14 +455,16 @@ const GalleryForAddPost = ({ navigation }) => {
 
       console.log('📤 Submitting post...')
 
-      const response = await fetch(`${BASE_URL}/api/user/AddPost`, {
+      // video posts show a progress card with the real upload %; photos upload quietly
+      const { ok, status, data: result } = await upload.run({
+        url: `${BASE_URL}/api/user/AddPost`,
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        token,
+        formData,
+        show: selectedMediaType === 'video',
       })
-      
-      if (!response.ok) throw new Error(`Server error ${response.status}`)
-      const result = JSON.parse(await response.text())
+
+      if (!ok) throw new Error(result?.message || `Server error ${status}`)
       
       // ✅ DELETE DRAFT AFTER SUCCESSFUL POST
       await deleteDraft()
@@ -468,7 +473,7 @@ const GalleryForAddPost = ({ navigation }) => {
       navigation.navigate('Tab')
     } catch (error) {
       console.log('❌ Submit error:', error)
-      ToastMsg('Something went wrong')
+      ToastMsg(error?.cancelled ? 'Upload cancelled' : (error?.message || 'Something went wrong'))
     } finally {
       setIsSubmitting(false)
     }
@@ -549,7 +554,15 @@ const GalleryForAddPost = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#131B2B' : '#FFFFFF' }}>
         <StatusBar backgroundColor='transparent' translucent barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        
+
+        <UploadProgressModal
+          {...upload.state}
+          title="Uploading video"
+          processingText="Processing video…"
+          hint="Large videos take a little while. Please keep the app open until it finishes."
+          onCancel={upload.cancel}
+        />
+
         <Row style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             {isDarkMode ? <BackIcon /> : <PrimaryBackArrow />}

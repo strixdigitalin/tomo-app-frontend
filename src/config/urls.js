@@ -105,5 +105,16 @@ export default {
     sellerChatHistory: '/api/seller/GetSellerUserChatHistory',
     sellerUpdateLocation: '/api/seller/SellerUpdateLocation',
     sellerToggleShowData: '/api/seller/ToggleShowData',
+    sellerDashboard: '/api/seller/GetSellerDashboard',
+    sellerScanVehicle: '/api/seller/ScanAUserVehicle',
+    sellerAddServiceRecord: '/api/seller/AddVehicleServiceRecord',
+    sellerMyServiceRecords: '/api/seller/GetMyServiceRecords',
+    sellerUpdateServiceRecord: '/api/seller/UpdateVehicleServiceRecord',
+    sellerDeleteServiceRecord: '/api/seller/DeleteVehicleServiceRecord',
+
+    // ─── Vehicle service history (owner side) ──────────────────────────────
+    carServiceHistory: '/api/user/GetCarServiceHistory',
+    approveServiceRecord: '/api/user/ApproveServiceRecord',
+    rejectServiceRecord: '/api/user/RejectServiceRecord',
 
 };

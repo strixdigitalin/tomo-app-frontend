@@ -34,7 +34,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Tomo uses the camera so you can capture photos and videos for your posts.</string>
+	<string>Tomo uses the camera to capture photos and videos for your posts and to scan vehicle QR codes.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
 	<key>NSMicrophoneUsageDescription</key>

@@ -97,6 +97,7 @@ function FeedCard({
   onBookmarkPress,
   onMuteToggle,
   onMorePress,
+  onLinkPress,
   formatInstagramDate,
 }) {
   const accent = glowColors?.[0] || '#1877f2';
@@ -139,7 +140,7 @@ function FeedCard({
         </Text>
       </TouchableOpacity>
       {isNewsItem && !!post?.Link && (
-        <TouchableOpacity onPress={() => Linking.openURL(post.Link).catch(() => {})}>
+        <TouchableOpacity onPress={() => (onLinkPress ? onLinkPress(post.Link, post.title) : Linking.openURL(post.Link).catch(() => {}))}>
           <Text style={[staticStyles.readMore, { color: accent }]}>Read More</Text>
         </TouchableOpacity>
       )}

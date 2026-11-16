@@ -17,15 +17,19 @@ import { profilePalette } from '../screens/UserDetail/profileTheme';
 
 // Song picker for posts and stories — port of web's MusicPickerModal.jsx
 //   step 1 "list": search + genre / language filters, tap ▶ to preview a song, tap a row to pick it
-//   step 2 "trim": choose which part of the song plays (start + 5/10/15/30/60 s) over a waveform
+//   step 2 "trim": choose which part of the song plays (start + 5/10/15 s, plus the video's own length when adding music to a long video story) over a waveform
 //   → onSelect({ music, start, duration })   (music = the track document from the API)
-const DURATION_OPTIONS = [5, 10, 15, 30, 60];
+const DURATION_OPTIONS = [5, 10, 15];
 const DEFAULT_DURATION = 15;
 const BAR_COUNT = 60;
 const WAVE_H = 90;
 
-const durationOptions = total => {
+// `extra` = the story video's length, so one song can cover every 15 s story it is split into
+const durationOptions = (total, extra = null) => {
   const opts = DURATION_OPTIONS.filter(d => d <= total);
+  const e = extra ? Math.min(Math.floor(extra), Math.floor(total)) : null;
+  if (e && e >= 1 && !opts.includes(e)) opts.push(e);
+  opts.sort((a, b) => a - b);
   return opts.length ? opts : [Math.max(1, Math.floor(total))];
 };
 
@@ -69,7 +73,7 @@ const Dropdown = ({ allLabel, options, value, onChange, c, accent }) => {
   );
 };
 
-const MusicPickerModal = ({ visible, onClose, onSelect, initial = null }) => {
+const MusicPickerModal = ({ visible, onClose, onSelect, initial = null, suggestedDuration = null }) => {
   const insets = useSafeAreaInsets();
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
   const accent = (THEMES[selectedColorTheme] || THEMES.default).primary;
@@ -170,7 +174,8 @@ const MusicPickerModal = ({ visible, onClose, onSelect, initial = null }) => {
 
   // ── trim step ──────────────────────────────────────────────────────────────
   const openTrim = t => {
-    const d = Math.min(DEFAULT_DURATION, Math.max(1, Math.floor(t.Duration || DEFAULT_DURATION)));
+    const wanted = suggestedDuration || DEFAULT_DURATION;
+    const d = Math.min(wanted, Math.max(1, Math.floor(t.Duration || wanted)));
     setPreviewTrack(null);
     setTrack(t);
     setStart(0);
@@ -377,7 +382,7 @@ const MusicPickerModal = ({ visible, onClose, onSelect, initial = null }) => {
 
             <Text style={[styles.sectionLabel, { color: c.muted, marginTop: 18 }]}>Length</Text>
             <View style={styles.durRow}>
-              {durationOptions(total).map(d => (
+              {durationOptions(total, suggestedDuration).map(d => (
                 <TouchableOpacity
                   key={d}
                   onPress={() => changeDuration(d)}

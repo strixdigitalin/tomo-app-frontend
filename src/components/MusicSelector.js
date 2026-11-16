@@ -10,7 +10,7 @@ import { profilePalette } from '../screens/UserDetail/profileTheme';
 
 // "Add music" row for the create-post / create-story screens (web: the Music button + chip in
 // AddPost.jsx / AddStoryModel.jsx).  value = { music, start, duration } | null
-const MusicSelector = ({ value, onChange, style }) => {
+const MusicSelector = ({ value, onChange, style, suggestedDuration = null }) => {
   const { isDarkMode, selectedColorTheme } = useSelector(state => state.theme);
   const accent = (THEMES[selectedColorTheme] || THEMES.default).primary;
   const c = profilePalette(isDarkMode, accent);
@@ -63,6 +63,7 @@ const MusicSelector = ({ value, onChange, style }) => {
         visible={open}
         onClose={() => setOpen(false)}
         initial={value}
+        suggestedDuration={suggestedDuration}
         onSelect={onChange}
       />
     </View>

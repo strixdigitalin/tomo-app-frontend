@@ -24,7 +24,7 @@ const Section = ({ title, children, c }) => (
 
 // A user's car (web: Profile/Car/CurrentCar.jsx): photo, PRIMARY badge, rating bar,
 // build stage + price, "Show more" specs, and Update / Delete (own) or Rate (others).
-const CarCard = ({ car, isOther, isDark, accent, onEdit, onDelete, onRate }) => {
+const CarCard = ({ car, isOther, isDark, accent, onEdit, onDelete, onRate, onHistory, onQr }) => {
   const c = profilePalette(isDark, accent);
   const [open, setOpen] = useState(false);
   const v = car?.VehicleInfo || {};
@@ -63,6 +63,11 @@ const CarCard = ({ car, isOther, isDark, accent, onEdit, onDelete, onRate }) => 
             </TouchableOpacity>
           ) : (
             <View style={{ flexDirection: 'row', gap: 8 }}>
+              {!!onQr && (
+                <TouchableOpacity style={[styles.iconBtn, { backgroundColor: accent + '1A' }]} onPress={() => onQr(car)}>
+                  <MaterialCommunityIcons name="qrcode" size={17} color={accent} />
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={[styles.iconBtn, { backgroundColor: accent + '1A' }]} onPress={() => onEdit(car)}>
                 <Feather name="edit-2" size={15} color={accent} />
               </TouchableOpacity>
@@ -96,6 +101,14 @@ const CarCard = ({ car, isOther, isDark, accent, onEdit, onDelete, onRate }) => 
             </View>
           )}
         </View>
+
+        {!isOther && !!onHistory && (
+          <TouchableOpacity onPress={() => onHistory(car)} activeOpacity={0.85} style={[styles.historyBtn, { borderColor: accent, backgroundColor: accent + '12' }]}>
+            <Feather name="tool" size={15} color={accent} />
+            <Text style={[styles.moreText, { color: accent }]}>Service history</Text>
+            <Feather name="chevron-right" size={16} color={accent} />
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity onPress={() => setOpen(o => !o)} style={styles.moreBtn} activeOpacity={0.7}>
           <Text style={[styles.moreText, { color: accent }]}>{open ? 'Show less' : 'Show more'}</Text>
@@ -166,6 +179,7 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   metaChip: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 },
   metaText: { fontSize: 12, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
+  historyBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, paddingVertical: 10, borderRadius: 14, borderWidth: 1.5 },
   moreBtn: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 12, gap: 4 },
   moreText: { fontSize: 14, fontFamily: FONTS_FAMILY.SourceSans3_SemiBold },
   sectionTitle: { fontSize: 15, fontFamily: FONTS_FAMILY.SourceSans3_Bold, marginBottom: 6 },

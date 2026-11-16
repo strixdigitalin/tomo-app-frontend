@@ -46,7 +46,7 @@ const FormButton = ({ label, onPress, loading = false, disabled = false, variant
 const styles = StyleSheet.create({
   btn: {
     height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row',
-    alignSelf: 'stretch', elevation: 3, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8,
+    alignSelf: 'stretch', elevation: 0, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8,
   },
   text: { fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Bold },
 });

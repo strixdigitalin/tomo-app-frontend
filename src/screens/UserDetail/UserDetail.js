@@ -22,6 +22,7 @@ import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import CarRatingModal from './CarRatingModal'
 import ProfileHeader from './ProfileHeader'
 import CarCard from './CarCard'
+import CarQrModal from './CarQrModal'
 import { PostTile, ProductCard } from './ProfileTiles'
 import { profilePalette } from './profileTheme'
 import FormField from '../../components/FormField'
@@ -133,6 +134,7 @@ const OtherUserDetail = ({ navigation, route }) => {
   const form = useForm({ FullName: '', UserName: '', Bio: '' }, EDIT_SCHEMA)
   const [ratingCar, setRatingCar] = useState(null)
   const [deleteCar, setDeleteCar] = useState(null)
+  const [qrCar, setQrCar] = useState(null)
   const [justRequested, setJustRequested] = useState(false)
 
   const fetchedFor = useRef(null)
@@ -329,6 +331,8 @@ const OtherUserDetail = ({ navigation, route }) => {
             onEdit={car => navigation.navigate('AddVehicleSpecs', { vehicleData: toVehicleData(car) })}
             onDelete={setDeleteCar}
             onRate={setRatingCar}
+            onHistory={car => navigation.navigate('CarServiceHistory', { car })}
+            onQr={setQrCar}
           />
         )
       case 'products':
@@ -488,6 +492,8 @@ const OtherUserDetail = ({ navigation, route }) => {
         message="Are you sure you want to delete this vehicle?"
         onConfirm={confirmDeleteCar}
       />
+
+      <CarQrModal car={qrCar} onClose={() => setQrCar(null)} />
 
       <CarRatingModal
         visible={!!ratingCar}

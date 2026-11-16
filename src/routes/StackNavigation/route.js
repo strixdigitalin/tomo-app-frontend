@@ -64,6 +64,10 @@ import SellerAddProduct from '../../screens/SellerFlow/SellerAddProduct';
 import SellerShopProducts from '../../screens/SellerFlow/SellerShopProducts';
 import SellerProductDetail from '../../screens/SellerFlow/SellerProductDetail';
 import SellerChatScreen from '../../screens/SellerFlow/SellerChatScreen';
+import WebViewScreen from '../../screens/WebView/WebViewScreen';
+import SellerServiceRecords from '../../screens/SellerFlow/SellerServiceRecords';
+import ServiceRecordForm from '../../screens/SellerFlow/ServiceRecordForm';
+import CarServiceHistory from '../../screens/UserDetail/CarServiceHistory';
 const Stack = createNativeStackNavigator();
 
 const StackNavigation = () => {
@@ -595,6 +599,26 @@ const StackNavigation = () => {
           options={{
             animation: 'slide_from_right',
           }}
+        />
+        <Stack.Screen
+          name={'WebViewScreen'}
+          component={WebViewScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name={'SellerServiceRecords'}
+          component={SellerServiceRecords}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name={'ServiceRecordForm'}
+          component={ServiceRecordForm}
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name={'CarServiceHistory'}
+          component={CarServiceHistory}
+          options={{ animation: 'slide_from_right' }}
         />
 
       </Stack.Navigator>
