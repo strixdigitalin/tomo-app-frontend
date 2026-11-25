@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.tomo"
+    namespace "com.tomoapp"
     defaultConfig {
-        applicationId "com.tomo"
+        applicationId "com.tomoapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -100,6 +100,14 @@ android {
         }
     }
     signingConfigs {
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -110,13 +118,19 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            // EAS Update channel this build checks for updates on.
+            manifestPlaceholders += [EXPO_UPDATES_REQUEST_HEADERS: '{"expo-channel-name":"development"}']
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // EAS Update channel this build checks for updates on.
+            // Override for a local test build: ./gradlew assembleRelease -PEXPO_UPDATE_CHANNEL=preview
+            def expoUpdateChannel = project.hasProperty('EXPO_UPDATE_CHANNEL') ? project.property('EXPO_UPDATE_CHANNEL') : 'production'
+            manifestPlaceholders += [EXPO_UPDATES_REQUEST_HEADERS: "{\"expo-channel-name\":\"${expoUpdateChannel}\"}"]
         }
     }
 }

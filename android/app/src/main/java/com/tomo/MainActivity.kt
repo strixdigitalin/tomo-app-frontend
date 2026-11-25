@@ -1,4 +1,4 @@
-package com.tomo
+package com.tomoapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
